@@ -1,0 +1,5 @@
+#! /usr/bin/env python
+
+import cooperative_transport.node
+if __name__ == '__main__':
+    cooperative_transport.node.main()
