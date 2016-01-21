@@ -1,0 +1,1579 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     59998,       1570]
+NotebookOptionsPosition[     56992,       1464]
+NotebookOutlinePosition[     57325,       1479]
+CellTagsIndexPosition[     57282,       1476]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["IR light bumper sensor", "Title",
+ CellChangeTimes->{{3.6623197306238413`*^9, 3.6623197465119753`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Angles and lengths", "Section",
+ CellChangeTimes->{{3.662319808995775*^9, 3.6623198182648907`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"\[Gamma]", "[", 
+   RowBox[{"\[Beta]_", ",", "\[Alpha]i_"}], "]"}], ":=", 
+  RowBox[{"\[Beta]", "+", 
+   RowBox[{"2", "\[Alpha]i"}]}]}]], "Input",
+ CellChangeTimes->{{3.662319821017684*^9, 3.662319894128158*^9}, {
+  3.662320007953763*^9, 3.6623200117218533`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"lExt", "[", 
+   RowBox[{"\[Beta]_", ",", "\[Alpha]i_", ",", "S_"}], "]"}], ":=", 
+  RowBox[{
+   FractionBox["S", "2"], "*", 
+   RowBox[{"Tan", " ", "[", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"\[Pi]", "-", "\[Beta]"}], "2"], "-", "\[Alpha]i"}], 
+    "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.662319896160862*^9, 3.662319902314537*^9}, {
+   3.6623199386977587`*^9, 3.66232005319549*^9}, {3.662320392217163*^9, 
+   3.6623204149093313`*^9}, {3.662321992279861*^9, 3.662321999266317*^9}, {
+   3.662322038071967*^9, 3.6623220397685747`*^9}, 3.662327689693905*^9, {
+   3.662327974407263*^9, 3.6623279854098997`*^9}, {3.662328054043397*^9, 
+   3.662328078111669*^9}, {3.662329545108395*^9, 3.662329550346736*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ir\[CapitalDelta]", "[", 
+   RowBox[{"\[Beta]_", ",", "\[Alpha]i_", ",", "\[Alpha]o_", ",", "S_"}], 
+   "]"}], ":=", 
+  RowBox[{
+   FractionBox["S", "2"], "*", 
+   RowBox[{"Sin", "[", 
+    RowBox[{"\[Alpha]i", "+", "\[Alpha]o"}], "]"}], "*", 
+   SuperscriptBox[
+    RowBox[{"Sin", "[", 
+     FractionBox[
+      RowBox[{"\[Gamma]", "[", 
+       RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "]"}], 
+    RowBox[{"-", "1"}]], "*", 
+   SuperscriptBox[
+    RowBox[{"Sin", "[", 
+     RowBox[{
+      RowBox[{"\[Gamma]", "[", 
+       RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "-", 
+      RowBox[{"(", 
+       RowBox[{"\[Alpha]i", "+", "\[Alpha]o"}], ")"}]}], "]"}], 
+    RowBox[{"-", "1"}]]}]}]], "Input",
+ CellChangeTimes->{{3.662320512256041*^9, 3.662320553943945*^9}, {
+  3.6623206002631693`*^9, 3.662320650183*^9}, {3.662321179456215*^9, 
+  3.662321236647127*^9}, {3.662327697822763*^9, 3.662327702092712*^9}, {
+  3.66232954669615*^9, 3.6623295485013866`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"laserOuterLenght", "[", 
+    RowBox[{
+    "\[Beta]_", ",", "\[Alpha]i_", ",", "\[Alpha]o_", ",", "S_", ",", "l_"}], 
+    "]"}], ":=", 
+   SqrtBox[
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"l", "+", 
+        RowBox[{"lExt", "[", 
+         RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "S"}], "]"}]}], ")"}], 
+      "2"], "+", 
+     SuperscriptBox[
+      RowBox[{"ir\[CapitalDelta]", "[", 
+       RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S"}], 
+       "]"}], "2"], "+", 
+     RowBox[{"2", "*", 
+      RowBox[{"ir\[CapitalDelta]", "[", 
+       RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S"}], 
+       "]"}], "*", 
+      RowBox[{"(", 
+       RowBox[{"l", "+", 
+        RowBox[{"lExt", "[", 
+         RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "S"}], "]"}]}], ")"}], "*", 
+      RowBox[{"Cos", "[", 
+       FractionBox[
+        RowBox[{"\[Gamma]", "[", 
+         RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "]"}]}]}]]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.662321941644414*^9, 3.6623219728766747`*^9}, {
+  3.6623220977346*^9, 3.662322224424993*^9}, {3.662322272666666*^9, 
+  3.66232232111026*^9}, {3.662327706471307*^9, 3.662327712305305*^9}, {
+  3.662328210231024*^9, 3.662328222582961*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"\[Epsilon]max", "[", 
+   RowBox[{
+   "\[Beta]_", ",", "\[Alpha]i_", ",", "\[Alpha]o_", ",", "S_", ",", "l_"}], 
+   "]"}], ":=", 
+  RowBox[{"ArcSin", "[", 
+   FractionBox[
+    RowBox[{
+     RowBox[{"ir\[CapitalDelta]", "[", 
+      RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S"}], 
+      "]"}], "*", 
+     RowBox[{"Sin", "[", 
+      FractionBox[
+       RowBox[{"\[Gamma]", "[", 
+        RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "]"}]}], 
+    RowBox[{"laserOuterLenght", "[", 
+     RowBox[{
+     "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l"}], 
+     "]"}]], "]"}]}]], "Input",
+ CellChangeTimes->{{3.662322330022243*^9, 3.6623223546369963`*^9}, {
+   3.662322533310999*^9, 3.662322551414197*^9}, {3.662323149367477*^9, 
+   3.662323154482473*^9}, 3.662327715476102*^9}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Laser min/max lengths", "Section",
+ CellChangeTimes->{{3.662328463862934*^9, 3.662328468887041*^9}, {
+  3.662332293456163*^9, 3.662332297494561*^9}, {3.662333174903544*^9, 
+  3.662333175481879*^9}, {3.662334639009509*^9, 3.662334673695137*^9}, {
+  3.662334764590952*^9, 3.662334777759103*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Line equations", "Subsection",
+ CellChangeTimes->{{3.662333144510207*^9, 3.6623331499668493`*^9}, {
+  3.6623345922068644`*^9, 3.662334595038588*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"laser", "[", "\[Epsilon]_", "]"}], "[", "x_", "]"}], ":=", 
+   RowBox[{
+    RowBox[{"Tan", "[", "\[Epsilon]", "]"}], "*", "x"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.662328483564736*^9, 3.66232848485105*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"diodeOuter", "[", 
+     RowBox[{
+     "\[Beta]_", ",", "\[Alpha]i_", ",", "\[Alpha]o_", ",", "S_", ",", "l_"}],
+      "]"}], "[", "x_", "]"}], ":=", " ", 
+   RowBox[{
+    RowBox[{"S", "/", "2"}], "-", 
+    RowBox[{
+     RowBox[{"Tan", "[", 
+      RowBox[{
+       RowBox[{"\[Pi]", "/", "2"}], "-", 
+       RowBox[{"(", 
+        RowBox[{"\[Alpha]i", "+", "\[Alpha]o"}], ")"}], "-", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Pi]", "-", "\[Beta]"}], ")"}], "/", "2"}], "-", 
+         "\[Alpha]i"}], ")"}]}], "]"}], "*", 
+     RowBox[{"(", 
+      RowBox[{"x", "-", "l"}], ")"}]}]}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6623240631222563`*^9, 3.662324151078236*^9}, {
+  3.6623242235559263`*^9, 3.66232426084859*^9}, {3.6623257484555273`*^9, 
+  3.662325768425684*^9}, {3.662325808009953*^9, 3.662325808295676*^9}, {
+  3.662325876869852*^9, 3.662325884993969*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"diodeCenter", "[", 
+     RowBox[{"\[Beta]_", ",", "\[Alpha]i_", ",", "S_", ",", "l_"}], "]"}], 
+    "[", "x_", "]"}], ":=", 
+   RowBox[{
+    RowBox[{"diodeOuter", "[", 
+     RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "0", ",", "S", ",", "l"}], 
+     "]"}], "[", "x", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.662325348073127*^9, 3.6623253881471024`*^9}, {
+  3.662325428240095*^9, 3.6623254670782022`*^9}, {3.662325811814363*^9, 
+  3.662325816132555*^9}, {3.662325887376449*^9, 3.6623258907865057`*^9}, {
+  3.662325940572126*^9, 3.662325944760854*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"diodeInner", "[", 
+     RowBox[{"\[Beta]_", ",", "\[Alpha]i_", ",", "S_", ",", "l_"}], "]"}], 
+    "[", "x_", "]"}], ":=", 
+   RowBox[{
+    RowBox[{"S", "/", "2"}], "-", 
+    RowBox[{
+     RowBox[{"Tan", "[", 
+      RowBox[{
+       RowBox[{"\[Pi]", "/", "2"}], "-", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Pi]", "-", "\[Beta]"}], ")"}], "/", "2"}], "-", 
+         "\[Alpha]i"}], ")"}]}], "]"}], "*", 
+     RowBox[{"(", 
+      RowBox[{"x", "-", "l"}], ")"}]}]}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6623248982506733`*^9, 3.662324927990364*^9}, {
+  3.662325241336727*^9, 3.662325261838037*^9}, {3.662325820989664*^9, 
+  3.662325821477482*^9}, {3.66232589302141*^9, 3.662325925803885*^9}, {
+  3.6623295178208847`*^9, 3.662329535680831*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Intersections", "Subsection",
+ CellChangeTimes->{{3.662333152760152*^9, 3.6623331549343243`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Solve", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"laser", "[", "\[Epsilon]", "]"}], "[", "x", "]"}], "\[Equal]", 
+    RowBox[{"-", 
+     RowBox[{
+      RowBox[{"diodeInner", "[", 
+       RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l"}], "]"}], "[", 
+      "x", "]"}]}]}], ",", "x"}], "]"}]], "Input",
+ CellChangeTimes->{{3.66233214311627*^9, 3.66233215001756*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{"x", "\[Rule]", 
+    FractionBox[
+     RowBox[{
+      RowBox[{"-", "S"}], "+", 
+      RowBox[{"2", " ", "l", " ", 
+       RowBox[{"Cot", "[", 
+        RowBox[{"\[Alpha]i", "+", 
+         RowBox[{
+          FractionBox["1", "2"], " ", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"-", "\[Pi]"}], "+", "\[Beta]"}], ")"}]}]}], "]"}]}]}], 
+     RowBox[{"2", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"Cot", "[", 
+         RowBox[{"\[Alpha]i", "+", 
+          RowBox[{
+           FractionBox["1", "2"], " ", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"-", "\[Pi]"}], "+", "\[Beta]"}], ")"}]}]}], "]"}], "+", 
+        
+        RowBox[{"Tan", "[", "\[Epsilon]", "]"}]}], ")"}]}]]}], "}"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{
+  3.6623321511569138`*^9, 3.662333708725555*^9, 3.6623349234609823`*^9, 
+   3.662334963055417*^9, {3.662335018978464*^9, 3.662335037901259*^9}}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"xmin", "[", 
+    RowBox[{
+    "\[Beta]_", ",", "\[Alpha]i_", ",", "S_", ",", "l_", ",", "\[Epsilon]_"}],
+     "]"}], ":=", 
+   FractionBox[
+    RowBox[{
+     RowBox[{"-", "S"}], "+", 
+     RowBox[{"2", " ", "l", " ", 
+      RowBox[{"Cot", "[", 
+       RowBox[{"\[Alpha]i", "+", 
+        RowBox[{
+         FractionBox["1", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", "\[Pi]"}], "+", "\[Beta]"}], ")"}]}]}], "]"}]}]}], 
+    RowBox[{"2", " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"Cot", "[", 
+        RowBox[{"\[Alpha]i", "+", 
+         RowBox[{
+          FractionBox["1", "2"], " ", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"-", "\[Pi]"}], "+", "\[Beta]"}], ")"}]}]}], "]"}], "+", 
+       RowBox[{"Tan", "[", 
+        RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}], ")"}]}]]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.662329311430606*^9, 3.6623293755974483`*^9}, {
+  3.6623301442965193`*^9, 3.662330153985292*^9}, {3.662330368301567*^9, 
+  3.662330373052718*^9}, {3.662331342773497*^9, 3.662331345928886*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Solve", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"laser", "[", "\[Epsilon]", "]"}], "[", "x", "]"}], "\[Equal]", 
+    RowBox[{
+     RowBox[{"diodeOuter", "[", 
+      RowBox[{
+      "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l"}], 
+      "]"}], "[", "x", "]"}]}], ",", "x"}], "]"}]], "Input",
+ CellChangeTimes->{{3.662329791134562*^9, 3.66232980439077*^9}, {
+  3.662330133216968*^9, 3.6623301381961393`*^9}, {3.662330502458783*^9, 
+  3.662330515848865*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{"x", "\[Rule]", 
+    FractionBox[
+     RowBox[{"S", "+", 
+      RowBox[{"2", " ", "l", " ", 
+       RowBox[{"Cot", "[", 
+        RowBox[{"\[Alpha]o", "+", 
+         FractionBox[
+          RowBox[{"\[Pi]", "-", "\[Beta]"}], "2"]}], "]"}]}]}], 
+     RowBox[{"2", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"Cot", "[", 
+         RowBox[{"\[Alpha]o", "+", 
+          FractionBox[
+           RowBox[{"\[Pi]", "-", "\[Beta]"}], "2"]}], "]"}], "+", 
+        RowBox[{"Tan", "[", "\[Epsilon]", "]"}]}], ")"}]}]]}], "}"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{
+  3.66232980836443*^9, 3.66233013880451*^9, 3.662330521395969*^9, 
+   3.662331353363573*^9, 3.6623313833685417`*^9, 3.6623321075301933`*^9, 
+   3.6623337088839493`*^9, 3.66233492362805*^9, 3.6623349631201*^9, {
+   3.662335019025329*^9, 3.6623350379624453`*^9}}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"xmax", "[", 
+    RowBox[{
+    "\[Beta]_", ",", "\[Alpha]o_", ",", "S_", ",", "l_", ",", "\[Epsilon]_"}],
+     "]"}], ":=", 
+   FractionBox[
+    RowBox[{"S", "+", 
+     RowBox[{"2", " ", "l", " ", 
+      RowBox[{"Cot", "[", 
+       RowBox[{"\[Alpha]o", "+", 
+        FractionBox[
+         RowBox[{"\[Pi]", "-", "\[Beta]"}], "2"]}], "]"}]}]}], 
+    RowBox[{"2", " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"Cot", "[", 
+        RowBox[{"\[Alpha]o", "+", 
+         FractionBox[
+          RowBox[{"\[Pi]", "-", "\[Beta]"}], "2"]}], "]"}], "+", 
+       RowBox[{"Tan", "[", 
+        RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}], ")"}]}]]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.662329810478127*^9, 3.662329866881579*^9}, {
+  3.662330165793549*^9, 3.662330170362246*^9}, {3.6623305313010263`*^9, 
+  3.662330535179158*^9}, {3.662331348045719*^9, 3.662331349932214*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Lengths", "Subsection",
+ CellChangeTimes->{{3.662333159064714*^9, 3.662333161249021*^9}, {
+  3.662334627622507*^9, 3.6623346333050327`*^9}, {3.662334772326809*^9, 
+  3.662334773522848*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Laser Min", "Subsubsection",
+ CellChangeTimes->{{3.662333450913743*^9, 3.6623334558291473`*^9}, {
+  3.662334653450341*^9, 3.662334654526607*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"laserMin", "[", 
+    RowBox[{
+    "\[Beta]_", ",", "\[Alpha]i_", ",", "S_", ",", "l_", ",", "\[Epsilon]_"}],
+     "]"}], " ", ":=", " ", 
+   SqrtBox[
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"xmin", "[", 
+       RowBox[{
+       "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+       "]"}], "2"], "+", 
+     SuperscriptBox[
+      RowBox[{
+       RowBox[{"laser", "[", "\[Epsilon]", "]"}], "[", 
+       RowBox[{"xmin", "[", 
+        RowBox[{
+        "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+        "]"}], "]"}], "2"]}]]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6623316140757313`*^9, 3.662331615324389*^9}, {
+  3.662331650310122*^9, 3.662331742051083*^9}, {3.662332085586398*^9, 
+  3.662332091529889*^9}, {3.662334698498363*^9, 3.662334700682087*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"laserMin", "[", 
+   RowBox[{
+   "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+   "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.662332434182664*^9, 3.662332455999456*^9}, {
+  3.6623347026117268`*^9, 3.662334703480538*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox["1", "2"], " ", 
+  SqrtBox[
+   FractionBox[
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"Sec", "[", "\[Epsilon]", "]"}], "2"], " ", 
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"S", "+", 
+        RowBox[{"2", " ", "l", " ", 
+         RowBox[{"Tan", "[", 
+          RowBox[{"\[Alpha]i", "+", 
+           FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}], "2"]}], 
+    SuperscriptBox[
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"Tan", "[", 
+        RowBox[{"\[Alpha]i", "+", 
+         FractionBox["\[Beta]", "2"]}], "]"}], "-", 
+       RowBox[{"Tan", "[", 
+        RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}], ")"}], 
+     "2"]]]}]], "Output",
+ CellChangeTimes->{{3.66233245203965*^9, 3.6623324570344276`*^9}, 
+   3.6623337096951447`*^9, 3.6623347046459217`*^9, 3.662334924438232*^9, 
+   3.662334963218843*^9, {3.6623350190855627`*^9, 3.662335038831191*^9}}]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Laser Min Alternative (Giulio)", "Subsubsection",
+ CellChangeTimes->{{3.662333465142708*^9, 3.662333479492867*^9}, 
+   3.66233461199317*^9, {3.662334656141489*^9, 3.6623346577274027`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"laserMinAlt", "[", 
+   RowBox[{
+   "\[Beta]_", ",", "\[Alpha]i_", ",", "S_", ",", "l_", ",", "\[Epsilon]_"}], 
+   "]"}], ":=", 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"lExt", "[", 
+      RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "S"}], "]"}], "+", "l"}], 
+    ")"}], "*", 
+   RowBox[{"Sin", "[", 
+    FractionBox[
+     RowBox[{"\[Gamma]", "[", 
+      RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "]"}], "*", 
+   SuperscriptBox[
+    RowBox[{"Sin", "[", 
+     RowBox[{
+      FractionBox[
+       RowBox[{"\[Gamma]", "[", 
+        RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "-", 
+      RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], 
+    RowBox[{"-", "1"}]]}]}]], "Input",
+ CellChangeTimes->{{3.662332464403254*^9, 3.662332468792207*^9}, {
+  3.66233249983241*^9, 3.662332607477674*^9}, {3.662332745023118*^9, 
+  3.662332746478732*^9}, {3.662334715952819*^9, 3.6623347175671263`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"laserMinAlt", "[", 
+   RowBox[{
+   "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+   "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{
+  3.662332626911474*^9, {3.662334719459694*^9, 3.662334721123089*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox["1", "2"], " ", 
+  RowBox[{"Csc", "[", 
+   RowBox[{"\[Alpha]i", "+", 
+    FractionBox["\[Beta]", "2"], "-", 
+    RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], " ", 
+  RowBox[{"(", 
+   RowBox[{
+    RowBox[{"S", " ", 
+     RowBox[{"Cos", "[", 
+      RowBox[{"\[Alpha]i", "+", 
+       FractionBox["\[Beta]", "2"]}], "]"}]}], "+", 
+    RowBox[{"2", " ", "l", " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{"\[Alpha]i", "+", 
+       FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}]}]], "Output",
+ CellChangeTimes->{
+  3.662332628349163*^9, 3.662332750982924*^9, 3.662333709891961*^9, {
+   3.662334721929825*^9, 3.662334727759328*^9}, 3.662334924682996*^9, 
+   3.662334963304305*^9, {3.662335019140993*^9, 3.6623350389586353`*^9}}]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Laser Max", "Subsubsection",
+ CellChangeTimes->{{3.662333484877349*^9, 3.66233348610385*^9}, {
+  3.6623346595604*^9, 3.6623346600094023`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"laserMax", "[", 
+   RowBox[{
+   "\[Beta]_", ",", "\[Alpha]o_", ",", "S_", ",", "l_", ",", "\[Epsilon]_"}], 
+   "]"}], ":=", 
+  SqrtBox[
+   RowBox[{
+    SuperscriptBox[
+     RowBox[{"xmax", "[", 
+      RowBox[{
+      "\[Beta]", ",", "\[Alpha]o", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+      "]"}], "2"], "+", 
+    SuperscriptBox[
+     RowBox[{
+      RowBox[{"laser", "[", "\[Epsilon]", "]"}], "[", 
+      RowBox[{"xmax", "[", 
+       RowBox[{
+       "\[Beta]", ",", "\[Alpha]o", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+       "]"}], "]"}], "2"]}]]}]], "Input",
+ CellChangeTimes->{{3.662332237804205*^9, 3.662332281444056*^9}, {
+  3.662334732549028*^9, 3.6623347335848703`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"laserMax", "[", 
+   RowBox[{
+   "\[Beta]", ",", "\[Alpha]o", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+   "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.6623334364781437`*^9, 3.662333443591462*^9}, {
+  3.662334734879162*^9, 3.662334735865728*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox["1", "2"], " ", 
+  SqrtBox[
+   FractionBox[
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"Sec", "[", "\[Epsilon]", "]"}], "2"], " ", 
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"S", "-", 
+        RowBox[{"2", " ", "l", " ", 
+         RowBox[{"Tan", "[", 
+          RowBox[{"\[Alpha]o", "-", 
+           FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}], "2"]}], 
+    SuperscriptBox[
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"Tan", "[", 
+        RowBox[{
+         FractionBox["1", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "2"}], " ", "\[Alpha]o"}], "+", "\[Beta]"}], ")"}]}],
+         "]"}], "+", 
+       RowBox[{"Tan", "[", 
+        RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}], ")"}], 
+     "2"]]]}]], "Output",
+ CellChangeTimes->{
+  3.662333444557514*^9, 3.662333710626609*^9, 3.662334740146584*^9, 
+   3.662334925425761*^9, 3.662334963378428*^9, {3.662335019198472*^9, 
+   3.6623350396872473`*^9}}]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Laser Max Alternative (Giulio)", "Subsubsection",
+ CellChangeTimes->{{3.6623334947697363`*^9, 3.662333510751761*^9}, {
+  3.662334820141797*^9, 3.662334825205625*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"\[CapitalDelta]laser", "[", 
+    RowBox[{
+    "\[Beta]_", ",", "\[Alpha]i_", ",", "\[Alpha]o_", ",", "S_", ",", "l_", 
+     ",", "\[Epsilon]_"}], "]"}], ":=", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"ir\[CapitalDelta]", "[", 
+       RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S"}], 
+       "]"}], "-", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"lExt", "[", 
+          RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "S"}], "]"}], "+", "l"}], 
+        ")"}], "*", 
+       SuperscriptBox[
+        RowBox[{"Sin", "[", 
+         RowBox[{
+          FractionBox[
+           RowBox[{"\[Gamma]", "[", 
+            RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "-", 
+          RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], 
+        RowBox[{"-", "1"}]], "*", 
+       RowBox[{"Sin", "[", 
+        RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}]}], ")"}], "*", 
+    RowBox[{"Sin", "[", 
+     RowBox[{
+      FractionBox[
+       RowBox[{"\[Gamma]", "[", 
+        RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "-", 
+      RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], 
+    SuperscriptBox[
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       FractionBox["\[Beta]", "2"], "-", "\[Alpha]o", "-", 
+       RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], 
+     RowBox[{"-", "1"}]]}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6623333395493937`*^9, 3.6623333728174667`*^9}, {
+  3.662333735124675*^9, 3.6623337438700247`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"laserMaxAlt", "[", 
+    RowBox[{
+    "\[Beta]_", ",", "\[Alpha]i_", ",", "\[Alpha]o_", ",", "S_", ",", "l_", 
+     ",", "\[Epsilon]_"}], "]"}], ":=", 
+   RowBox[{
+    RowBox[{"laserMinAlt", "[", 
+     RowBox[{
+     "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+     "]"}], "+", 
+    RowBox[{"\[CapitalDelta]laser", "[", 
+     RowBox[{
+     "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l", ",", 
+      "\[Epsilon]"}], "]"}]}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.662332792348074*^9, 3.662332807816844*^9}, {
+  3.662332949087274*^9, 3.662332956347369*^9}, {3.662332988193893*^9, 
+  3.6623331084641743`*^9}, {3.662333200434299*^9, 3.662333211472083*^9}, {
+  3.662333259723906*^9, 3.662333302719211*^9}, {3.662333367440259*^9, 
+  3.662333393459826*^9}, {3.662333978514058*^9, 3.662333980498599*^9}, {
+  3.662334746594082*^9, 3.662334748388268*^9}, {3.66233499927713*^9, 
+  3.662335002114127*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"\[CapitalDelta]laser", "[", 
+   RowBox[{
+   "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l", ",", 
+    "\[Epsilon]"}], "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.662333399800787*^9, 3.66233340689454*^9}, {
+  3.662333781031229*^9, 3.662333786813861*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox["1", "2"]}], " ", 
+  RowBox[{"Csc", "[", 
+   RowBox[{"\[Alpha]o", "-", 
+    FractionBox["\[Beta]", "2"], "+", 
+    RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], " ", 
+  RowBox[{"(", 
+   RowBox[{
+    RowBox[{"S", " ", 
+     RowBox[{"Csc", "[", 
+      RowBox[{"\[Alpha]i", "+", 
+       FractionBox["\[Beta]", "2"]}], "]"}], " ", 
+     RowBox[{"Csc", "[", 
+      RowBox[{"\[Alpha]i", "-", "\[Alpha]o", "+", "\[Beta]"}], "]"}], " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{"\[Alpha]i", "+", "\[Alpha]o"}], "]"}], " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{"\[Alpha]i", "+", 
+       FractionBox["\[Beta]", "2"], "-", 
+       RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}]}], "-", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"2", " ", "l"}], "+", 
+       RowBox[{"S", " ", 
+        RowBox[{"Cot", "[", 
+         RowBox[{"\[Alpha]i", "+", 
+          FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}], " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}]}], ")"}]}]], "Output",
+ CellChangeTimes->{
+  3.662333408494853*^9, 3.662333711368856*^9, {3.66233377664259*^9, 
+   3.662333789936252*^9}, 3.66233492622591*^9, 3.662334963466329*^9, {
+   3.662335019260301*^9, 3.6623350403958607`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"laserMaxAlt", "[", 
+   RowBox[{
+   "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l", ",", 
+    "\[Epsilon]"}], "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.662333314402964*^9, 3.662333324895927*^9}, {
+  3.662334750301066*^9, 3.6623347517260838`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox["1", "2"], " ", 
+  RowBox[{"(", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Csc", "[", 
+      RowBox[{"\[Alpha]i", "+", 
+       FractionBox["\[Beta]", "2"], "-", 
+       RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"S", " ", 
+        RowBox[{"Cos", "[", 
+         RowBox[{"\[Alpha]i", "+", 
+          FractionBox["\[Beta]", "2"]}], "]"}]}], "+", 
+       RowBox[{"2", " ", "l", " ", 
+        RowBox[{"Sin", "[", 
+         RowBox[{"\[Alpha]i", "+", 
+          FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}]}], "-", 
+    RowBox[{
+     RowBox[{"Csc", "[", 
+      RowBox[{"\[Alpha]o", "-", 
+       FractionBox["\[Beta]", "2"], "+", 
+       RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"S", " ", 
+        RowBox[{"Csc", "[", 
+         RowBox[{"\[Alpha]i", "+", 
+          FractionBox["\[Beta]", "2"]}], "]"}], " ", 
+        RowBox[{"Csc", "[", 
+         RowBox[{"\[Alpha]i", "-", "\[Alpha]o", "+", "\[Beta]"}], "]"}], " ", 
+        
+        RowBox[{"Sin", "[", 
+         RowBox[{"\[Alpha]i", "+", "\[Alpha]o"}], "]"}], " ", 
+        RowBox[{"Sin", "[", 
+         RowBox[{"\[Alpha]i", "+", 
+          FractionBox["\[Beta]", "2"], "-", 
+          RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}]}], "-", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"2", " ", "l"}], "+", 
+          RowBox[{"S", " ", 
+           RowBox[{"Cot", "[", 
+            RowBox[{"\[Alpha]i", "+", 
+             FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}], " ", 
+        RowBox[{"Sin", "[", 
+         RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}]}], ")"}]}]}], 
+   ")"}]}]], "Output",
+ CellChangeTimes->{{3.6623333197051*^9, 3.66233332767981*^9}, 
+   3.662333713254868*^9, 3.6623347545837183`*^9, 3.6623349272367287`*^9, 
+   3.662334963517818*^9, {3.662335020831729*^9, 3.662335042262205*^9}}]
+}, Open  ]]
+}, Closed]]
+}, Closed]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Graphical representation", "Section",
+ CellChangeTimes->{{3.662323164617078*^9, 3.662323167359605*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Graphical elements", "Subsection",
+ CellChangeTimes->{{3.662323169692651*^9, 3.6623231725841923`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"laserColor", "=", "Green"}], ";"}]], "Input",
+ CellChangeTimes->{{3.662323927261108*^9, 3.66232394650215*^9}, {
+  3.662326272704913*^9, 3.662326288276661*^9}, {3.6623265438957777`*^9, 
+  3.662326546229542*^9}, {3.662326848789371*^9, 3.662326855213851*^9}, {
+  3.662327422086615*^9, 3.662327429098933*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"diodeEmitterColor", "=", "Blue"}], ";"}]], "Input",
+ CellChangeTimes->{{3.662324159204885*^9, 3.662324201606854*^9}, {
+  3.662326539727048*^9, 3.6623265417012587`*^9}, {3.6623268852349577`*^9, 
+  3.66232692677148*^9}, {3.662327333278262*^9, 3.66232734676908*^9}, {
+  3.662327395453108*^9, 3.662327396365906*^9}, {3.662327431593183*^9, 
+  3.66232743221205*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"diodeReceiverColor", "=", "Blue"}], ";"}]], "Input",
+ CellChangeTimes->{{3.6623242088076468`*^9, 3.66232421830766*^9}, {
+  3.662326527230672*^9, 3.662326534999626*^9}, {3.662326809236032*^9, 
+  3.662326837683861*^9}, {3.662326915534741*^9, 3.6623269173201723`*^9}, {
+  3.6623270577678957`*^9, 3.6623270585452013`*^9}, {3.6623274349948673`*^9, 
+  3.6623274356226377`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"laserRay", "[", 
+    RowBox[{"\[Epsilon]_", ",", "color_"}], "]"}], ":=", 
+   RowBox[{"Plot", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"laser", "[", "\[Epsilon]", "]"}], "[", "x", "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", "0", ",", "0.24"}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"PlotRange", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0.15", ",", "0.27"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "0.05"}], ",", "0.05"}], "}"}]}], "}"}]}], ",", 
+     RowBox[{"AspectRatio", "\[Rule]", "Automatic"}], ",", 
+     RowBox[{"ImageSize", "\[Rule]", "Large"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"PlotStyle", "\[Rule]", 
+      RowBox[{"Directive", "[", "color", "]"}]}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.662323468464017*^9, 3.662323491443965*^9}, 
+   3.6623236566685753`*^9, {3.662323831616976*^9, 3.662323837101191*^9}, {
+   3.662323959088834*^9, 3.662323966594977*^9}, {3.6623250032891617`*^9, 
+   3.6623250074048243`*^9}, {3.662325092747314*^9, 3.662325118585861*^9}, {
+   3.662327446983829*^9, 3.66232745548734*^9}, {3.662328259790641*^9, 
+   3.662328263789215*^9}, {3.662328398671513*^9, 3.662328405659122*^9}, {
+   3.6623311299684*^9, 3.6623311329452143`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"intersectRay", "[", 
+    RowBox[{
+    "\[Beta]_", ",", "\[Alpha]i_", ",", "\[Alpha]o_", ",", "S_", ",", "l_", 
+     ",", "\[Epsilon]_"}], "]"}], ":=", 
+   RowBox[{"Plot", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"laser", "[", "\[Epsilon]", "]"}], "[", "x", "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", 
+       RowBox[{"xmin", "[", 
+        RowBox[{
+        "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+        "]"}], ",", 
+       RowBox[{"xmax", "[", 
+        RowBox[{
+        "\[Beta]", ",", "\[Alpha]o", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
+        "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"PlotStyle", "\[Rule]", 
+      RowBox[{"Directive", "[", 
+       RowBox[{"Red", ",", "Dashed"}], "]"}]}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.662329036469956*^9, 3.66232906672871*^9}, {
+  3.6623290970785646`*^9, 3.662329097307267*^9}, {3.6623291392563972`*^9, 
+  3.6623291445820923`*^9}, {3.6623293984686813`*^9, 3.662329431327141*^9}, {
+  3.6623298777882566`*^9, 3.6623298908590384`*^9}, {3.6623301807920313`*^9, 
+  3.6623301902831078`*^9}, {3.662330380072402*^9, 3.66233038048018*^9}, {
+  3.662330541880889*^9, 3.66233054203052*^9}, {3.6623311150976057`*^9, 
+  3.662331139208021*^9}, {3.662331236473288*^9, 3.662331242513708*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"diode", "[", 
+    RowBox[{
+    "\[Beta]_", ",", "\[Alpha]i_", ",", "\[Alpha]o_", ",", "S_", ",", "l_", 
+     ",", "sign_", ",", "color_"}], "]"}], ":=", 
+   RowBox[{"Plot", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"sign", "*", 
+        RowBox[{
+         RowBox[{"diodeOuter", "[", 
+          RowBox[{
+          "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l"}],
+           "]"}], "[", "x", "]"}]}], ",", 
+       RowBox[{"sign", "*", 
+        RowBox[{
+         RowBox[{"diodeCenter", "[", 
+          RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l"}], "]"}], 
+         "[", "x", "]"}]}], ",", 
+       RowBox[{"sign", "*", 
+        RowBox[{
+         RowBox[{"diodeInner", "[", 
+          RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l"}], "]"}], 
+         "[", "x", "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", "l", ",", 
+       RowBox[{"l", "+", "0.1"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Filling", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"1", "\[Rule]", 
+        RowBox[{"{", "3", "}"}]}], "}"}]}], ",", 
+     RowBox[{"FillingStyle", "\[Rule]", 
+      RowBox[{"Directive", "[", 
+       RowBox[{"color", ",", 
+        RowBox[{"Opacity", "[", "0.1", "]"}]}], "]"}]}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"PlotStyle", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"Directive", "[", 
+         RowBox[{"color", ",", 
+          RowBox[{"Opacity", "[", "0.5", "]"}]}], "]"}], ",", 
+        RowBox[{"Directive", "[", 
+         RowBox[{"color", ",", "Dashed", ",", 
+          RowBox[{"Opacity", "[", "0.5", "]"}], ",", "Thin"}], "]"}], ",", 
+        RowBox[{"Directive", "[", 
+         RowBox[{"color", ",", 
+          RowBox[{"Opacity", "[", "0.5", "]"}]}], "]"}]}], "}"}]}]}], "]"}]}],
+   ";"}]], "Input",
+ CellChangeTimes->{{3.662325958812724*^9, 3.6623259753607273`*^9}, {
+  3.662326009977845*^9, 3.662326127437808*^9}, {3.662326324860305*^9, 
+  3.6623265080282297`*^9}, {3.6623265664396553`*^9, 3.662326567276331*^9}, {
+  3.6623266085385942`*^9, 3.662326669871643*^9}, {3.662326960084344*^9, 
+  3.662327242269562*^9}, {3.662327288075042*^9, 3.662327306320532*^9}, {
+  3.66233023585432*^9, 3.6623302372533617`*^9}, {3.66233029806277*^9, 
+  3.66233031643222*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.662325737774678*^9, 3.662325743644225*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Graphics", "Subsection",
+ CellChangeTimes->{{3.662323175037551*^9, 3.662323176263815*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Manipulate", "[", 
+  RowBox[{
+   RowBox[{"Show", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"laserRay", "[", 
+      RowBox[{
+       RowBox[{"\[Epsilon]", "*", 
+        RowBox[{"\[Pi]", "/", "180"}]}], ",", "laserColor"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"diode", "[", 
+      RowBox[{
+       RowBox[{"\[Beta]", "*", 
+        RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+       RowBox[{"\[Alpha]i", "*", 
+        RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+       RowBox[{"\[Alpha]o", "*", 
+        RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l", ",", "1", ",", 
+       "diodeReceiverColor"}], "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"diode", "[", 
+      RowBox[{
+       RowBox[{"\[Beta]", "*", 
+        RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+       RowBox[{"\[Alpha]i", "*", 
+        RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+       RowBox[{"\[Alpha]o", "*", 
+        RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l", ",", 
+       RowBox[{"-", "1"}], ",", "diodeEmitterColor"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "*", 
+         RowBox[{"\[Pi]", "/", "180"}]}], "<=", 
+        RowBox[{"\[Epsilon]max", "[", 
+         RowBox[{
+          RowBox[{"\[Beta]", "*", 
+           RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+          RowBox[{"\[Alpha]i", "*", 
+           RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+          RowBox[{"\[Alpha]o", "*", 
+           RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l"}], "]"}]}], 
+       ",", "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"intersectRay", "[", 
+          RowBox[{
+           RowBox[{"\[Beta]", "*", 
+            RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+           RowBox[{"\[Alpha]i", "*", 
+            RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+           RowBox[{"\[Alpha]o", "*", 
+            RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l", ",", 
+           RowBox[{"\[Epsilon]", "*", 
+            RowBox[{"\[Pi]", "/", "180"}]}]}], "]"}], ",", 
+         RowBox[{"Graphics", "[", 
+          RowBox[{"Text", "[", 
+           RowBox[{
+            RowBox[{"\"\<Laser min:\>\"", " ", "<>", " ", 
+             RowBox[{"ToString", "[", 
+              RowBox[{"laserMin", "[", 
+               RowBox[{
+                RowBox[{"\[Beta]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+                RowBox[{"\[Alpha]i", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l", ",", 
+                RowBox[{"\[Epsilon]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}]}], "]"}], "]"}]}], ",", 
+            RowBox[{"{", 
+             RowBox[{"0.18", ",", "0.04"}], "}"}]}], "]"}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Graphics", "[", 
+          RowBox[{"Text", "[", 
+           RowBox[{
+            RowBox[{"\"\<Laser min (alt):\>\"", " ", "<>", " ", 
+             RowBox[{"ToString", "[", 
+              RowBox[{"laserMinAlt", "[", 
+               RowBox[{
+                RowBox[{"\[Beta]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+                RowBox[{"\[Alpha]i", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l", ",", 
+                RowBox[{"\[Epsilon]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}]}], "]"}], "]"}]}], ",", 
+            RowBox[{"{", 
+             RowBox[{"0.18", ",", "0.037"}], "}"}]}], "]"}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Graphics", "[", 
+          RowBox[{"Text", "[", 
+           RowBox[{
+            RowBox[{"\"\<Laser max:\>\"", " ", "<>", " ", 
+             RowBox[{"ToString", "[", 
+              RowBox[{"laserMax", "[", 
+               RowBox[{
+                RowBox[{"\[Beta]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+                RowBox[{"\[Alpha]o", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l", ",", 
+                RowBox[{"\[Epsilon]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}]}], "]"}], "]"}]}], ",", 
+            RowBox[{"{", 
+             RowBox[{"0.18", ",", "0.034"}], "}"}]}], "]"}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Graphics", "[", 
+          RowBox[{"Text", "[", 
+           RowBox[{
+            RowBox[{"\"\<Laser max (alt):\>\"", " ", "<>", " ", 
+             RowBox[{"ToString", "[", 
+              RowBox[{"laserMaxAlt", "[", 
+               RowBox[{
+                RowBox[{"\[Beta]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+                RowBox[{"\[Alpha]i", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+                RowBox[{"\[Alpha]o", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l", ",", 
+                RowBox[{"\[Epsilon]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}]}], "]"}], "]"}]}], ",", 
+            RowBox[{"{", 
+             RowBox[{"0.18", ",", "0.031"}], "}"}]}], "]"}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Graphics", "[", 
+          RowBox[{"Text", "[", 
+           RowBox[{
+            RowBox[{"\"\<\[CapitalDelta]laser (alt):\>\"", " ", "<>", " ", 
+             RowBox[{"ToString", "[", 
+              RowBox[{"\[CapitalDelta]laser", "[", 
+               RowBox[{
+                RowBox[{"\[Beta]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+                RowBox[{"\[Alpha]i", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+                RowBox[{"\[Alpha]o", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l", ",", 
+                RowBox[{"\[Epsilon]", "*", 
+                 RowBox[{"\[Pi]", "/", "180"}]}]}], "]"}], "]"}]}], ",", 
+            RowBox[{"{", 
+             RowBox[{"0.18", ",", "0.028"}], "}"}]}], "]"}], "]"}]}], "}"}], 
+       ",", "\[IndentingNewLine]", 
+       RowBox[{"Plot", "[", 
+        RowBox[{
+         RowBox[{"{", "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"x", ",", "0", ",", "0.1"}], "}"}]}], "]"}]}], "]"}]}], 
+    "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"\[Epsilon]", ",", 
+       RowBox[{
+        RowBox[{"-", 
+         RowBox[{"\[Epsilon]max", "[", 
+          RowBox[{
+           RowBox[{"\[Beta]", "*", 
+            RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+           RowBox[{"\[Alpha]i", "*", 
+            RowBox[{"\[Pi]", "/", "180"}]}], ",", 
+           RowBox[{"\[Alpha]o", "*", 
+            RowBox[{"\[Pi]", "/", "180"}]}], ",", "S", ",", "l"}], "]"}]}], 
+        "*", 
+        RowBox[{"180", "/", "\[Pi]"}]}], ",", 
+       "\"\<Ray angle \[Epsilon]\>\""}], "}"}], ",", 
+     RowBox[{"-", "90"}], ",", "90", ",", "0.2", ",", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Open\>\""}]}], "}"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"\[Beta]", ",", "50", ",", "\"\<Angle between \[Beta]\>\""}], 
+      "}"}], ",", "40", ",", "60", ",", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Open\>\""}]}], "}"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "\[Alpha]i", ",", "25", ",", 
+       "\"\<Inner off center angle \[Alpha]i\>\""}], "}"}], ",", "20", ",", 
+     "30", ",", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Open\>\""}]}], "}"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "\[Alpha]o", ",", "10", ",", 
+       "\"\<Outer off center angle \[Alpha]o\>\""}], "}"}], ",", "5", ",", 
+     "15", ",", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Open\>\""}]}], "}"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"S", ",", "0.034", ",", "\"\<Sensor housing length\>\""}], 
+      "}"}], ",", "0.01", ",", "0.05", ",", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Open\>\""}]}], "}"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"l", ",", "0.1696", ",", "\"\<Roomba 'fake' radius l\>\""}], 
+      "}"}], ",", "0.1", ",", "0.3", ",", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Open\>\""}]}], "}"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"ControlPlacement", "\[Rule]", "Right"}]}], "\[IndentingNewLine]", 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.66232349423072*^9, 3.662323498493631*^9}, {
+   3.662323664989801*^9, 3.662323712407236*^9}, {3.6623237447684193`*^9, 
+   3.66232377961679*^9}, {3.6623238450203733`*^9, 3.6623238455183973`*^9}, {
+   3.662323900112834*^9, 3.662323901435492*^9}, {3.662324280707851*^9, 
+   3.662324614897871*^9}, {3.662324656209379*^9, 3.662324830352968*^9}, {
+   3.662324933081051*^9, 3.662324960863391*^9}, {3.662325025177558*^9, 
+   3.662325067464323*^9}, {3.6623251682374067`*^9, 3.6623251686251497`*^9}, {
+   3.66232526854355*^9, 3.662325296696813*^9}, {3.662325453997937*^9, 
+   3.662325502376153*^9}, {3.6623261376418324`*^9, 3.662326234550321*^9}, {
+   3.662326304695568*^9, 3.662326308298046*^9}, {3.662326459731172*^9, 
+   3.6623264713229237`*^9}, {3.662327459257448*^9, 3.6623274623191013`*^9}, {
+   3.662327503365484*^9, 3.6623275260845537`*^9}, {3.662327563979013*^9, 
+   3.662327624699935*^9}, {3.662327766111517*^9, 3.662327802359811*^9}, {
+   3.662328290280875*^9, 3.6623283002403316`*^9}, {3.6623289203162537`*^9, 
+   3.6623289297544603`*^9}, {3.6623289826628428`*^9, 
+   3.6623289988482847`*^9}, {3.662329076157938*^9, 3.662329082593186*^9}, 
+   3.662329128699807*^9, {3.66232965032727*^9, 3.662329671225027*^9}, {
+   3.662329897122176*^9, 3.662329906689248*^9}, {3.6623299866654654`*^9, 
+   3.662330013934507*^9}, {3.6623312107633743`*^9, 3.662331212389202*^9}, {
+   3.662331786135151*^9, 3.662331843339909*^9}, {3.6623322002532*^9, 
+   3.6623322141488047`*^9}, {3.6623323171215973`*^9, 3.662332359285375*^9}, {
+   3.662332644585597*^9, 3.662332649578833*^9}, {3.662332680125421*^9, 
+   3.6623326900447598`*^9}, {3.66233352749047*^9, 3.662333562988426*^9}, {
+   3.662333623626052*^9, 3.66233367559974*^9}, 3.662333763033465*^9, {
+   3.662333812650401*^9, 3.6623338211239862`*^9}, 3.66233392848405*^9, {
+   3.662333998641527*^9, 3.66233399910147*^9}, {3.662334114150817*^9, 
+   3.662334115275804*^9}, {3.662334156186483*^9, 3.662334157483364*^9}, {
+   3.66233429598275*^9, 3.662334310306184*^9}, {3.662334352039876*^9, 
+   3.662334408926918*^9}, {3.662334475709779*^9, 3.662334549347221*^9}, {
+   3.662334848115012*^9, 3.662334860605548*^9}, {3.662334951460318*^9, 
+   3.662334960610991*^9}}],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`l$$ = 0.1696, $CellContext`S$$ = 
+    0.034, $CellContext`\[Alpha]i$$ = 25, $CellContext`\[Alpha]o$$ = 
+    10, $CellContext`\[Beta]$$ = 50, $CellContext`\[Epsilon]$$ = 
+    1.6075636893277438`, Typeset`show$$ = True, Typeset`bookmarkList$$ = {}, 
+    Typeset`bookmarkMode$$ = "Menu", Typeset`animator$$, Typeset`animvar$$ = 
+    1, Typeset`name$$ = "\"untitled\"", Typeset`specs$$ = {{{
+       Hold[$CellContext`\[Epsilon]$$], (-180) Pi^(-1) 
+       ArcSin[Rational[1, 2] $CellContext`S$$ 
+         Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+           Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+           Rational[1, 180] Pi $CellContext`\[Beta]$$] 
+         Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+           Rational[1, 180] Pi $CellContext`\[Alpha]o$$] (
+           Rational[1, 4] $CellContext`S$$^2 
+            Csc[Rational[1, 2] (Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
+                Rational[1, 180] Pi $CellContext`\[Beta]$$)]^2 
+            Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+               Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+               Rational[1, 180] Pi $CellContext`\[Beta]$$]^2 
+            Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+               Rational[1, 180] 
+                Pi $CellContext`\[Alpha]o$$]^2 + $CellContext`S$$ 
+            Cot[Rational[1, 2] (Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
+               Rational[1, 180] Pi $CellContext`\[Beta]$$)] 
+            Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+              Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+              Rational[1, 180] Pi $CellContext`\[Beta]$$] 
+            Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+              Rational[1, 180] Pi $CellContext`\[Alpha]o$$] ($CellContext`l$$ + 
+             Rational[-1, 2] $CellContext`S$$ 
+              Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                Rational[1, 2] (-Pi + 
+                  Rational[1, 180] 
+                   Pi $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + 
+             Rational[-1, 2] $CellContext`S$$ 
+              Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                Rational[1, 2] (-Pi + 
+                  Rational[1, 180] Pi $CellContext`\[Beta]$$)])^2)^
+          Rational[-1, 2]], "Ray angle \[Epsilon]"}, -90, 90, 0.2}, {{
+       Hold[$CellContext`\[Beta]$$], 50, "Angle between \[Beta]"}, 40, 60}, {{
+      
+       Hold[$CellContext`\[Alpha]i$$], 25, 
+       "Inner off center angle \[Alpha]i"}, 20, 30}, {{
+       Hold[$CellContext`\[Alpha]o$$], 10, 
+       "Outer off center angle \[Alpha]o"}, 5, 15}, {{
+       Hold[$CellContext`S$$], 0.034, "Sensor housing length"}, 0.01, 0.05}, {{
+       Hold[$CellContext`l$$], 0.1696, "Roomba 'fake' radius l"}, 0.1, 0.3}}, 
+    Typeset`size$$ = {576., {238., 242.}}, Typeset`update$$ = 0, 
+    Typeset`initDone$$, Typeset`skipInitDone$$ = 
+    True, $CellContext`\[Epsilon]$483$$ = 0, $CellContext`\[Beta]$488$$ = 
+    0, $CellContext`\[Alpha]i$489$$ = 0, $CellContext`\[Alpha]o$490$$ = 
+    0, $CellContext`S$491$$ = 0, $CellContext`l$492$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, 
+      "Variables" :> {$CellContext`l$$ = 0.1696, $CellContext`S$$ = 
+        0.034, $CellContext`\[Alpha]i$$ = 25, $CellContext`\[Alpha]o$$ = 
+        10, $CellContext`\[Beta]$$ = 
+        50, $CellContext`\[Epsilon]$$ = (-180) Pi^(-1) 
+         ArcSin[Rational[1, 2] $CellContext`S$$ 
+           Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+             Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+             Rational[1, 180] Pi $CellContext`\[Beta]$$] 
+           Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+             Rational[1, 180] Pi $CellContext`\[Alpha]o$$] (
+             Rational[1, 4] $CellContext`S$$^2 
+              Csc[Rational[1, 2] (Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
+                  Rational[1, 180] Pi $CellContext`\[Beta]$$)]^2 
+              Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                 Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+                 Rational[1, 180] Pi $CellContext`\[Beta]$$]^2 
+              Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                 Rational[1, 180] 
+                  Pi $CellContext`\[Alpha]o$$]^2 + $CellContext`S$$ 
+              Cot[Rational[1, 2] (Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
+                 Rational[1, 180] Pi $CellContext`\[Beta]$$)] 
+              Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+                Rational[1, 180] Pi $CellContext`\[Beta]$$] 
+              Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                Rational[1, 180] 
+                 Pi $CellContext`\[Alpha]o$$] ($CellContext`l$$ + 
+               Rational[-1, 2] $CellContext`S$$ 
+                Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                  Rational[1, 2] (-Pi + 
+                    Rational[1, 180] 
+                    Pi $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + 
+               Rational[-1, 2] $CellContext`S$$ 
+                Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                  Rational[1, 2] (-Pi + 
+                    Rational[1, 180] Pi $CellContext`\[Beta]$$)])^2)^
+            Rational[-1, 2]]}, "ControllerVariables" :> {
+        Hold[$CellContext`\[Epsilon]$$, $CellContext`\[Epsilon]$483$$, 0], 
+        Hold[$CellContext`\[Beta]$$, $CellContext`\[Beta]$488$$, 0], 
+        Hold[$CellContext`\[Alpha]i$$, $CellContext`\[Alpha]i$489$$, 0], 
+        Hold[$CellContext`\[Alpha]o$$, $CellContext`\[Alpha]o$490$$, 0], 
+        Hold[$CellContext`S$$, $CellContext`S$491$$, 0], 
+        Hold[$CellContext`l$$, $CellContext`l$492$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, "Body" :> Show[
+        $CellContext`laserRay[$CellContext`\[Epsilon]$$ (Pi/
+          180), $CellContext`laserColor], 
+        $CellContext`diode[$CellContext`\[Beta]$$ (Pi/
+          180), $CellContext`\[Alpha]i$$ (Pi/180), $CellContext`\[Alpha]o$$ (
+          Pi/180), $CellContext`S$$, $CellContext`l$$, 
+         1, $CellContext`diodeReceiverColor], 
+        $CellContext`diode[$CellContext`\[Beta]$$ (Pi/
+          180), $CellContext`\[Alpha]i$$ (Pi/180), $CellContext`\[Alpha]o$$ (
+          Pi/180), $CellContext`S$$, $CellContext`l$$, -1, \
+$CellContext`diodeEmitterColor], 
+        If[
+        Abs[$CellContext`\[Epsilon]$$] (Pi/
+           180) <= $CellContext`\[Epsilon]max[$CellContext`\[Beta]$$ (Pi/
+            180), $CellContext`\[Alpha]i$$ (Pi/
+            180), $CellContext`\[Alpha]o$$ (Pi/
+            180), $CellContext`S$$, $CellContext`l$$], {
+          $CellContext`intersectRay[$CellContext`\[Beta]$$ (Pi/
+            180), $CellContext`\[Alpha]i$$ (Pi/
+            180), $CellContext`\[Alpha]o$$ (Pi/
+            180), $CellContext`S$$, $CellContext`l$$, \
+$CellContext`\[Epsilon]$$ (Pi/180)], 
+          Graphics[
+           Text[
+            StringJoin["Laser min:", 
+             ToString[
+              $CellContext`laserMin[$CellContext`\[Beta]$$ (Pi/
+                180), $CellContext`\[Alpha]i$$ (Pi/
+                180), $CellContext`S$$, $CellContext`l$$, $CellContext`\
+\[Epsilon]$$ (Pi/180)]]], {0.18, 0.04}]], 
+          Graphics[
+           Text[
+            StringJoin["Laser min (alt):", 
+             ToString[
+              $CellContext`laserMinAlt[$CellContext`\[Beta]$$ (Pi/
+                180), $CellContext`\[Alpha]i$$ (Pi/
+                180), $CellContext`S$$, $CellContext`l$$, $CellContext`\
+\[Epsilon]$$ (Pi/180)]]], {0.18, 0.037}]], 
+          Graphics[
+           Text[
+            StringJoin["Laser max:", 
+             ToString[
+              $CellContext`laserMax[$CellContext`\[Beta]$$ (Pi/
+                180), $CellContext`\[Alpha]o$$ (Pi/
+                180), $CellContext`S$$, $CellContext`l$$, $CellContext`\
+\[Epsilon]$$ (Pi/180)]]], {0.18, 0.034}]], 
+          Graphics[
+           Text[
+            StringJoin["Laser max (alt):", 
+             ToString[
+              $CellContext`laserMaxAlt[$CellContext`\[Beta]$$ (Pi/
+                180), $CellContext`\[Alpha]i$$ (Pi/
+                180), $CellContext`\[Alpha]o$$ (Pi/
+                180), $CellContext`S$$, $CellContext`l$$, $CellContext`\
+\[Epsilon]$$ (Pi/180)]]], {0.18, 0.031}]], 
+          Graphics[
+           Text[
+            StringJoin["\[CapitalDelta]laser (alt):", 
+             ToString[
+              $CellContext`\[CapitalDelta]laser[$CellContext`\[Beta]$$ (Pi/
+                180), $CellContext`\[Alpha]i$$ (Pi/
+                180), $CellContext`\[Alpha]o$$ (Pi/
+                180), $CellContext`S$$, $CellContext`l$$, $CellContext`\
+\[Epsilon]$$ (Pi/180)]]], {0.18, 0.028}]]}, 
+         Plot[{}, {$CellContext`x, 0, 0.1}]]], 
+      "Specifications" :> {{{$CellContext`\[Epsilon]$$, (-180) Pi^(-1) 
+          ArcSin[Rational[1, 2] $CellContext`S$$ 
+            Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+              Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+              Rational[1, 180] Pi $CellContext`\[Beta]$$] 
+            Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+              Rational[1, 180] Pi $CellContext`\[Alpha]o$$] (
+              Rational[1, 4] $CellContext`S$$^2 
+               Csc[Rational[1, 2] (
+                   Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
+                   Rational[1, 180] Pi $CellContext`\[Beta]$$)]^2 
+               Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                  Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+                  Rational[1, 180] Pi $CellContext`\[Beta]$$]^2 
+               Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                  Rational[1, 180] 
+                   Pi $CellContext`\[Alpha]o$$]^2 + $CellContext`S$$ 
+               Cot[Rational[1, 2] (
+                  Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
+                  Rational[1, 180] Pi $CellContext`\[Beta]$$)] 
+               Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                 Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
+                 Rational[1, 180] Pi $CellContext`\[Beta]$$] 
+               Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                 Rational[1, 180] 
+                  Pi $CellContext`\[Alpha]o$$] ($CellContext`l$$ + 
+                Rational[-1, 2] $CellContext`S$$ 
+                 Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                   Rational[1, 2] (-Pi + 
+                    Rational[1, 180] 
+                    Pi $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + 
+                Rational[-1, 2] $CellContext`S$$ 
+                 Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+                   Rational[1, 2] (-Pi + 
+                    Rational[1, 180] Pi $CellContext`\[Beta]$$)])^2)^
+             Rational[-1, 2]], "Ray angle \[Epsilon]"}, -90, 90, 0.2, 
+         Appearance -> 
+         "Open"}, {{$CellContext`\[Beta]$$, 50, "Angle between \[Beta]"}, 40, 
+         60, Appearance -> 
+         "Open"}, {{$CellContext`\[Alpha]i$$, 25, 
+          "Inner off center angle \[Alpha]i"}, 20, 30, Appearance -> 
+         "Open"}, {{$CellContext`\[Alpha]o$$, 10, 
+          "Outer off center angle \[Alpha]o"}, 5, 15, Appearance -> 
+         "Open"}, {{$CellContext`S$$, 0.034, "Sensor housing length"}, 0.01, 
+         0.05, Appearance -> 
+         "Open"}, {{$CellContext`l$$, 0.1696, "Roomba 'fake' radius l"}, 0.1, 
+         0.3, Appearance -> "Open"}}, 
+      "Options" :> {ControlPlacement -> Right}, "DefaultOptions" :> {}],
+     ImageSizeCache->{977., {267., 274.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{
+  3.6623349285193443`*^9, 3.662334963734354*^9, {3.6623350209765453`*^9, 
+   3.662335042438611*^9}}]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1364, 747},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+FrontEndVersion->"10.0 for Linux x86 (64-bit) (June 27, 2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 109, 1, 93, "Title"],
+Cell[CellGroupData[{
+Cell[714, 27, 105, 1, 65, "Section"],
+Cell[822, 30, 298, 7, 32, "Input"],
+Cell[1123, 39, 749, 16, 63, "Input"],
+Cell[1875, 57, 1001, 26, 64, "Input"],
+Cell[2879, 85, 1309, 35, 108, "Input"],
+Cell[4191, 122, 848, 22, 81, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[5076, 149, 299, 4, 51, "Section"],
+Cell[CellGroupData[{
+Cell[5400, 157, 155, 2, 45, "Subsection"],
+Cell[5558, 161, 272, 7, 32, "Input"],
+Cell[5833, 170, 981, 27, 32, "Input"],
+Cell[6817, 199, 616, 14, 32, "Input"],
+Cell[7436, 215, 865, 24, 32, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[8338, 244, 103, 1, 36, "Subsection"],
+Cell[CellGroupData[{
+Cell[8466, 249, 411, 11, 32, "Input"],
+Cell[8880, 262, 985, 30, 70, "Output"]
+}, Open  ]],
+Cell[9880, 295, 1129, 33, 93, "Input"],
+Cell[CellGroupData[{
+Cell[11034, 332, 514, 13, 32, "Input"],
+Cell[11551, 347, 886, 24, 70, "Output"]
+}, Open  ]],
+Cell[12452, 374, 927, 26, 93, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[13416, 405, 195, 3, 37, "Subsection"],
+Cell[CellGroupData[{
+Cell[13636, 412, 151, 2, 35, "Subsubsection"],
+Cell[13790, 416, 857, 23, 47, "Input"],
+Cell[CellGroupData[{
+Cell[14672, 443, 294, 7, 32, "Input"],
+Cell[14969, 452, 919, 26, 70, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[15937, 484, 194, 2, 29, "Subsubsection"],
+Cell[16134, 488, 948, 26, 64, "Input"],
+Cell[CellGroupData[{
+Cell[17107, 518, 271, 7, 32, "Input"],
+Cell[17381, 527, 765, 20, 70, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[18195, 553, 148, 2, 29, "Subsubsection"],
+Cell[18346, 557, 716, 21, 47, "Input"],
+Cell[CellGroupData[{
+Cell[19087, 582, 294, 7, 32, "Input"],
+Cell[19384, 591, 1023, 32, 70, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[20456, 629, 172, 2, 29, "Subsubsection"],
+Cell[20631, 633, 1528, 42, 123, "Input"],
+Cell[22162, 677, 987, 22, 65, "Input"],
+Cell[CellGroupData[{
+Cell[23174, 703, 322, 7, 32, "Input"],
+Cell[23499, 712, 1296, 35, 70, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[24832, 752, 316, 7, 32, "Input"],
+Cell[25151, 761, 1950, 53, 70, "Output"]
+}, Open  ]]
+}, Closed]]
+}, Closed]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[27174, 822, 109, 1, 51, "Section"],
+Cell[CellGroupData[{
+Cell[27308, 827, 108, 1, 45, "Subsection"],
+Cell[27419, 830, 340, 6, 32, "Input"],
+Cell[27762, 838, 395, 7, 32, "Input"],
+Cell[28160, 847, 406, 7, 32, "Input"],
+Cell[28569, 856, 1343, 29, 77, "Input"],
+Cell[29915, 887, 1350, 30, 55, "Input"],
+Cell[31268, 919, 2387, 58, 121, "Input"],
+Cell[33658, 979, 92, 1, 32, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[33787, 985, 96, 1, 37, "Subsection"],
+Cell[CellGroupData[{
+Cell[33908, 990, 10620, 237, 473, "Input"],
+Cell[44531, 1229, 12409, 229, 591, "Output"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
