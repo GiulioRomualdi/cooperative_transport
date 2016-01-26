@@ -1,41 +1,50 @@
-(* Content-type: application/vnd.wolfram.mathematica *)
+(* Content-type: application/vnd.wolfram.cdf.text *)
 
-(*** Wolfram Notebook File ***)
-(* http://www.wolfram.com/nb *)
+(*** Wolfram CDF File ***)
+(* http://www.wolfram.com/cdf *)
 
 (* CreatedBy='Mathematica 10.0' *)
+
+(*************************************************************************)
+(*                                                                       *)
+(*  The Mathematica License under which this file was created prohibits  *)
+(*  restricting third parties in receipt of this file from republishing  *)
+(*  or redistributing it by any means, including but not limited to      *)
+(*  rights management or terms of use, without the express consent of    *)
+(*  Wolfram Research, Inc. For additional information concerning CDF     *)
+(*  licensing and redistribution see:                                    *)
+(*                                                                       *)
+(*        www.wolfram.com/cdf/adopting-cdf/licensing-options.html        *)
+(*                                                                       *)
+(*************************************************************************)
 
 (*CacheID: 234*)
 (* Internal cache information:
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
-NotebookDataPosition[       158,          7]
-NotebookDataLength[     62065,       1634]
-NotebookOptionsPosition[     58939,       1524]
-NotebookOutlinePosition[     59272,       1539]
-CellTagsIndexPosition[     59229,       1536]
+NotebookDataPosition[      1064,         20]
+NotebookDataLength[     50543,       1464]
+NotebookOptionsPosition[     48256,       1363]
+NotebookOutlinePosition[     48683,       1382]
+CellTagsIndexPosition[     48640,       1379]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
 
 Cell[CellGroupData[{
-Cell["IR light bumper sensor", "Title",
- CellChangeTimes->{{3.6623197306238413`*^9, 3.6623197465119753`*^9}}],
+Cell["IR light bumper sensor", "Title"],
 
 Cell[CellGroupData[{
 
-Cell["Angles and lengths", "Section",
- CellChangeTimes->{{3.662319808995775*^9, 3.6623198182648907`*^9}}],
+Cell["Angles and lengths", "Section"],
 
 Cell[BoxData[
  RowBox[{
   RowBox[{"\[Gamma]", "[", 
    RowBox[{"\[Beta]_", ",", "\[Alpha]i_"}], "]"}], ":=", 
   RowBox[{"\[Beta]", "+", 
-   RowBox[{"2", "\[Alpha]i"}]}]}]], "Input",
- CellChangeTimes->{{3.662319821017684*^9, 3.662319894128158*^9}, {
-  3.662320007953763*^9, 3.6623200117218533`*^9}}],
+   RowBox[{"2", "\[Alpha]i"}]}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -47,13 +56,7 @@ Cell[BoxData[
     RowBox[{
      FractionBox[
       RowBox[{"\[Pi]", "-", "\[Beta]"}], "2"], "-", "\[Alpha]i"}], 
-    "]"}]}]}]], "Input",
- CellChangeTimes->{{3.662319896160862*^9, 3.662319902314537*^9}, {
-   3.6623199386977587`*^9, 3.66232005319549*^9}, {3.662320392217163*^9, 
-   3.6623204149093313`*^9}, {3.662321992279861*^9, 3.662321999266317*^9}, {
-   3.662322038071967*^9, 3.6623220397685747`*^9}, 3.662327689693905*^9, {
-   3.662327974407263*^9, 3.6623279854098997`*^9}, {3.662328054043397*^9, 
-   3.662328078111669*^9}, {3.662329545108395*^9, 3.662329550346736*^9}}],
+    "]"}]}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -77,11 +80,7 @@ Cell[BoxData[
        RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "-", 
       RowBox[{"(", 
        RowBox[{"\[Alpha]i", "+", "\[Alpha]o"}], ")"}]}], "]"}], 
-    RowBox[{"-", "1"}]]}]}]], "Input",
- CellChangeTimes->{{3.662320512256041*^9, 3.662320553943945*^9}, {
-  3.6623206002631693`*^9, 3.662320650183*^9}, {3.662321179456215*^9, 
-  3.662321236647127*^9}, {3.662327697822763*^9, 3.662327702092712*^9}, {
-  3.66232954669615*^9, 3.6623295485013866`*^9}}],
+    RowBox[{"-", "1"}]]}]}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -114,11 +113,7 @@ Cell[BoxData[
        FractionBox[
         RowBox[{"\[Gamma]", "[", 
          RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "]"}]}]}]]}], 
-  ";"}]], "Input",
- CellChangeTimes->{{3.662321941644414*^9, 3.6623219728766747`*^9}, {
-  3.6623220977346*^9, 3.662322224424993*^9}, {3.662322272666666*^9, 
-  3.66232232111026*^9}, {3.662327706471307*^9, 3.662327712305305*^9}, {
-  3.662328210231024*^9, 3.662328222582961*^9}}],
+  ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -139,10 +134,7 @@ Cell[BoxData[
     RowBox[{"laserOuterLenght", "[", 
      RowBox[{
      "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l"}], 
-     "]"}]], "]"}]}]], "Input",
- CellChangeTimes->{{3.662322330022243*^9, 3.6623223546369963`*^9}, {
-   3.662322533310999*^9, 3.662322551414197*^9}, {3.662323149367477*^9, 
-   3.662323154482473*^9}, 3.662327715476102*^9}],
+     "]"}]], "]"}]}]], "Input"],
 
 Cell[CellGroupData[{
 
@@ -151,8 +143,7 @@ Cell[BoxData[
   RowBox[{"\[Epsilon]max", "[", 
    RowBox[{
    "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l"}], "]"}],
-   "//", "Simplify"}]], "Input",
- CellChangeTimes->{{3.662555931230822*^9, 3.662555945514591*^9}}],
+   "//", "Simplify"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"ArcSin", "[", 
@@ -200,24 +191,17 @@ Cell[BoxData[
       SuperscriptBox[
        RowBox[{"Sin", "[", 
         RowBox[{"\[Alpha]i", "+", "\[Alpha]o"}], "]"}], "2"]}]}]]], 
-  "]"}]], "Output",
- CellChangeTimes->{{3.662555936387218*^9, 3.662555949005517*^9}}]
+  "]"}]], "Output"]
 }, Open  ]]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
-Cell["Laser min/max lengths", "Section",
- CellChangeTimes->{{3.662328463862934*^9, 3.662328468887041*^9}, {
-  3.662332293456163*^9, 3.662332297494561*^9}, {3.662333174903544*^9, 
-  3.662333175481879*^9}, {3.662334639009509*^9, 3.662334673695137*^9}, {
-  3.662334764590952*^9, 3.662334777759103*^9}}],
+Cell["Laser min/max lengths", "Section"],
 
 Cell[CellGroupData[{
 
-Cell["Line equations", "Subsection",
- CellChangeTimes->{{3.662333144510207*^9, 3.6623331499668493`*^9}, {
-  3.6623345922068644`*^9, 3.662334595038588*^9}}],
+Cell["Line equations", "Subsection"],
 
 Cell[BoxData[
  RowBox[{
@@ -225,8 +209,7 @@ Cell[BoxData[
    RowBox[{
     RowBox[{"laser", "[", "\[Epsilon]_", "]"}], "[", "x_", "]"}], ":=", 
    RowBox[{
-    RowBox[{"Tan", "[", "\[Epsilon]", "]"}], "*", "x"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.662328483564736*^9, 3.66232848485105*^9}}],
+    RowBox[{"Tan", "[", "\[Epsilon]", "]"}], "*", "x"}]}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -251,11 +234,7 @@ Cell[BoxData[
            RowBox[{"\[Pi]", "-", "\[Beta]"}], ")"}], "/", "2"}], "-", 
          "\[Alpha]i"}], ")"}]}], "]"}], "*", 
      RowBox[{"(", 
-      RowBox[{"x", "-", "l"}], ")"}]}]}]}], ";"}]], "Input",
- CellChangeTimes->{{3.6623240631222563`*^9, 3.662324151078236*^9}, {
-  3.6623242235559263`*^9, 3.66232426084859*^9}, {3.6623257484555273`*^9, 
-  3.662325768425684*^9}, {3.662325808009953*^9, 3.662325808295676*^9}, {
-  3.662325876869852*^9, 3.662325884993969*^9}}],
+      RowBox[{"x", "-", "l"}], ")"}]}]}]}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -267,11 +246,7 @@ Cell[BoxData[
    RowBox[{
     RowBox[{"diodeOuter", "[", 
      RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "0", ",", "S", ",", "l"}], 
-     "]"}], "[", "x", "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.662325348073127*^9, 3.6623253881471024`*^9}, {
-  3.662325428240095*^9, 3.6623254670782022`*^9}, {3.662325811814363*^9, 
-  3.662325816132555*^9}, {3.662325887376449*^9, 3.6623258907865057`*^9}, {
-  3.662325940572126*^9, 3.662325944760854*^9}}],
+     "]"}], "[", "x", "]"}]}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -293,17 +268,12 @@ Cell[BoxData[
            RowBox[{"\[Pi]", "-", "\[Beta]"}], ")"}], "/", "2"}], "-", 
          "\[Alpha]i"}], ")"}]}], "]"}], "*", 
      RowBox[{"(", 
-      RowBox[{"x", "-", "l"}], ")"}]}]}]}], ";"}]], "Input",
- CellChangeTimes->{{3.6623248982506733`*^9, 3.662324927990364*^9}, {
-  3.662325241336727*^9, 3.662325261838037*^9}, {3.662325820989664*^9, 
-  3.662325821477482*^9}, {3.66232589302141*^9, 3.662325925803885*^9}, {
-  3.6623295178208847`*^9, 3.662329535680831*^9}}]
+      RowBox[{"x", "-", "l"}], ")"}]}]}]}], ";"}]], "Input"]
 }, Closed]],
 
 Cell[CellGroupData[{
 
-Cell["Intersections", "Subsection",
- CellChangeTimes->{{3.662333152760152*^9, 3.6623331549343243`*^9}}],
+Cell["Intersections", "Subsection"],
 
 Cell[CellGroupData[{
 
@@ -317,8 +287,7 @@ Cell[BoxData[
      RowBox[{
       RowBox[{"diodeInner", "[", 
        RowBox[{"\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l"}], "]"}], "[", 
-      "x", "]"}]}]}], ",", "x"}], "]"}]], "Input",
- CellChangeTimes->{{3.66233214311627*^9, 3.66233215001756*^9}}],
+      "x", "]"}]}]}], ",", "x"}], "]"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -347,10 +316,7 @@ Cell[BoxData[
              RowBox[{"-", "\[Pi]"}], "+", "\[Beta]"}], ")"}]}]}], "]"}], "+", 
         
         RowBox[{"Tan", "[", "\[Epsilon]", "]"}]}], ")"}]}]]}], "}"}], 
-  "}"}]], "Output",
- CellChangeTimes->{
-  3.6623321511569138`*^9, 3.662333708725555*^9, 3.6623349234609823`*^9, 
-   3.662334963055417*^9, {3.662335018978464*^9, 3.662335037901259*^9}}]
+  "}"}]], "Output"]
 }, Open  ]],
 
 Cell[BoxData[
@@ -383,10 +349,7 @@ Cell[BoxData[
             RowBox[{"-", "\[Pi]"}], "+", "\[Beta]"}], ")"}]}]}], "]"}], "+", 
        RowBox[{"Tan", "[", 
         RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}], ")"}]}]]}], 
-  ";"}]], "Input",
- CellChangeTimes->{{3.662329311430606*^9, 3.6623293755974483`*^9}, {
-  3.6623301442965193`*^9, 3.662330153985292*^9}, {3.662330368301567*^9, 
-  3.662330373052718*^9}, {3.662331342773497*^9, 3.662331345928886*^9}}],
+  ";"}]], "Input"],
 
 Cell[CellGroupData[{
 
@@ -400,10 +363,7 @@ Cell[BoxData[
      RowBox[{"diodeOuter", "[", 
       RowBox[{
       "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l"}], 
-      "]"}], "[", "x", "]"}]}], ",", "x"}], "]"}]], "Input",
- CellChangeTimes->{{3.662329791134562*^9, 3.66232980439077*^9}, {
-  3.662330133216968*^9, 3.6623301381961393`*^9}, {3.662330502458783*^9, 
-  3.662330515848865*^9}}],
+      "]"}], "[", "x", "]"}]}], ",", "x"}], "]"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -424,12 +384,7 @@ Cell[BoxData[
           FractionBox[
            RowBox[{"\[Pi]", "-", "\[Beta]"}], "2"]}], "]"}], "+", 
         RowBox[{"Tan", "[", "\[Epsilon]", "]"}]}], ")"}]}]]}], "}"}], 
-  "}"}]], "Output",
- CellChangeTimes->{
-  3.66232980836443*^9, 3.66233013880451*^9, 3.662330521395969*^9, 
-   3.662331353363573*^9, 3.6623313833685417`*^9, 3.6623321075301933`*^9, 
-   3.6623337088839493`*^9, 3.66233492362805*^9, 3.6623349631201*^9, {
-   3.662335019025329*^9, 3.6623350379624453`*^9}}]
+  "}"}]], "Output"]
 }, Open  ]],
 
 Cell[BoxData[
@@ -455,24 +410,16 @@ Cell[BoxData[
           RowBox[{"\[Pi]", "-", "\[Beta]"}], "2"]}], "]"}], "+", 
        RowBox[{"Tan", "[", 
         RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}], ")"}]}]]}], 
-  ";"}]], "Input",
- CellChangeTimes->{{3.662329810478127*^9, 3.662329866881579*^9}, {
-  3.662330165793549*^9, 3.662330170362246*^9}, {3.6623305313010263`*^9, 
-  3.662330535179158*^9}, {3.662331348045719*^9, 3.662331349932214*^9}}]
+  ";"}]], "Input"]
 }, Closed]],
 
 Cell[CellGroupData[{
 
-Cell["Lengths", "Subsection",
- CellChangeTimes->{{3.662333159064714*^9, 3.662333161249021*^9}, {
-  3.662334627622507*^9, 3.6623346333050327`*^9}, {3.662334772326809*^9, 
-  3.662334773522848*^9}}],
+Cell["Lengths", "Subsection"],
 
 Cell[CellGroupData[{
 
-Cell["Laser Min", "Subsubsection",
- CellChangeTimes->{{3.662333450913743*^9, 3.6623334558291473`*^9}, {
-  3.662334653450341*^9, 3.662334654526607*^9}}],
+Cell["Laser Min", "Subsubsection"],
 
 Cell[BoxData[
  RowBox[{
@@ -494,10 +441,7 @@ Cell[BoxData[
        RowBox[{"xmin", "[", 
         RowBox[{
         "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
-        "]"}], "]"}], "2"]}]]}], ";"}]], "Input",
- CellChangeTimes->{{3.6623316140757313`*^9, 3.662331615324389*^9}, {
-  3.662331650310122*^9, 3.662331742051083*^9}, {3.662332085586398*^9, 
-  3.662332091529889*^9}, {3.662334698498363*^9, 3.662334700682087*^9}}],
+        "]"}], "]"}], "2"]}]]}], ";"}]], "Input"],
 
 Cell[CellGroupData[{
 
@@ -506,9 +450,7 @@ Cell[BoxData[
   RowBox[{"laserMin", "[", 
    RowBox[{
    "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
-   "]"}], "//", "Simplify"}]], "Input",
- CellChangeTimes->{{3.662332434182664*^9, 3.662332455999456*^9}, {
-  3.6623347026117268`*^9, 3.662334703480538*^9}}],
+   "]"}], "//", "Simplify"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -533,18 +475,13 @@ Cell[BoxData[
          FractionBox["\[Beta]", "2"]}], "]"}], "-", 
        RowBox[{"Tan", "[", 
         RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}], ")"}], 
-     "2"]]]}]], "Output",
- CellChangeTimes->{{3.66233245203965*^9, 3.6623324570344276`*^9}, 
-   3.6623337096951447`*^9, 3.6623347046459217`*^9, 3.662334924438232*^9, 
-   3.662334963218843*^9, {3.6623350190855627`*^9, 3.662335038831191*^9}}]
+     "2"]]]}]], "Output"]
 }, Open  ]]
 }, Closed]],
 
 Cell[CellGroupData[{
 
-Cell["Laser Min Alternative (Giulio)", "Subsubsection",
- CellChangeTimes->{{3.662333465142708*^9, 3.662333479492867*^9}, 
-   3.66233461199317*^9, {3.662334656141489*^9, 3.6623346577274027`*^9}}],
+Cell["Laser Min Alternative (Giulio)", "Subsubsection"],
 
 Cell[BoxData[
  RowBox[{
@@ -569,10 +506,7 @@ Cell[BoxData[
        RowBox[{"\[Gamma]", "[", 
         RowBox[{"\[Beta]", ",", "\[Alpha]i"}], "]"}], "2"], "-", 
       RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], 
-    RowBox[{"-", "1"}]]}]}]], "Input",
- CellChangeTimes->{{3.662332464403254*^9, 3.662332468792207*^9}, {
-  3.66233249983241*^9, 3.662332607477674*^9}, {3.662332745023118*^9, 
-  3.662332746478732*^9}, {3.662334715952819*^9, 3.6623347175671263`*^9}}],
+    RowBox[{"-", "1"}]]}]}]], "Input"],
 
 Cell[CellGroupData[{
 
@@ -581,9 +515,7 @@ Cell[BoxData[
   RowBox[{"laserMinAlt", "[", 
    RowBox[{
    "\[Beta]", ",", "\[Alpha]i", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
-   "]"}], "//", "Simplify"}]], "Input",
- CellChangeTimes->{
-  3.662332626911474*^9, {3.662334719459694*^9, 3.662334721123089*^9}}],
+   "]"}], "//", "Simplify"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -601,19 +533,13 @@ Cell[BoxData[
     RowBox[{"2", " ", "l", " ", 
      RowBox[{"Sin", "[", 
       RowBox[{"\[Alpha]i", "+", 
-       FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}]}]], "Output",
- CellChangeTimes->{
-  3.662332628349163*^9, 3.662332750982924*^9, 3.662333709891961*^9, {
-   3.662334721929825*^9, 3.662334727759328*^9}, 3.662334924682996*^9, 
-   3.662334963304305*^9, {3.662335019140993*^9, 3.6623350389586353`*^9}}]
+       FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}]}]], "Output"]
 }, Open  ]]
 }, Closed]],
 
 Cell[CellGroupData[{
 
-Cell["Laser Max", "Subsubsection",
- CellChangeTimes->{{3.662333484877349*^9, 3.66233348610385*^9}, {
-  3.6623346595604*^9, 3.6623346600094023`*^9}}],
+Cell["Laser Max", "Subsubsection"],
 
 Cell[BoxData[
  RowBox[{
@@ -634,9 +560,7 @@ Cell[BoxData[
       RowBox[{"xmax", "[", 
        RowBox[{
        "\[Beta]", ",", "\[Alpha]o", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
-       "]"}], "]"}], "2"]}]]}]], "Input",
- CellChangeTimes->{{3.662332237804205*^9, 3.662332281444056*^9}, {
-  3.662334732549028*^9, 3.6623347335848703`*^9}}],
+       "]"}], "]"}], "2"]}]]}]], "Input"],
 
 Cell[CellGroupData[{
 
@@ -645,9 +569,7 @@ Cell[BoxData[
   RowBox[{"laserMax", "[", 
    RowBox[{
    "\[Beta]", ",", "\[Alpha]o", ",", "S", ",", "l", ",", "\[Epsilon]"}], 
-   "]"}], "//", "Simplify"}]], "Input",
- CellChangeTimes->{{3.6623334364781437`*^9, 3.662333443591462*^9}, {
-  3.662334734879162*^9, 3.662334735865728*^9}}],
+   "]"}], "//", "Simplify"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -677,19 +599,13 @@ Cell[BoxData[
          "]"}], "+", 
        RowBox[{"Tan", "[", 
         RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}], ")"}], 
-     "2"]]]}]], "Output",
- CellChangeTimes->{
-  3.662333444557514*^9, 3.662333710626609*^9, 3.662334740146584*^9, 
-   3.662334925425761*^9, 3.662334963378428*^9, {3.662335019198472*^9, 
-   3.6623350396872473`*^9}}]
+     "2"]]]}]], "Output"]
 }, Open  ]]
 }, Closed]],
 
 Cell[CellGroupData[{
 
-Cell["Laser Max Alternative (Giulio)", "Subsubsection",
- CellChangeTimes->{{3.6623334947697363`*^9, 3.662333510751761*^9}, {
-  3.662334820141797*^9, 3.662334825205625*^9}}],
+Cell["Laser Max Alternative (Giulio)", "Subsubsection"],
 
 Cell[BoxData[
  RowBox[{
@@ -731,9 +647,7 @@ Cell[BoxData[
       RowBox[{
        FractionBox["\[Beta]", "2"], "-", "\[Alpha]o", "-", 
        RowBox[{"Abs", "[", "\[Epsilon]", "]"}]}], "]"}], 
-     RowBox[{"-", "1"}]]}]}], ";"}]], "Input",
- CellChangeTimes->{{3.6623333395493937`*^9, 3.6623333728174667`*^9}, {
-  3.662333735124675*^9, 3.6623337438700247`*^9}}],
+     RowBox[{"-", "1"}]]}]}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -750,14 +664,7 @@ Cell[BoxData[
     RowBox[{"\[CapitalDelta]laser", "[", 
      RowBox[{
      "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l", ",", 
-      "\[Epsilon]"}], "]"}]}]}], ";"}]], "Input",
- CellChangeTimes->{{3.662332792348074*^9, 3.662332807816844*^9}, {
-  3.662332949087274*^9, 3.662332956347369*^9}, {3.662332988193893*^9, 
-  3.6623331084641743`*^9}, {3.662333200434299*^9, 3.662333211472083*^9}, {
-  3.662333259723906*^9, 3.662333302719211*^9}, {3.662333367440259*^9, 
-  3.662333393459826*^9}, {3.662333978514058*^9, 3.662333980498599*^9}, {
-  3.662334746594082*^9, 3.662334748388268*^9}, {3.66233499927713*^9, 
-  3.662335002114127*^9}}],
+      "\[Epsilon]"}], "]"}]}]}], ";"}]], "Input"],
 
 Cell[CellGroupData[{
 
@@ -766,9 +673,7 @@ Cell[BoxData[
   RowBox[{"\[CapitalDelta]laser", "[", 
    RowBox[{
    "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l", ",", 
-    "\[Epsilon]"}], "]"}], "//", "Simplify"}]], "Input",
- CellChangeTimes->{{3.662333399800787*^9, 3.66233340689454*^9}, {
-  3.662333781031229*^9, 3.662333786813861*^9}}],
+    "\[Epsilon]"}], "]"}], "//", "Simplify"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -801,11 +706,7 @@ Cell[BoxData[
          RowBox[{"\[Alpha]i", "+", 
           FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}], " ", 
      RowBox[{"Sin", "[", 
-      RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}]}], ")"}]}]], "Output",
- CellChangeTimes->{
-  3.662333408494853*^9, 3.662333711368856*^9, {3.66233377664259*^9, 
-   3.662333789936252*^9}, 3.66233492622591*^9, 3.662334963466329*^9, {
-   3.662335019260301*^9, 3.6623350403958607`*^9}}]
+      RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}]}], ")"}]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -815,9 +716,7 @@ Cell[BoxData[
   RowBox[{"laserMaxAlt", "[", 
    RowBox[{
    "\[Beta]", ",", "\[Alpha]i", ",", "\[Alpha]o", ",", "S", ",", "l", ",", 
-    "\[Epsilon]"}], "]"}], "//", "Simplify"}]], "Input",
- CellChangeTimes->{{3.662333314402964*^9, 3.662333324895927*^9}, {
-  3.662334750301066*^9, 3.6623347517260838`*^9}}],
+    "\[Epsilon]"}], "]"}], "//", "Simplify"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -869,10 +768,7 @@ Cell[BoxData[
              FractionBox["\[Beta]", "2"]}], "]"}]}]}], ")"}], " ", 
         RowBox[{"Sin", "[", 
          RowBox[{"Abs", "[", "\[Epsilon]", "]"}], "]"}]}]}], ")"}]}]}], 
-   ")"}]}]], "Output",
- CellChangeTimes->{{3.6623333197051*^9, 3.66233332767981*^9}, 
-   3.662333713254868*^9, 3.6623347545837183`*^9, 3.6623349272367287`*^9, 
-   3.662334963517818*^9, {3.662335020831729*^9, 3.662335042262205*^9}}]
+   ")"}]}]], "Output"]
 }, Open  ]]
 }, Closed]]
 }, Closed]]
@@ -880,39 +776,23 @@ Cell[BoxData[
 
 Cell[CellGroupData[{
 
-Cell["Graphical representation", "Section",
- CellChangeTimes->{{3.662323164617078*^9, 3.662323167359605*^9}}],
+Cell["Graphical representation", "Section"],
 
 Cell[CellGroupData[{
 
-Cell["Graphical elements", "Subsection",
- CellChangeTimes->{{3.662323169692651*^9, 3.6623231725841923`*^9}}],
+Cell["Graphical elements", "Subsection"],
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"laserColor", "=", "Green"}], ";"}]], "Input",
- CellChangeTimes->{{3.662323927261108*^9, 3.66232394650215*^9}, {
-  3.662326272704913*^9, 3.662326288276661*^9}, {3.6623265438957777`*^9, 
-  3.662326546229542*^9}, {3.662326848789371*^9, 3.662326855213851*^9}, {
-  3.662327422086615*^9, 3.662327429098933*^9}}],
+  RowBox[{"laserColor", "=", "Green"}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"diodeEmitterColor", "=", "Blue"}], ";"}]], "Input",
- CellChangeTimes->{{3.662324159204885*^9, 3.662324201606854*^9}, {
-  3.662326539727048*^9, 3.6623265417012587`*^9}, {3.6623268852349577`*^9, 
-  3.66232692677148*^9}, {3.662327333278262*^9, 3.66232734676908*^9}, {
-  3.662327395453108*^9, 3.662327396365906*^9}, {3.662327431593183*^9, 
-  3.66232743221205*^9}}],
+  RowBox[{"diodeEmitterColor", "=", "Blue"}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"diodeReceiverColor", "=", "Blue"}], ";"}]], "Input",
- CellChangeTimes->{{3.6623242088076468`*^9, 3.66232421830766*^9}, {
-  3.662326527230672*^9, 3.662326534999626*^9}, {3.662326809236032*^9, 
-  3.662326837683861*^9}, {3.662326915534741*^9, 3.6623269173201723`*^9}, {
-  3.6623270577678957`*^9, 3.6623270585452013`*^9}, {3.6623274349948673`*^9, 
-  3.6623274356226377`*^9}}],
+  RowBox[{"diodeReceiverColor", "=", "Blue"}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -936,14 +816,7 @@ Cell[BoxData[
      RowBox[{"AspectRatio", "\[Rule]", "Automatic"}], ",", 
      RowBox[{"ImageSize", "\[Rule]", "Large"}], ",", "\[IndentingNewLine]", 
      RowBox[{"PlotStyle", "\[Rule]", 
-      RowBox[{"Directive", "[", "color", "]"}]}]}], "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.662323468464017*^9, 3.662323491443965*^9}, 
-   3.6623236566685753`*^9, {3.662323831616976*^9, 3.662323837101191*^9}, {
-   3.662323959088834*^9, 3.662323966594977*^9}, {3.6623250032891617`*^9, 
-   3.6623250074048243`*^9}, {3.662325092747314*^9, 3.662325118585861*^9}, {
-   3.662327446983829*^9, 3.66232745548734*^9}, {3.662328259790641*^9, 
-   3.662328263789215*^9}, {3.662328398671513*^9, 3.662328405659122*^9}, {
-   3.6623311299684*^9, 3.6623311329452143`*^9}}],
+      RowBox[{"Directive", "[", "color", "]"}]}]}], "]"}]}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -968,14 +841,7 @@ Cell[BoxData[
         "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
      RowBox[{"PlotStyle", "\[Rule]", 
       RowBox[{"Directive", "[", 
-       RowBox[{"Red", ",", "Dashed"}], "]"}]}]}], "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.662329036469956*^9, 3.66232906672871*^9}, {
-  3.6623290970785646`*^9, 3.662329097307267*^9}, {3.6623291392563972`*^9, 
-  3.6623291445820923`*^9}, {3.6623293984686813`*^9, 3.662329431327141*^9}, {
-  3.6623298777882566`*^9, 3.6623298908590384`*^9}, {3.6623301807920313`*^9, 
-  3.6623301902831078`*^9}, {3.662330380072402*^9, 3.66233038048018*^9}, {
-  3.662330541880889*^9, 3.66233054203052*^9}, {3.6623311150976057`*^9, 
-  3.662331139208021*^9}, {3.662331236473288*^9, 3.662331242513708*^9}}],
+       RowBox[{"Red", ",", "Dashed"}], "]"}]}]}], "]"}]}], ";"}]], "Input"],
 
 Cell[BoxData[
  RowBox[{
@@ -1028,23 +894,14 @@ Cell[BoxData[
         RowBox[{"Directive", "[", 
          RowBox[{"color", ",", 
           RowBox[{"Opacity", "[", "0.5", "]"}]}], "]"}]}], "}"}]}]}], "]"}]}],
-   ";"}]], "Input",
- CellChangeTimes->{{3.662325958812724*^9, 3.6623259753607273`*^9}, {
-  3.662326009977845*^9, 3.662326127437808*^9}, {3.662326324860305*^9, 
-  3.6623265080282297`*^9}, {3.6623265664396553`*^9, 3.662326567276331*^9}, {
-  3.6623266085385942`*^9, 3.662326669871643*^9}, {3.662326960084344*^9, 
-  3.662327242269562*^9}, {3.662327288075042*^9, 3.662327306320532*^9}, {
-  3.66233023585432*^9, 3.6623302372533617`*^9}, {3.66233029806277*^9, 
-  3.66233031643222*^9}}],
+   ";"}]], "Input"],
 
-Cell[BoxData[""], "Input",
- CellChangeTimes->{{3.662325737774678*^9, 3.662325743644225*^9}}]
+Cell[BoxData[""], "Input"]
 }, Closed]],
 
 Cell[CellGroupData[{
 
-Cell["Graphics", "Subsection",
- CellChangeTimes->{{3.662323175037551*^9, 3.662323176263815*^9}}],
+Cell["Graphics", "Subsection"],
 
 Cell[CellGroupData[{
 
@@ -1254,38 +1111,7 @@ Cell[BoxData[
      RowBox[{"Appearance", "\[Rule]", "\"\<Open\>\""}]}], "}"}], ",", 
    "\[IndentingNewLine]", 
    RowBox[{"ControlPlacement", "\[Rule]", "Right"}]}], "\[IndentingNewLine]", 
-  "]"}]], "Input",
- CellChangeTimes->{{3.66232349423072*^9, 3.662323498493631*^9}, {
-   3.662323664989801*^9, 3.662323712407236*^9}, {3.6623237447684193`*^9, 
-   3.66232377961679*^9}, {3.6623238450203733`*^9, 3.6623238455183973`*^9}, {
-   3.662323900112834*^9, 3.662323901435492*^9}, {3.662324280707851*^9, 
-   3.662324614897871*^9}, {3.662324656209379*^9, 3.662324830352968*^9}, {
-   3.662324933081051*^9, 3.662324960863391*^9}, {3.662325025177558*^9, 
-   3.662325067464323*^9}, {3.6623251682374067`*^9, 3.6623251686251497`*^9}, {
-   3.66232526854355*^9, 3.662325296696813*^9}, {3.662325453997937*^9, 
-   3.662325502376153*^9}, {3.6623261376418324`*^9, 3.662326234550321*^9}, {
-   3.662326304695568*^9, 3.662326308298046*^9}, {3.662326459731172*^9, 
-   3.6623264713229237`*^9}, {3.662327459257448*^9, 3.6623274623191013`*^9}, {
-   3.662327503365484*^9, 3.6623275260845537`*^9}, {3.662327563979013*^9, 
-   3.662327624699935*^9}, {3.662327766111517*^9, 3.662327802359811*^9}, {
-   3.662328290280875*^9, 3.6623283002403316`*^9}, {3.6623289203162537`*^9, 
-   3.6623289297544603`*^9}, {3.6623289826628428`*^9, 
-   3.6623289988482847`*^9}, {3.662329076157938*^9, 3.662329082593186*^9}, 
-   3.662329128699807*^9, {3.66232965032727*^9, 3.662329671225027*^9}, {
-   3.662329897122176*^9, 3.662329906689248*^9}, {3.6623299866654654`*^9, 
-   3.662330013934507*^9}, {3.6623312107633743`*^9, 3.662331212389202*^9}, {
-   3.662331786135151*^9, 3.662331843339909*^9}, {3.6623322002532*^9, 
-   3.6623322141488047`*^9}, {3.6623323171215973`*^9, 3.662332359285375*^9}, {
-   3.662332644585597*^9, 3.662332649578833*^9}, {3.662332680125421*^9, 
-   3.6623326900447598`*^9}, {3.66233352749047*^9, 3.662333562988426*^9}, {
-   3.662333623626052*^9, 3.66233367559974*^9}, 3.662333763033465*^9, {
-   3.662333812650401*^9, 3.6623338211239862`*^9}, 3.66233392848405*^9, {
-   3.662333998641527*^9, 3.66233399910147*^9}, {3.662334114150817*^9, 
-   3.662334115275804*^9}, {3.662334156186483*^9, 3.662334157483364*^9}, {
-   3.66233429598275*^9, 3.662334310306184*^9}, {3.662334352039876*^9, 
-   3.662334408926918*^9}, {3.662334475709779*^9, 3.662334549347221*^9}, {
-   3.662334848115012*^9, 3.662334860605548*^9}, {3.662334951460318*^9, 
-   3.662334960610991*^9}}],
+  "]"}]], "Input"],
 
 Cell[BoxData[
  TagBox[
@@ -1296,38 +1122,44 @@ Cell[BoxData[
     1.6075636893277438`, Typeset`show$$ = True, Typeset`bookmarkList$$ = {}, 
     Typeset`bookmarkMode$$ = "Menu", Typeset`animator$$, Typeset`animvar$$ = 
     1, Typeset`name$$ = "\"untitled\"", Typeset`specs$$ = {{{
-       Hold[$CellContext`\[Epsilon]$$], (-180) Pi^(-1) 
-       ArcSin[Rational[1, 2] $CellContext`S$$ 
-         Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-           Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-           Rational[1, 180] Pi $CellContext`\[Beta]$$] 
-         Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-           Rational[1, 180] Pi $CellContext`\[Alpha]o$$] (
-           Rational[1, 4] $CellContext`S$$^2 
-            Csc[Rational[1, 2] (Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
-                Rational[1, 180] Pi $CellContext`\[Beta]$$)]^2 
-            Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-               Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-               Rational[1, 180] Pi $CellContext`\[Beta]$$]^2 
-            Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-               Rational[1, 180] 
-                Pi $CellContext`\[Alpha]o$$]^2 + $CellContext`S$$ 
-            Cot[Rational[1, 2] (Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
-               Rational[1, 180] Pi $CellContext`\[Beta]$$)] 
-            Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-              Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-              Rational[1, 180] Pi $CellContext`\[Beta]$$] 
-            Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-              Rational[1, 180] Pi $CellContext`\[Alpha]o$$] ($CellContext`l$$ + 
-             Rational[-1, 2] $CellContext`S$$ 
-              Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                Rational[1, 2] (-Pi + 
-                  Rational[1, 180] 
-                   Pi $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + 
-             Rational[-1, 2] $CellContext`S$$ 
-              Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                Rational[1, 2] (-Pi + 
-                  Rational[1, 180] Pi $CellContext`\[Beta]$$)])^2)^
+       Hold[$CellContext`\[Epsilon]$$], ((-180)/Pi) 
+       ArcSin[(((Rational[1, 2] $CellContext`S$$) 
+           Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+               Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+               Rational[1, 180] Pi) $CellContext`\[Beta]$$]) 
+          Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+              Rational[1, 180] 
+              Pi) $CellContext`\[Alpha]o$$]) ((((
+               Rational[1, 4] $CellContext`S$$^2) 
+              Csc[Rational[
+                  1, 2] ((Rational[1, 90] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$)]^2) 
+             Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                  Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+                  Rational[1, 180] Pi) $CellContext`\[Beta]$$]^2) 
+            Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                 Rational[1, 180] 
+                 Pi) $CellContext`\[Alpha]o$$]^2 + ((($CellContext`S$$ 
+               Cot[Rational[
+                  1, 2] ((Rational[1, 90] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$)]) 
+              Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                  Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+                  Rational[1, 180] Pi) $CellContext`\[Beta]$$]) 
+             Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                 Rational[1, 180] 
+                 Pi) $CellContext`\[Alpha]o$$]) ($CellContext`l$$ + (
+               Rational[-1, 2] $CellContext`S$$) 
+              Tan[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + 
+                Rational[
+                  1, 2] (-
+                   Pi + (Rational[1, 180] 
+                    Pi) $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + (
+               Rational[-1, 2] $CellContext`S$$) 
+              Tan[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + 
+                Rational[
+                  1, 2] (-
+                   Pi + (Rational[1, 180] Pi) $CellContext`\[Beta]$$)])^2)^
           Rational[-1, 2]], "Ray angle \[Epsilon]"}, -90, 90, 0.2}, {{
        Hold[$CellContext`\[Beta]$$], 50, "Angle between \[Beta]"}, 40, 60}, {{
       
@@ -1347,39 +1179,45 @@ Cell[BoxData[
       "Variables" :> {$CellContext`l$$ = 0.1696, $CellContext`S$$ = 
         0.034, $CellContext`\[Alpha]i$$ = 25, $CellContext`\[Alpha]o$$ = 
         10, $CellContext`\[Beta]$$ = 
-        50, $CellContext`\[Epsilon]$$ = (-180) Pi^(-1) 
-         ArcSin[Rational[1, 2] $CellContext`S$$ 
-           Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-             Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-             Rational[1, 180] Pi $CellContext`\[Beta]$$] 
-           Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-             Rational[1, 180] Pi $CellContext`\[Alpha]o$$] (
-             Rational[1, 4] $CellContext`S$$^2 
-              Csc[Rational[1, 2] (Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
-                  Rational[1, 180] Pi $CellContext`\[Beta]$$)]^2 
-              Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                 Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-                 Rational[1, 180] Pi $CellContext`\[Beta]$$]^2 
-              Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                 Rational[1, 180] 
-                  Pi $CellContext`\[Alpha]o$$]^2 + $CellContext`S$$ 
-              Cot[Rational[1, 2] (Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
-                 Rational[1, 180] Pi $CellContext`\[Beta]$$)] 
-              Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-                Rational[1, 180] Pi $CellContext`\[Beta]$$] 
-              Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+        50, $CellContext`\[Epsilon]$$ = ((-180)/Pi) 
+         ArcSin[(((Rational[1, 2] $CellContext`S$$) 
+             Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                 Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+                 Rational[1, 180] Pi) $CellContext`\[Beta]$$]) 
+            Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
                 Rational[1, 180] 
-                 Pi $CellContext`\[Alpha]o$$] ($CellContext`l$$ + 
-               Rational[-1, 2] $CellContext`S$$ 
-                Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                  Rational[1, 2] (-Pi + 
-                    Rational[1, 180] 
-                    Pi $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + 
-               Rational[-1, 2] $CellContext`S$$ 
-                Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                  Rational[1, 2] (-Pi + 
-                    Rational[1, 180] Pi $CellContext`\[Beta]$$)])^2)^
+                Pi) $CellContext`\[Alpha]o$$]) ((((
+                 Rational[1, 4] $CellContext`S$$^2) 
+                Csc[Rational[
+                    1, 2] ((Rational[1, 90] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$)]^2) 
+               Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$]^2) 
+              Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                   Rational[1, 180] 
+                   Pi) $CellContext`\[Alpha]o$$]^2 + ((($CellContext`S$$ 
+                 Cot[Rational[
+                    1, 
+                    2] ((Rational[1, 90] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$)]) 
+                Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$]) 
+               Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                   Rational[1, 180] 
+                   Pi) $CellContext`\[Alpha]o$$]) ($CellContext`l$$ + (
+                 Rational[-1, 2] $CellContext`S$$) 
+                Tan[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + 
+                  Rational[
+                    1, 2] (-
+                    Pi + (Rational[1, 180] 
+                    Pi) $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + (
+                 Rational[-1, 2] $CellContext`S$$) 
+                Tan[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + 
+                  Rational[
+                    1, 2] (-
+                    Pi + (Rational[1, 180] Pi) $CellContext`\[Beta]$$)])^2)^
             Rational[-1, 2]]}, "ControllerVariables" :> {
         Hold[$CellContext`\[Epsilon]$$, $CellContext`\[Epsilon]$483$$, 0], 
         Hold[$CellContext`\[Beta]$$, $CellContext`\[Beta]$488$$, 0], 
@@ -1400,7 +1238,8 @@ Cell[BoxData[
          1, $CellContext`diodeReceiverColor], 
         $CellContext`diode[$CellContext`\[Beta]$$ (Pi/
           180), $CellContext`\[Alpha]i$$ (Pi/180), $CellContext`\[Alpha]o$$ (
-          Pi/180), $CellContext`S$$, $CellContext`l$$, -1, \
+          Pi/
+          180), $CellContext`S$$, $CellContext`l$$, -1, \
 $CellContext`diodeEmitterColor], 
         If[
         Abs[$CellContext`\[Epsilon]$$] (Pi/
@@ -1456,41 +1295,44 @@ $CellContext`\[Epsilon]$$ (Pi/180)],
                 180), $CellContext`S$$, $CellContext`l$$, $CellContext`\
 \[Epsilon]$$ (Pi/180)]]], {0.18, 0.028}]]}, 
          Plot[{}, {$CellContext`x, 0, 0.1}]]], 
-      "Specifications" :> {{{$CellContext`\[Epsilon]$$, (-180) Pi^(-1) 
-          ArcSin[Rational[1, 2] $CellContext`S$$ 
-            Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-              Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-              Rational[1, 180] Pi $CellContext`\[Beta]$$] 
-            Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-              Rational[1, 180] Pi $CellContext`\[Alpha]o$$] (
-              Rational[1, 4] $CellContext`S$$^2 
-               Csc[Rational[1, 2] (
-                   Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
-                   Rational[1, 180] Pi $CellContext`\[Beta]$$)]^2 
-               Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                  Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-                  Rational[1, 180] Pi $CellContext`\[Beta]$$]^2 
-               Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                  Rational[1, 180] 
-                   Pi $CellContext`\[Alpha]o$$]^2 + $CellContext`S$$ 
-               Cot[Rational[1, 2] (
-                  Rational[1, 90] Pi $CellContext`\[Alpha]i$$ + 
-                  Rational[1, 180] Pi $CellContext`\[Beta]$$)] 
-               Csc[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                 Rational[-1, 180] Pi $CellContext`\[Alpha]o$$ + 
-                 Rational[1, 180] Pi $CellContext`\[Beta]$$] 
-               Sin[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
+      "Specifications" :> {{{$CellContext`\[Epsilon]$$, ((-180)/Pi) 
+          ArcSin[(((Rational[1, 2] $CellContext`S$$) 
+              Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                  Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+                  Rational[1, 180] Pi) $CellContext`\[Beta]$$]) 
+             Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
                  Rational[1, 180] 
-                  Pi $CellContext`\[Alpha]o$$] ($CellContext`l$$ + 
-                Rational[-1, 2] $CellContext`S$$ 
-                 Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                   Rational[1, 2] (-Pi + 
+                 Pi) $CellContext`\[Alpha]o$$]) ((((
+                  Rational[1, 4] $CellContext`S$$^2) 
+                 Csc[Rational[
+                    1, 2] ((Rational[1, 90] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$)]^2) 
+                Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$]^2) 
+               Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
                     Rational[1, 180] 
-                    Pi $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + 
-                Rational[-1, 2] $CellContext`S$$ 
-                 Tan[Rational[1, 180] Pi $CellContext`\[Alpha]i$$ + 
-                   Rational[1, 2] (-Pi + 
-                    Rational[1, 180] Pi $CellContext`\[Beta]$$)])^2)^
+                    Pi) $CellContext`\[Alpha]o$$]^2 + ((($CellContext`S$$ 
+                  Cot[Rational[
+                    1, 2] ((Rational[1, 90] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$)]) 
+                 Csc[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[-1, 180] Pi) $CellContext`\[Alpha]o$$ + (
+                    Rational[1, 180] Pi) $CellContext`\[Beta]$$]) 
+                Sin[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + (
+                    Rational[1, 180] 
+                    Pi) $CellContext`\[Alpha]o$$]) ($CellContext`l$$ + (
+                  Rational[-1, 2] $CellContext`S$$) 
+                 Tan[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + 
+                   Rational[
+                    1, 2] (-
+                    Pi + (Rational[1, 180] 
+                    Pi) $CellContext`\[Beta]$$)]) + ($CellContext`l$$ + (
+                  Rational[-1, 2] $CellContext`S$$) 
+                 Tan[(Rational[1, 180] Pi) $CellContext`\[Alpha]i$$ + 
+                   Rational[
+                    1, 2] (-
+                    Pi + (Rational[1, 180] Pi) $CellContext`\[Beta]$$)])^2)^
              Rational[-1, 2]], "Ray angle \[Epsilon]"}, -90, 90, 0.2, 
          Appearance -> 
          "Open"}, {{$CellContext`\[Beta]$$, 50, "Angle between \[Beta]"}, 40, 
@@ -1513,17 +1355,18 @@ $CellContext`\[Epsilon]$$ (Pi/180)],
     UntrackedVariables:>{Typeset`size$$}], "Manipulate",
    Deployed->True,
    StripOnInput->False],
-  Manipulate`InterpretManipulate[1]]], "Output",
- CellChangeTimes->{
-  3.6623349285193443`*^9, 3.662334963734354*^9, {3.6623350209765453`*^9, 
-   3.662335042438611*^9}}]
+  Manipulate`InterpretManipulate[1]]], "Output"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
 },
 WindowSize->{1364, 747},
-WindowMargins->{{0, Automatic}, {Automatic, 0}},
+Visible->True,
+ScrollingOptions->{"VerticalScrollRange"->Fit},
+ShowCellBracket->Automatic,
+CellContext->Notebook,
+TrackCellChangeTimes->False,
 FrontEndVersion->"10.0 for Linux x86 (64-bit) (June 27, 2014)",
 StyleDefinitions->"Default.nb"
 ]
@@ -1539,99 +1382,99 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[580, 22, 109, 1, 93, "Title"],
+Cell[1486, 35, 39, 0, 93, "Title"],
 Cell[CellGroupData[{
-Cell[714, 27, 105, 1, 65, "Section"],
-Cell[822, 30, 298, 7, 32, "Input"],
-Cell[1123, 39, 749, 16, 63, "Input"],
-Cell[1875, 57, 1001, 26, 64, "Input"],
-Cell[2879, 85, 1309, 35, 108, "Input"],
-Cell[4191, 122, 848, 22, 81, "Input"],
+Cell[1550, 39, 37, 0, 65, "Section"],
+Cell[1590, 41, 181, 5, 32, "Input"],
+Cell[1774, 48, 312, 10, 63, "Input"],
+Cell[2089, 60, 742, 22, 64, "Input"],
+Cell[2834, 84, 1051, 31, 81, "Input"],
+Cell[3888, 117, 658, 19, 81, "Input"],
 Cell[CellGroupData[{
-Cell[5064, 148, 246, 6, 32, "Input"],
-Cell[5313, 156, 1661, 47, 116, "Output"]
+Cell[4571, 140, 180, 5, 32, "Input"],
+Cell[4754, 147, 1595, 46, 83, "Output"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[7023, 209, 299, 4, 65, "Section"],
+Cell[6398, 199, 40, 0, 65, "Section"],
 Cell[CellGroupData[{
-Cell[7347, 217, 155, 2, 45, "Subsection"],
-Cell[7505, 221, 272, 7, 32, "Input"],
-Cell[7780, 230, 981, 27, 32, "Input"],
-Cell[8764, 259, 616, 14, 32, "Input"],
-Cell[9383, 275, 865, 24, 32, "Input"]
+Cell[6463, 203, 36, 0, 37, "Subsection"],
+Cell[6502, 205, 207, 6, 26, "Input"],
+Cell[6712, 213, 717, 23, 32, "Input"],
+Cell[7432, 238, 351, 10, 32, "Input"],
+Cell[7786, 250, 603, 20, 32, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[10285, 304, 103, 1, 36, "Subsection"],
+Cell[8426, 275, 35, 0, 36, "Subsection"],
 Cell[CellGroupData[{
-Cell[10413, 309, 411, 11, 32, "Input"],
-Cell[10827, 322, 985, 30, 70, "Output"]
+Cell[8486, 279, 347, 10, 26, "Input"],
+Cell[8836, 291, 820, 27, 67, "Output"]
 }, Open  ]],
-Cell[11827, 355, 1129, 33, 93, "Input"],
+Cell[9671, 321, 915, 30, 93, "Input"],
 Cell[CellGroupData[{
-Cell[12981, 392, 514, 13, 32, "Input"],
-Cell[13498, 407, 886, 24, 70, "Output"]
+Cell[10611, 355, 349, 10, 32, "Input"],
+Cell[10963, 367, 604, 19, 67, "Output"]
 }, Open  ]],
-Cell[14399, 434, 927, 26, 93, "Input"]
+Cell[11582, 389, 715, 23, 93, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[15363, 465, 195, 3, 37, "Subsection"],
+Cell[12334, 417, 29, 0, 37, "Subsection"],
 Cell[CellGroupData[{
-Cell[15583, 472, 151, 2, 35, "Subsubsection"],
-Cell[15737, 476, 857, 23, 47, "Input"],
+Cell[12388, 421, 34, 0, 29, "Subsubsection"],
+Cell[12425, 423, 645, 20, 41, "Input"],
 Cell[CellGroupData[{
-Cell[16619, 503, 294, 7, 32, "Input"],
-Cell[16916, 512, 919, 26, 70, "Output"]
+Cell[13095, 447, 177, 5, 32, "Input"],
+Cell[13275, 454, 704, 23, 79, "Output"]
 }, Open  ]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[17884, 544, 194, 2, 29, "Subsubsection"],
-Cell[18081, 548, 948, 26, 64, "Input"],
+Cell[14028, 483, 55, 0, 29, "Subsubsection"],
+Cell[14086, 485, 737, 23, 58, "Input"],
 Cell[CellGroupData[{
-Cell[19054, 578, 271, 7, 32, "Input"],
-Cell[19328, 587, 765, 20, 70, "Output"]
+Cell[14848, 512, 180, 5, 32, "Input"],
+Cell[15031, 519, 530, 16, 48, "Output"]
 }, Open  ]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[20142, 613, 148, 2, 29, "Subsubsection"],
-Cell[20293, 617, 716, 21, 47, "Input"],
+Cell[15610, 541, 34, 0, 29, "Subsubsection"],
+Cell[15647, 543, 599, 19, 41, "Input"],
 Cell[CellGroupData[{
-Cell[21034, 642, 294, 7, 32, "Input"],
-Cell[21331, 651, 1023, 32, 70, "Output"]
+Cell[16271, 566, 177, 5, 32, "Input"],
+Cell[16451, 573, 834, 28, 79, "Output"]
 }, Open  ]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[22403, 689, 172, 2, 29, "Subsubsection"],
-Cell[22578, 693, 1528, 42, 123, "Input"],
-Cell[24109, 737, 987, 22, 65, "Input"],
+Cell[17334, 607, 55, 0, 29, "Subsubsection"],
+Cell[17392, 609, 1407, 40, 117, "Input"],
+Cell[18802, 651, 534, 15, 32, "Input"],
 Cell[CellGroupData[{
-Cell[25121, 763, 322, 7, 32, "Input"],
-Cell[25446, 772, 1296, 35, 70, "Output"]
+Cell[19361, 670, 208, 5, 32, "Input"],
+Cell[19572, 677, 1085, 31, 48, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[26779, 812, 316, 7, 32, "Input"],
-Cell[27098, 821, 1950, 53, 70, "Output"]
+Cell[20694, 713, 199, 5, 32, "Input"],
+Cell[20896, 720, 1741, 50, 86, "Output"]
 }, Open  ]]
 }, Closed]]
 }, Closed]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[29121, 882, 109, 1, 51, "Section"],
+Cell[22710, 778, 43, 0, 51, "Section"],
 Cell[CellGroupData[{
-Cell[29255, 887, 108, 1, 45, "Subsection"],
-Cell[29366, 890, 340, 6, 32, "Input"],
-Cell[29709, 898, 395, 7, 32, "Input"],
-Cell[30107, 907, 406, 7, 32, "Input"],
-Cell[30516, 916, 1343, 29, 77, "Input"],
-Cell[31862, 947, 1350, 30, 55, "Input"],
-Cell[33215, 979, 2387, 58, 121, "Input"],
-Cell[35605, 1039, 92, 1, 32, "Input"]
+Cell[22778, 782, 40, 0, 45, "Subsection"],
+Cell[22821, 784, 80, 2, 26, "Input"],
+Cell[22904, 788, 86, 2, 32, "Input"],
+Cell[22993, 792, 87, 2, 32, "Input"],
+Cell[23083, 796, 858, 22, 77, "Input"],
+Cell[23944, 820, 837, 23, 55, "Input"],
+Cell[24784, 845, 1928, 51, 121, "Input"],
+Cell[26715, 898, 26, 0, 32, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[35734, 1045, 96, 1, 37, "Subsection"],
+Cell[26778, 903, 30, 0, 37, "Subsection"],
 Cell[CellGroupData[{
-Cell[35855, 1050, 10620, 237, 473, "Input"],
-Cell[46478, 1289, 12409, 229, 591, "Output"]
+Cell[26833, 907, 8407, 206, 473, "Input"],
+Cell[35243, 1115, 12961, 242, 558, "Output"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
@@ -1641,3 +1484,5 @@ Cell[46478, 1289, 12409, 229, 591, "Output"]
 *)
 
 (* End of internal cache information *)
+
+(* NotebookSignature @up7rHOsnagp8Bgt7mBI1qBH *)
