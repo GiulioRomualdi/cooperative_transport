@@ -1,7 +1,7 @@
 <launch>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find cooperative_transport)/worlds/onerobot.world"/>
+    <arg name="world_name" value="$(find cooperative_transport)/worlds/severalrobots.world"/>
   </include>
 
   <include file="$(find cooperative_transport)/launch/irsimulator.launch"/>
