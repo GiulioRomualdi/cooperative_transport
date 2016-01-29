@@ -1,5 +1,4 @@
 from sympy.mpmath import *
-import sys
 
 class IrSensor():
     """Simulate the irobot create 2 ir light bumper sensor using laser range finder data.
@@ -159,12 +158,13 @@ class IrSensor():
         if not admissible_ranges:
             return irobot_min_ir
 
-        # take the minimum 
-        equivalent_range = min(admissible_ranges)
+        # take the minimum and offset it wrt the lower bound of the ir detection area
+        distance = min(admissible_ranges)
+        distance -= (self.bounds[0][0] - self.robot_radius)
 
         # scale the value so that it adhere with the irobot create 2 open specification (0-4095)
-        max_distance = self.bounds[0][1] - self.robot_radius
-        ir_value = int(round((1 - equivalent_range/max_distance)*irobot_max_ir))
+        max_distance = self.bounds[0][1] - self.bounds[0][0]
+        ir_value = int(round((1 - distance/max_distance)*irobot_max_ir))
         
         return ir_value
 
@@ -201,5 +201,5 @@ if __name__ == "__main__":
     for i in range(0, number_steps):
         radius = min_radius + i*step
         fake_data = [radius for  j in range (data_length)]
-        ir_reading = ir.laser_to_ir(fake_data, ir_angle, angle_0)
+        ir_reading = ir.laser_to_ir(fake_data, angle_0, ir_angle)
         print "constant radius: %f, ir: %f" % (radius, ir_reading)
