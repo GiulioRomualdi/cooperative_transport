@@ -92,7 +92,7 @@ class IrSensor():
         Args:
         index (int): laser sweep angle index
         """        
-        angle = index * laser_resolution
+        angle = index * self.laser_resolution
         upper_bound = 1./2 * sqrt(((sec(angle))**2 * (self.housing_length - 2 * self.robot_radius * tan(self.alpha_o -\
                     self.beta/2))**2)/(tan(1./2 * (-2 * self.alpha_o + self.beta)) + tan(abs(angle)))**2)
 
@@ -111,7 +111,10 @@ class IrSensor():
         index (int): sweep angle index
         """
         angle = self.laser_resolution * index
-        return float(distance_from_laser * cos(angle) - self.robot_radius)
+        distance = sqrt(distance_from_laser**2 + (self.robot_radius)**2 -\
+                        2 * cos(angle) * distance_from_laser * self.robot_radius)
+
+        return float(distance)
 
     def laser_to_ir(self, data, angle_0, ir_angle):
         """Convert laser range finder data into IR sensor reading.
