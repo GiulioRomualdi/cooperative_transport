@@ -1,0 +1,5 @@
+#! /usr/bin/env python
+
+import cooperative_transport.controller
+if __name__ == '__main__':
+    cooperative_transport.controller.main()
