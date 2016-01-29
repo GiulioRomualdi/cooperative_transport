@@ -123,7 +123,7 @@ class IrSensor():
         Args:
         data (float[]): laser range finder data
         angle_0 (int): angle corresponding to the first item of data (rad)
-        ir_angle (float): angular position of the emitter/detector housing (-180, 180)
+        ir_angle (float): angular position of the emitter/detector housing (rad)
         """
 
         # ir light bumper sensor values range as reported in the
@@ -132,7 +132,6 @@ class IrSensor():
         irobot_max_ir = 4095
 
         # force ir_angle inside [0, 2pi]
-        ir_angle = float(pi) / 180 * ir_angle
         if(ir_angle < 0):
             ir_angle = float(ir_angle + 2 * pi)
     
