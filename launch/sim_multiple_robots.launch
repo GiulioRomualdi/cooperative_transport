@@ -6,4 +6,6 @@
 
   <include file="$(find cooperative_transport)/launch/irsimulator.launch"/>
 
+  <include file="$(find cooperative_transport)/launch/controller.launch"/>
+
 </launch>
