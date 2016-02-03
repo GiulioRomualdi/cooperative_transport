@@ -53,8 +53,9 @@ class IrSimulator:
             irbumper.state = False
             if irbumper.signal != 0:
                 irbumper.state = True
-            
-            self.irbumper_pub.publish(irbumper);
+
+            if not rospy.is_shutdown():
+                self.irbumper_pub.publish(irbumper);
 
 def main():
     """Start the node that simulates the ir sensors readings."""
