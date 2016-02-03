@@ -68,7 +68,7 @@ def main():
 
     # Start publishing ir readings for any '/iRobot_x/laser_scan' topic found
     sensors_angles = rospy.get_param("ir_simulator/sensors_angles")
-    angle_0 = float(rospy.get_param("angle_0"))
+    angle_0 = float(rospy.get_param("ir_simulator/angle_0"))
     laser_topics = []
 
     try:

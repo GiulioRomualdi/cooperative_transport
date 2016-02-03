@@ -1,5 +1,15 @@
 <launch>
 
-	<node name="controller" pkg="cooperative_transport" type="controller"/>
+  <arg name="node_name" default="controller"/>
+  <arg name="cmdvel_topic_name" default="/cmd_vel"/>
+  <arg name="odom_topic_name" default="/odom"/>
+  <arg name="irbumper_topic_name" default="/ir_bumper"/>
+
+  
+  <node name="$(arg node_name)" pkg="cooperative_transport" type="controller" args="$(arg node_name)" output="screen">
+
+    <rosparam subst_value="true" param="topic_names">{cmdvel : $(arg cmdvel_topic_name), odom : $(arg odom_topic_name), irbumper : $(arg irbumper_topic_name)}</rosparam>
+
+  </node>
 
 </launch>

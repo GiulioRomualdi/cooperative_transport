@@ -6,6 +6,11 @@
 
   <include file="$(find cooperative_transport)/launch/irsimulator.launch"/>
 
-  <include file="$(find cooperative_transport)/launch/controller.launch"/>
+  <include file="$(find cooperative_transport)/launch/controller.launch">
+    <arg name="node_name" value="controller_0"/>
+    <arg name="cmdvel_topic_name" value="/iRobot/cmd_vel"/>
+    <arg name="odom_topic_name" value="/iRobot/odom"/>
+    <arg name="irbumper_topic_name" value="/ir_bumper_0"/>
+  </include>
 
 </launch>

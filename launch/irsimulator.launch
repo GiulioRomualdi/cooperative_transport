@@ -2,11 +2,12 @@
 
   <node name="ir_simulator" pkg="cooperative_transport" type="ir_simulator" output="screen">
 
+    <param name="angle_0" value="3.14"/>
+
     <rosparam param="ir_sensor_specs">{alpha_o : 0.17453292519943295, alpha_i : 0.4363323129985824, beta : 0.8726646259971648, housing_length : 0.034, laser_resolution : 0.017453292519943295, robot_radius : 0.1696}</rosparam>
 
     <rosparam param="sensors_angles">{base_irbumper_left : -1.0471975511965976, base_irbumper_front_left : -0.6283185307179586, base_irbumper_center_left : -0.20943951023931953, base_irbumper_center_right : 0.20943951023931953, base_irbumper_front_right : 0.6283185307179586, base_irbumper_right : 1.0471975511965976}</rosparam>
-  </node>
 
-    <param name="angle_0" value="3.14" />
+  </node>
 
 </launch>
