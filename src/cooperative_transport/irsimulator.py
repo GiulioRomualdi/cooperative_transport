@@ -55,7 +55,7 @@ class IrSimulator:
                 irbumper.state = True
 
             if not rospy.is_shutdown():
-                self.irbumper_pub.publish(irbumper);
+                self.irbumper_pub.publish(irbumper)
 
 def main():
     """Start the node that simulates the ir sensors readings."""
@@ -78,11 +78,16 @@ def main():
             topics = rospy.get_published_topics()
 
             for topic in topics:
-                if re.match("/iRobot(_[0-9])?/laser_scan",topic[0]) and not topic[0] in laser_topics:
-                    laser_topics.append(topic[0])
-                    index = len(laser_topics) - 1
-                    IrSimulator(index, topic[0], ir_sensor, sensors_angles, angle_0)
-                    rospy.loginfo("Found topic " + topic[0] + ". Will publish on /ir_bumper_" + `index`)
+                topic_name = topic[0]
+                if re.match("/iRobot(_[0-9])?/laser_scan",topic_name) and not topic_name in laser_topics:
+                    laser_topics.append(topic_name)
+                    index = 0
+                    for i in range(10):
+                        if str(i) in topic_name:
+                            index = i + 1
+                            break
+                    IrSimulator(index, topic_name, ir_sensor, sensors_angles, angle_0)
+                    rospy.loginfo("Found topic " + topic_name + ". Will publish on /ir_bumper_" + `index`)
 
             clock.sleep()
     except rospy.ROSInterruptException:
