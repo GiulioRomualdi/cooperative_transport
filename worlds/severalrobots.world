@@ -1,8 +1,8 @@
-<sdf version='1.4'>
+<sdf version='1.5'>
   <world name='default'>
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
-      <pose>0 0 10 0 -0 0</pose>
+      <pose frame=''>0 0 10 0 -0 0</pose>
       <diffuse>0.8 0.8 0.8 1</diffuse>
       <specular>0.2 0.2 0.2 1</specular>
       <attenuation>
@@ -61,11 +61,12 @@
         <gravity>1</gravity>
       </link>
     </model>
-    <physics type='ode'>
+    <physics name='default_physics' default='0' type='ode'>
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
       <gravity>0 0 -9.8</gravity>
+      <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
     </physics>
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
@@ -81,9 +82,9 @@
     </spherical_coordinates>
     <model name='iRobot'>
       <link name='base_link'>
-        <pose>0 0 0 0 -0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose>-9.99689e-06 0 2.05936e-06 0 -0 0</pose>
+          <pose frame=''>-1e-05 0 2e-06 0 -0 0</pose>
           <mass>10.0031</mass>
           <inertia>
             <ixx>0.425046</ixx>
@@ -95,7 +96,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision_camera_link'>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -113,7 +114,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_chassis'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -132,7 +133,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_hokuyo_laser_link'>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -151,7 +152,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_imu_sensor_link'>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -169,7 +170,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_left_axis'>
-          <pose>0 0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -188,7 +189,7 @@
           </surface>
         </collision>
         <collision name='base_link_collision_right_axis'>
-          <pose>0 -0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -207,7 +208,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual_camera_link'>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -215,7 +216,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_chassis'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -230,7 +231,7 @@
           </material>
         </visual>
         <visual name='base_link_visual_hokuyo_laser_link'>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -239,7 +240,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_imu_sensor_link'>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -247,7 +248,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_left_axis'>
-          <pose>0 0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -256,7 +257,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_right_axis'>
-          <pose>0 -0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -309,7 +310,7 @@
             <distortionT1>0.0</distortionT1>
             <distortionT2>0.0</distortionT2>
           </plugin>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -345,7 +346,7 @@
             <topicName>laser_scan</topicName>
             <frameName>hokuyo_laser_link</frameName>
           </plugin>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -367,14 +368,14 @@
             <xyzOffset>0 0 0</xyzOffset>
             <rpyOffset>0 0 0</rpyOffset>
           </plugin>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
         </sensor>
         <kinematic>0</kinematic>
       </link>
       <link name='left_wheel_link'>
-        <pose>0 0.14 -0.02 0 -0 0</pose>
+        <pose frame=''>0 0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -386,7 +387,7 @@
           </inertia>
         </inertial>
         <collision name='left_wheel_link_collision'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -413,7 +414,7 @@
           </surface>
         </collision>
         <visual name='left_wheel_link_visual'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -445,13 +446,17 @@
             <lower>-1e+16</lower>
             <upper>1e+16</upper>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='right_wheel_link'>
-        <pose>0 -0.14 -0.02 0 -0 0</pose>
+        <pose frame=''>0 -0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -463,7 +468,7 @@
           </inertia>
         </inertial>
         <collision name='right_wheel_link_collision'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -490,7 +495,7 @@
           </surface>
         </collision>
         <visual name='right_wheel_link_visual'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -522,13 +527,17 @@
             <lower>-1e+16</lower>
             <upper>1e+16</upper>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='sphere1'>
-        <pose>0.14 0 -0.04 0 -0 0</pose>
+        <pose frame=''>0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -540,7 +549,7 @@
           </inertia>
         </inertial>
         <collision name='sphere1_collision'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -566,7 +575,7 @@
           </surface>
         </collision>
         <visual name='sphere1_visual'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -599,13 +608,17 @@
             <effort>100</effort>
             <velocity>100</velocity>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='sphere2'>
-        <pose>-0.14 0 -0.04 0 -0 0</pose>
+        <pose frame=''>-0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -617,7 +630,7 @@
           </inertia>
         </inertial>
         <collision name='sphere2_collision'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -643,7 +656,7 @@
           </surface>
         </collision>
         <visual name='sphere2_visual'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -676,7 +689,11 @@
             <effort>100</effort>
             <velocity>100</velocity>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <static>0</static>
@@ -711,13 +728,13 @@
         <xyzOffset>0 0 0</xyzOffset>
         <rpyOffset>0 0 0</rpyOffset>
       </plugin>
-      <pose>-1 -2 0 0 -0 0</pose>
+      <pose frame=''>-1 -2 0 0 -0 0</pose>
     </model>
     <model name='iRobot_0'>
       <link name='base_link'>
-        <pose>0 0 0 0 -0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose>-9.99689e-06 0 2.05936e-06 0 -0 0</pose>
+          <pose frame=''>-1e-05 0 2e-06 0 -0 0</pose>
           <mass>10.0031</mass>
           <inertia>
             <ixx>0.425046</ixx>
@@ -729,7 +746,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision_camera_link'>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -747,7 +764,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_chassis'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -766,7 +783,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_hokuyo_laser_link'>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -785,7 +802,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_imu_sensor_link'>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -803,7 +820,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_left_axis'>
-          <pose>0 0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -822,7 +839,7 @@
           </surface>
         </collision>
         <collision name='base_link_collision_right_axis'>
-          <pose>0 -0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -841,7 +858,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual_camera_link'>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -849,7 +866,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_chassis'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -864,7 +881,7 @@
           </material>
         </visual>
         <visual name='base_link_visual_hokuyo_laser_link'>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -873,7 +890,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_imu_sensor_link'>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -881,7 +898,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_left_axis'>
-          <pose>0 0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -890,7 +907,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_right_axis'>
-          <pose>0 -0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -943,7 +960,7 @@
             <distortionT1>0.0</distortionT1>
             <distortionT2>0.0</distortionT2>
           </plugin>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -979,7 +996,7 @@
             <topicName>laser_scan</topicName>
             <frameName>hokuyo_laser_link</frameName>
           </plugin>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -1001,14 +1018,14 @@
             <xyzOffset>0 0 0</xyzOffset>
             <rpyOffset>0 0 0</rpyOffset>
           </plugin>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
         </sensor>
         <kinematic>0</kinematic>
       </link>
       <link name='left_wheel_link'>
-        <pose>0 0.14 -0.02 0 -0 0</pose>
+        <pose frame=''>0 0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -1020,7 +1037,7 @@
           </inertia>
         </inertial>
         <collision name='left_wheel_link_collision'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1047,7 +1064,7 @@
           </surface>
         </collision>
         <visual name='left_wheel_link_visual'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1079,13 +1096,17 @@
             <lower>-1e+16</lower>
             <upper>1e+16</upper>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='right_wheel_link'>
-        <pose>0 -0.14 -0.02 0 -0 0</pose>
+        <pose frame=''>0 -0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -1097,7 +1118,7 @@
           </inertia>
         </inertial>
         <collision name='right_wheel_link_collision'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1124,7 +1145,7 @@
           </surface>
         </collision>
         <visual name='right_wheel_link_visual'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1156,13 +1177,17 @@
             <lower>-1e+16</lower>
             <upper>1e+16</upper>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='sphere1'>
-        <pose>0.14 0 -0.04 0 -0 0</pose>
+        <pose frame=''>0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -1174,7 +1199,7 @@
           </inertia>
         </inertial>
         <collision name='sphere1_collision'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1200,7 +1225,7 @@
           </surface>
         </collision>
         <visual name='sphere1_visual'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1233,13 +1258,17 @@
             <effort>100</effort>
             <velocity>100</velocity>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='sphere2'>
-        <pose>-0.14 0 -0.04 0 -0 0</pose>
+        <pose frame=''>-0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -1251,7 +1280,7 @@
           </inertia>
         </inertial>
         <collision name='sphere2_collision'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1277,7 +1306,7 @@
           </surface>
         </collision>
         <visual name='sphere2_visual'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1310,7 +1339,11 @@
             <effort>100</effort>
             <velocity>100</velocity>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <static>0</static>
@@ -1345,13 +1378,13 @@
         <xyzOffset>0 0 0</xyzOffset>
         <rpyOffset>0 0 0</rpyOffset>
       </plugin>
-      <pose>0 -2 0 0 -0 0</pose>
+      <pose frame=''>0 -2 0 0 -0 0</pose>
     </model>
     <model name='iRobot_1'>
       <link name='base_link'>
-        <pose>0 0 0 0 -0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <inertial>
-          <pose>-9.99689e-06 0 2.05936e-06 0 -0 0</pose>
+          <pose frame=''>-1e-05 0 2e-06 0 -0 0</pose>
           <mass>10.0031</mass>
           <inertia>
             <ixx>0.425046</ixx>
@@ -1363,7 +1396,7 @@
           </inertia>
         </inertial>
         <collision name='base_link_collision_camera_link'>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -1381,7 +1414,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_chassis'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -1400,7 +1433,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_hokuyo_laser_link'>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -1419,7 +1452,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_imu_sensor_link'>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -1437,7 +1470,7 @@
           <max_contacts>10</max_contacts>
         </collision>
         <collision name='base_link_collision_left_axis'>
-          <pose>0 0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1456,7 +1489,7 @@
           </surface>
         </collision>
         <collision name='base_link_collision_right_axis'>
-          <pose>0 -0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1475,7 +1508,7 @@
           </surface>
         </collision>
         <visual name='base_link_visual_camera_link'>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -1483,7 +1516,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_chassis'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -1498,7 +1531,7 @@
           </material>
         </visual>
         <visual name='base_link_visual_hokuyo_laser_link'>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -1507,7 +1540,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_imu_sensor_link'>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -1515,7 +1548,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_left_axis'>
-          <pose>0 0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1524,7 +1557,7 @@
           </geometry>
         </visual>
         <visual name='base_link_visual_right_axis'>
-          <pose>0 -0.14 -0.02 -1.5708 0 0</pose>
+          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1577,7 +1610,7 @@
             <distortionT1>0.0</distortionT1>
             <distortionT2>0.0</distortionT2>
           </plugin>
-          <pose>0 0 0.1 0 -0 0</pose>
+          <pose frame=''>0 0 0.1 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -1613,7 +1646,7 @@
             <topicName>laser_scan</topicName>
             <frameName>hokuyo_laser_link</frameName>
           </plugin>
-          <pose>0 0 0.06 0 -0 0</pose>
+          <pose frame=''>0 0 0.06 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -1635,14 +1668,14 @@
             <xyzOffset>0 0 0</xyzOffset>
             <rpyOffset>0 0 0</rpyOffset>
           </plugin>
-          <pose>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
         </sensor>
         <kinematic>0</kinematic>
       </link>
       <link name='left_wheel_link'>
-        <pose>0 0.14 -0.02 0 -0 0</pose>
+        <pose frame=''>0 0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -1654,7 +1687,7 @@
           </inertia>
         </inertial>
         <collision name='left_wheel_link_collision'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1681,7 +1714,7 @@
           </surface>
         </collision>
         <visual name='left_wheel_link_visual'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1713,13 +1746,17 @@
             <lower>-1e+16</lower>
             <upper>1e+16</upper>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='right_wheel_link'>
-        <pose>0 -0.14 -0.02 0 -0 0</pose>
+        <pose frame=''>0 -0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -1731,7 +1768,7 @@
           </inertia>
         </inertial>
         <collision name='right_wheel_link_collision'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1758,7 +1795,7 @@
           </surface>
         </collision>
         <visual name='right_wheel_link_visual'>
-          <pose>0 0 0 -1.5708 0 0</pose>
+          <pose frame=''>0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1790,13 +1827,17 @@
             <lower>-1e+16</lower>
             <upper>1e+16</upper>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='sphere1'>
-        <pose>0.14 0 -0.04 0 -0 0</pose>
+        <pose frame=''>0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -1808,7 +1849,7 @@
           </inertia>
         </inertial>
         <collision name='sphere1_collision'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1834,7 +1875,7 @@
           </surface>
         </collision>
         <visual name='sphere1_visual'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1867,13 +1908,17 @@
             <effort>100</effort>
             <velocity>100</velocity>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <link name='sphere2'>
-        <pose>-0.14 0 -0.04 0 -0 0</pose>
+        <pose frame=''>-0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -1885,7 +1930,7 @@
           </inertia>
         </inertial>
         <collision name='sphere2_collision'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1911,7 +1956,7 @@
           </surface>
         </collision>
         <visual name='sphere2_visual'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1944,7 +1989,11 @@
             <effort>100</effort>
             <velocity>100</velocity>
           </limit>
-          <dynamics/>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
       <static>0</static>
@@ -1979,10 +2028,140 @@
         <xyzOffset>0 0 0</xyzOffset>
         <rpyOffset>0 0 0</rpyOffset>
       </plugin>
-      <pose>1 -2 0 0 -0 0</pose>
+      <pose frame=''>1 -2 0 0 -0 0</pose>
     </model>
-    <model name='my_model'>
-      <pose>0 -1 0.1 0 -0 0</pose>
+    <state world_name='default'>
+      <sim_time>871 863000000</sim_time>
+      <real_time>18 554406070</real_time>
+      <wall_time>1454693760 490563286</wall_time>
+      <iterations>2760</iterations>
+      <model name='ground_plane'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <link name='link'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='iRobot'>
+        <pose frame=''>-0.999945 -1.99999 0.049897 1e-06 -0 2e-06</pose>
+        <link name='base_link'>
+          <pose frame=''>-0.999945 -1.99999 0.049897 1e-06 -0 2e-06</pose>
+          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
+          <acceleration>-0 -0 0 0 0 -1.3e-05</acceleration>
+          <wrench>-1e-06 -0 0 0 -0 0</wrench>
+        </link>
+        <link name='left_wheel_link'>
+          <pose frame=''>-0.999945 -1.85999 0.029897 1e-06 4.2e-05 2e-06</pose>
+          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -0</velocity>
+          <acceleration>0 -0 -0 0 1.6e-05 -1.4e-05</acceleration>
+          <wrench>0 -0 -0 0 -0 0</wrench>
+        </link>
+        <link name='right_wheel_link'>
+          <pose frame=''>-0.999944 -2.13999 0.029897 1e-06 4.2e-05 2e-06</pose>
+          <velocity>0 0 2.2e-05 -4e-06 1.5e-05 -0</velocity>
+          <acceleration>-0 -0 0 0 -1.5e-05 -1.3e-05</acceleration>
+          <wrench>-0 -0 0 0 -0 0</wrench>
+        </link>
+        <link name='sphere1'>
+          <pose frame=''>-0.859945 -1.99999 0.009897 1e-06 -0 2e-06</pose>
+          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
+          <acceleration>-0 -2e-06 -0 0 -0 0.000549</acceleration>
+          <wrench>-0 -1e-06 -0 0 -0 0</wrench>
+        </link>
+        <link name='sphere2'>
+          <pose frame=''>-1.13994 -1.99999 0.009897 1e-06 -0 2e-06</pose>
+          <velocity>0 -0 2.3e-05 -4e-06 -0 6e-06</velocity>
+          <acceleration>-0 2e-06 0 0 -0 0.010942</acceleration>
+          <wrench>-0 1e-06 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='iRobot_0'>
+        <pose frame=''>5.2e-05 -1.99999 0.049897 1e-06 -0 2e-06</pose>
+        <link name='base_link'>
+          <pose frame=''>5.2e-05 -1.99999 0.049897 1e-06 -0 2e-06</pose>
+          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
+          <acceleration>-0 -0 0 0 0 -1.3e-05</acceleration>
+          <wrench>-1e-06 -0 0 0 -0 0</wrench>
+        </link>
+        <link name='left_wheel_link'>
+          <pose frame=''>5.2e-05 -1.85999 0.029897 1e-06 4.2e-05 2e-06</pose>
+          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -0</velocity>
+          <acceleration>0 -0 -0 0 1.6e-05 -1.4e-05</acceleration>
+          <wrench>0 -0 -0 0 -0 0</wrench>
+        </link>
+        <link name='right_wheel_link'>
+          <pose frame=''>5.3e-05 -2.13999 0.029897 1e-06 4.2e-05 2e-06</pose>
+          <velocity>0 0 2.2e-05 -4e-06 1.5e-05 -0</velocity>
+          <acceleration>-0 -0 0 0 -1.5e-05 -1.3e-05</acceleration>
+          <wrench>-0 -0 0 0 -0 0</wrench>
+        </link>
+        <link name='sphere1'>
+          <pose frame=''>0.140052 -1.99999 0.009897 1e-06 -0 2e-06</pose>
+          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
+          <acceleration>-0 -2e-06 -0 0 -0 0.000549</acceleration>
+          <wrench>-0 -1e-06 -0 0 -0 0</wrench>
+        </link>
+        <link name='sphere2'>
+          <pose frame=''>-0.139948 -1.99999 0.009897 1e-06 -0 2e-06</pose>
+          <velocity>0 -0 2.3e-05 -4e-06 -0 5e-06</velocity>
+          <acceleration>-0 2e-06 0 0 -0 0.010918</acceleration>
+          <wrench>-0 1e-06 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='iRobot_1'>
+        <pose frame=''>1.00005 -1.99999 0.049897 1e-06 -0 2e-06</pose>
+        <link name='base_link'>
+          <pose frame=''>1.00005 -1.99999 0.049897 1e-06 -0 2e-06</pose>
+          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
+          <acceleration>-0 -0 0 0 0 -1.2e-05</acceleration>
+          <wrench>-1e-06 -0 0 0 -0 0</wrench>
+        </link>
+        <link name='left_wheel_link'>
+          <pose frame=''>1.00005 -1.85999 0.029897 1e-06 4.2e-05 2e-06</pose>
+          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -0</velocity>
+          <acceleration>0 -0 -0 0 1.4e-05 -1.2e-05</acceleration>
+          <wrench>0 -0 -0 0 -0 0</wrench>
+        </link>
+        <link name='right_wheel_link'>
+          <pose frame=''>1.00005 -2.13999 0.029897 1e-06 4.2e-05 2e-06</pose>
+          <velocity>0 0 2.2e-05 -4e-06 1.6e-05 0</velocity>
+          <acceleration>-0 -0 0 -0 -1.3e-05 -1.2e-05</acceleration>
+          <wrench>-0 -0 0 0 -0 0</wrench>
+        </link>
+        <link name='sphere1'>
+          <pose frame=''>1.14005 -1.99999 0.009897 1e-06 -0 2e-06</pose>
+          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
+          <acceleration>-0 -2e-06 -0 0 0 -0.000575</acceleration>
+          <wrench>-0 -1e-06 -0 0 -0 0</wrench>
+        </link>
+        <link name='sphere2'>
+          <pose frame=''>0.860051 -1.99999 0.009897 1e-06 -0 2e-06</pose>
+          <velocity>0 -0 2.3e-05 -4e-06 -0 5e-06</velocity>
+          <acceleration>-0 2e-06 0 0 -0 0.010925</acceleration>
+          <wrench>-0 1e-06 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='my_box'>
+        <pose frame=''>0 -1 0.1 0 -0 0</pose>
+        <link name='link'>
+          <pose frame=''>0 -1 0.1 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 -0 -0 0 -0 0</acceleration>
+          <wrench>0 -0 -0 0 -0 0</wrench>
+        </link>
+      </model>
+    </state>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>5.00352 -4.99385 2.00658 0 0.275643 2.35619</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+    <model name='my_box'>
+      <pose frame=''>0 -1 0.1 0 -0 0</pose>
       <static>0</static>
       <link name='link'>
         <inertial>
@@ -1991,32 +2170,32 @@
             <ixx>0.00725</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.00725</iyy>
+            <iyy>0.026</iyy>
             <iyz>0</iyz>
-            <izz>0.0125</izz>
+            <izz>0.03125</izz>
           </inertia>
         </inertial>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.5 0.5 0.2</size>
+              <size>1 0.5 0.2</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
+            <contact>
+              <ode/>
+            </contact>
             <bounce/>
             <friction>
               <ode/>
             </friction>
-            <contact>
-              <ode/>
-            </contact>
           </surface>
         </collision>
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.5 0.5 0.2</size>
+              <size>1 0.5 0.2</size>
             </box>
           </geometry>
           <material>
@@ -2026,142 +2205,10 @@
             </script>
           </material>
         </visual>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
         <self_collide>0</self_collide>
         <kinematic>0</kinematic>
         <gravity>1</gravity>
       </link>
     </model>
-    <state world_name='default'>
-      <sim_time>869 103000000</sim_time>
-      <real_time>874 408348089</real_time>
-      <wall_time>1452973203 200051171</wall_time>
-      <model name='ground_plane'>
-        <pose>0 0 0 0 -0 0</pose>
-        <link name='link'>
-          <pose>0 0 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='iRobot'>
-        <pose>-0.999946 -1.99999 0.049897 1e-06 -8.07794e-28 2e-06</pose>
-        <link name='base_link'>
-          <pose>-0.999946 -1.99999 0.049897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='left_wheel_link'>
-          <pose>-0.999946 -1.85999 0.029897 1e-06 0.000939 2e-06</pose>
-          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -1.29247e-26</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='right_wheel_link'>
-          <pose>-0.999945 -2.13999 0.029897 1e-06 0.000955 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 1.5e-05 -1.29247e-26</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere1'>
-          <pose>-0.859946 -1.99999 0.009897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere2'>
-          <pose>-1.13995 -1.99999 0.009897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 -0 -5e-06</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='iRobot_0'>
-        <pose>5.1e-05 -1.99999 0.049897 1e-06 -8.07794e-28 2e-06</pose>
-        <link name='base_link'>
-          <pose>5.1e-05 -1.99999 0.049897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='left_wheel_link'>
-          <pose>5.1e-05 -1.85999 0.029897 1e-06 0.000849 2e-06</pose>
-          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -1.29247e-26</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='right_wheel_link'>
-          <pose>5.2e-05 -2.13999 0.029897 1e-06 0.000863 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 1.5e-05 -1.29247e-26</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere1'>
-          <pose>0.140051 -1.99999 0.009897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere2'>
-          <pose>-0.139949 -1.99999 0.009897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 -0 6e-06</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='iRobot_1'>
-        <pose>1.00005 -1.99999 0.049897 1e-06 -8.07794e-28 2e-06</pose>
-        <link name='base_link'>
-          <pose>1.00005 -1.99999 0.049897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='left_wheel_link'>
-          <pose>1.00005 -1.85999 0.029897 1e-06 0.000765 2e-06</pose>
-          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -1.29247e-26</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='right_wheel_link'>
-          <pose>1.00005 -2.13999 0.029897 1e-06 0.000778 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 1.5e-05 -1.29247e-26</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere1'>
-          <pose>1.14005 -1.99999 0.009897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere2'>
-          <pose>0.860049 -1.99999 0.009897 1e-06 -8.07794e-28 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 -0 6e-06</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='my_model'>
-        <pose>-0 -1 0.1 0 -0 0</pose>
-        <link name='link'>
-          <pose>-0 -1 0.1 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-    </state>
-    <gui fullscreen='0'>
-      <camera name='user_camera'>
-        <pose>5 -5 2 0 0.275643 2.35619</pose>
-        <view_controller>orbit</view_controller>
-      </camera>
-    </gui>
   </world>
 </sdf>
