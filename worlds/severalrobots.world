@@ -694,7 +694,6 @@
         <commandTopic>cmd_vel</commandTopic>
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
-        <odometrySource>encoder</odometrySource>
         <robotBaseFrame>base_link</robotBaseFrame>
         <updateRate>10.0</updateRate>
       </plugin>
@@ -1329,7 +1328,6 @@
         <commandTopic>cmd_vel</commandTopic>
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
-        <odometrySource>encoder</odometrySource>
         <robotBaseFrame>base_link</robotBaseFrame>
         <updateRate>10.0</updateRate>
       </plugin>
@@ -1964,7 +1962,6 @@
         <commandTopic>cmd_vel</commandTopic>
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
-        <odometrySource>encoder</odometrySource>
         <robotBaseFrame>base_link</robotBaseFrame>
         <updateRate>10.0</updateRate>
       </plugin>
