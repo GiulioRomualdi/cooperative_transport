@@ -1,0 +1,7 @@
+<launch>
+
+	<node name="onerobot_world_editor" required="true"  pkg="cooperative_transport" type="world_editor" args="$(find cooperative_transport) '-1 -1 0 0 0 0.785' '-1 1 0 0 0 0'" output="screen"/>
+
+	<node name="severalrobots_world_editor" required="true"  pkg="cooperative_transport" type="world_editor" args="$(find cooperative_transport) '-1 -1 0 0 0 0.785' '1 0 0 0 0 0' '1 -2 0 0 0 0' '1 2 0 0 0 0'" output="screen"/>
+
+</launch>

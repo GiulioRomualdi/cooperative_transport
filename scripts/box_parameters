@@ -1,0 +1,61 @@
+#! /usr/bin/env python
+import sys
+import xml.etree.ElementTree as ET
+import rospy
+
+def box_position(file_name):
+    """Return a dictionary with box initial pose.
+    
+    Arguments:
+    file_name (str): world file path
+    """
+
+    # Open world file
+    tree = ET.parse(file_name)
+
+    root = tree.getroot()
+    root_state = root.findall('world')[0].findall('state')[0]
+
+    pose = []
+
+    for model in root_state.iter('model'):
+        if model.attrib['name'] == 'my_box':
+            pose = model.findall('pose')[0].text.split()
+    
+    return {'posx': float(pose[0]), 'posy': float(pose[1]), 'posz': float(pose[2]),'roll':float(pose[3]), 'pitch':float(pose[4]), 'yaw':float(pose[5])} 
+
+def box_size(file_name):
+    """Return a dictionary with box size.
+    
+    Arguments:
+    file_name (str): sdf file path
+    """
+
+    # Open sdf file
+    tree = ET.parse(file_name)
+
+    root = tree.getroot()
+
+    size = []
+
+    for size in root.iter('size'):
+        size = size.text.split()
+        break
+        
+    return {'length': float(size[0]), 'width': float(size[1]), 'height': float(size[2])} 
+    
+        
+
+if __name__ == '__main__':
+    """Load position and size of the box in ROS parameters server. """
+
+    if sys.argv[2] == 'onerobot':
+        position = box_position(sys.argv[1] + '/worlds/onerobot.world')
+    
+    if sys.argv[2] == 'severalrobots':
+        position = box_position(sys.argv[1] + '/worlds/severalrobots.world')
+
+    size = box_size(sys.argv[1] + '/box/box.sdf')
+
+    #Load in ROS parameters server
+    rospy.set_param('box', dict(position, **size))

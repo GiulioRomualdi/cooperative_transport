@@ -4,6 +4,10 @@
     <arg name="world_name" value="$(find cooperative_transport)/worlds/onerobot.world"/>
   </include>
 
+  <include file="$(find cooperative_transport)/launch/box_parameters.launch">
+    <arg name="world" value="onerobot"/>
+  </include>
+  	   
   <include file="$(find cooperative_transport)/launch/irsimulator.launch"/>
 
   <include file="$(find cooperative_transport)/launch/controller.launch">

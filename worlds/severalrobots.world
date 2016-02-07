@@ -1,8 +1,8 @@
-<sdf version='1.5'>
-  <world name='default'>
-    <light name='sun' type='directional'>
+<sdf version="1.5">
+  <world name="default">
+    <light name="sun" type="directional">
       <cast_shadows>1</cast_shadows>
-      <pose frame=''>0 0 10 0 -0 0</pose>
+      <pose frame="">0 0 10 0 -0 0</pose>
       <diffuse>0.8 0.8 0.8 1</diffuse>
       <specular>0.2 0.2 0.2 1</specular>
       <attenuation>
@@ -13,10 +13,10 @@
       </attenuation>
       <direction>-0.5 0.1 -0.9</direction>
     </light>
-    <model name='ground_plane'>
+    <model name="ground_plane">
       <static>1</static>
-      <link name='link'>
-        <collision name='collision'>
+      <link name="link">
+        <collision name="collision">
           <geometry>
             <plane>
               <normal>0 0 1</normal>
@@ -30,14 +30,14 @@
                 <mu2>50</mu2>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
             <contact>
-              <ode/>
+              <ode />
             </contact>
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <cast_shadows>0</cast_shadows>
           <geometry>
             <plane>
@@ -61,7 +61,7 @@
         <gravity>1</gravity>
       </link>
     </model>
-    <physics name='default_physics' default='0' type='ode'>
+    <physics default="0" name="default_physics" type="ode">
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
@@ -80,11 +80,11 @@
       <elevation>0</elevation>
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
-    <model name='iRobot'>
-      <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+    <model name="iRobot">
+      <link name="base_link">
+        <pose frame="">0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-1e-05 0 2e-06 0 -0 0</pose>
+          <pose frame="">-1e-05 0 2e-06 0 -0 0</pose>
           <mass>10.0031</mass>
           <inertia>
             <ixx>0.425046</ixx>
@@ -95,8 +95,8 @@
             <izz>0.850052</izz>
           </inertia>
         </inertial>
-        <collision name='base_link_collision_camera_link'>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+        <collision name="base_link_collision_camera_link">
+          <pose frame="">0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -104,17 +104,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_chassis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="base_link_collision_chassis">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -123,17 +123,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_hokuyo_laser_link'>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+        <collision name="base_link_collision_hokuyo_laser_link">
+          <pose frame="">0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -142,17 +142,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_imu_sensor_link'>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+        <collision name="base_link_collision_imu_sensor_link">
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -160,17 +160,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_left_axis'>
-          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
+        <collision name="base_link_collision_left_axis">
+          <pose frame="">0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -179,17 +179,17 @@
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
-            <bounce/>
+            <bounce />
             <friction>
-              <ode/>
+              <ode />
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
           </surface>
         </collision>
-        <collision name='base_link_collision_right_axis'>
-          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
+        <collision name="base_link_collision_right_axis">
+          <pose frame="">0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -198,25 +198,25 @@
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
-            <bounce/>
+            <bounce />
             <friction>
-              <ode/>
+              <ode />
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
           </surface>
         </collision>
-        <visual name='base_link_visual_camera_link'>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+        <visual name="base_link_visual_camera_link">
+          <pose frame="">0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
             </box>
           </geometry>
         </visual>
-        <visual name='base_link_visual_chassis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="base_link_visual_chassis">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -230,8 +230,8 @@
             </script>
           </material>
         </visual>
-        <visual name='base_link_visual_hokuyo_laser_link'>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+        <visual name="base_link_visual_hokuyo_laser_link">
+          <pose frame="">0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -239,16 +239,16 @@
             </cylinder>
           </geometry>
         </visual>
-        <visual name='base_link_visual_imu_sensor_link'>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+        <visual name="base_link_visual_imu_sensor_link">
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
             </box>
           </geometry>
         </visual>
-        <visual name='base_link_visual_left_axis'>
-          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
+        <visual name="base_link_visual_left_axis">
+          <pose frame="">0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -256,8 +256,8 @@
             </cylinder>
           </geometry>
         </visual>
-        <visual name='base_link_visual_right_axis'>
-          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
+        <visual name="base_link_visual_right_axis">
+          <pose frame="">0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -277,9 +277,9 @@
           <linear>0</linear>
           <angular>0</angular>
         </velocity_decay>
-        <sensor name='camera' type='camera'>
+        <sensor name="camera" type="camera">
           <update_rate>30</update_rate>
-          <camera name='head'>
+          <camera name="head">
             <horizontal_fov>1.39626</horizontal_fov>
             <image>
               <width>800</width>
@@ -296,7 +296,7 @@
               <stddev>0.007</stddev>
             </noise>
           </camera>
-          <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
+          <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
             <alwaysOn>true</alwaysOn>
             <updateRate>0.0</updateRate>
             <cameraName>iRobot/camera</cameraName>
@@ -310,7 +310,7 @@
             <distortionT1>0.0</distortionT1>
             <distortionT2>0.0</distortionT2>
           </plugin>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+          <pose frame="">0 0 0.1 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -318,7 +318,7 @@
           <angular>0</angular>
         </velocity_decay>
         <gravity>1</gravity>
-        <sensor name='head_hokuyo_sensor' type='ray'>
+        <sensor name="head_hokuyo_sensor" type="ray">
           <visualize>0</visualize>
           <update_rate>40</update_rate>
           <ray>
@@ -341,12 +341,12 @@
               <stddev>0</stddev>
             </noise>
           </ray>
-          <plugin name='gazebo_ros_head_hokuyo_controller' filename='libgazebo_ros_laser.so'>
-            <robotNamespace/>
+          <plugin filename="libgazebo_ros_laser.so" name="gazebo_ros_head_hokuyo_controller">
+            <robotNamespace />
             <topicName>laser_scan</topicName>
             <frameName>hokuyo_laser_link</frameName>
           </plugin>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+          <pose frame="">0 0 0.06 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -355,12 +355,12 @@
         </velocity_decay>
         <self_collide>0</self_collide>
         <gravity>1</gravity>
-        <sensor name='imu_sensor' type='imu'>
+        <sensor name="imu_sensor" type="imu">
           <always_on>1</always_on>
           <update_rate>1000</update_rate>
           <visualize>1</visualize>
           <topic>__default_topic__</topic>
-          <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+          <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
             <topicName>imu_data</topicName>
             <bodyName>imu_sensor_link</bodyName>
             <updateRateHZ>10.0</updateRateHZ>
@@ -368,14 +368,14 @@
             <xyzOffset>0 0 0</xyzOffset>
             <rpyOffset>0 0 0</rpyOffset>
           </plugin>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
         </sensor>
         <kinematic>0</kinematic>
       </link>
-      <link name='left_wheel_link'>
-        <pose frame=''>0 0.14 -0.02 0 -0 0</pose>
+      <link name="left_wheel_link">
+        <pose frame="">0 0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame="">0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -386,8 +386,8 @@
             <izz>0.00125</izz>
           </inertia>
         </inertial>
-        <collision name='left_wheel_link_collision'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <collision name="left_wheel_link_collision">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -410,11 +410,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='left_wheel_link_visual'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <visual name="left_wheel_link_visual">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -437,7 +437,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='left_wheel_rot_joint' type='revolute'>
+      <joint name="left_wheel_rot_joint" type="revolute">
         <child>left_wheel_link</child>
         <parent>base_link</parent>
         <axis>
@@ -453,10 +453,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='right_wheel_link'>
-        <pose frame=''>0 -0.14 -0.02 0 -0 0</pose>
+      <link name="right_wheel_link">
+        <pose frame="">0 -0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame="">0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -467,8 +467,8 @@
             <izz>0.00125</izz>
           </inertia>
         </inertial>
-        <collision name='right_wheel_link_collision'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <collision name="right_wheel_link_collision">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -491,11 +491,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='right_wheel_link_visual'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <visual name="right_wheel_link_visual">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -518,7 +518,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='right_wheel_rot_joint' type='revolute'>
+      <joint name="right_wheel_rot_joint" type="revolute">
         <child>right_wheel_link</child>
         <parent>base_link</parent>
         <axis>
@@ -534,10 +534,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='sphere1'>
-        <pose frame=''>0.14 0 -0.04 0 -0 0</pose>
+      <link name="sphere1">
+        <pose frame="">0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose frame="">0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -548,8 +548,8 @@
             <izz>0.0012</izz>
           </inertia>
         </inertial>
-        <collision name='sphere1_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="sphere1_collision">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -571,11 +571,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='sphere1_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="sphere1_visual">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -597,7 +597,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='sphere_joint1' type='revolute'>
+      <joint name="sphere_joint1" type="revolute">
         <child>sphere1</child>
         <parent>base_link</parent>
         <axis>
@@ -615,10 +615,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='sphere2'>
-        <pose frame=''>-0.14 0 -0.04 0 -0 0</pose>
+      <link name="sphere2">
+        <pose frame="">-0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose frame="">0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -629,8 +629,8 @@
             <izz>0.0012</izz>
           </inertia>
         </inertial>
-        <collision name='sphere2_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="sphere2_collision">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -652,11 +652,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='sphere2_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="sphere2_visual">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -678,7 +678,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='sphere_joint2' type='revolute'>
+      <joint name="sphere_joint2" type="revolute">
         <child>sphere2</child>
         <parent>base_link</parent>
         <axis>
@@ -697,7 +697,7 @@
         </axis>
       </joint>
       <static>0</static>
-      <plugin name='differential_drive_controller' filename='libgazebo_ros_diff_drive.so'>
+      <plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller">
         <rosDebugLevel>Debug</rosDebugLevel>
         <publishWheelTF>false</publishWheelTF>
         <publishWheelJointState>true</publishWheelJointState>
@@ -714,12 +714,12 @@
         <robotBaseFrame>base_link</robotBaseFrame>
         <updateRate>10.0</updateRate>
       </plugin>
-      <plugin name='joint_state_publisher' filename='libgazebo_ros_joint_state_publisher.so'>
+      <plugin filename="libgazebo_ros_joint_state_publisher.so" name="joint_state_publisher">
         <jointName>left_wheel_rot_joint, right_wheel_rot_joint</jointName>
         <updateRate>10.0</updateRate>
         <alwaysOn>true</alwaysOn>
       </plugin>
-      <plugin name='imu_plugin' filename='libgazebo_ros_imu.so'>
+      <plugin filename="libgazebo_ros_imu.so" name="imu_plugin">
         <bodyName>base_link</bodyName>
         <updateRate>100.0</updateRate>
         <topicName>imu_data</topicName>
@@ -728,13 +728,13 @@
         <xyzOffset>0 0 0</xyzOffset>
         <rpyOffset>0 0 0</rpyOffset>
       </plugin>
-      <pose frame=''>-1 -2 0 0 -0 0</pose>
+      <pose frame="">-1 -2 0 0 -0 0</pose>
     </model>
-    <model name='iRobot_0'>
-      <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+    <model name="iRobot_0">
+      <link name="base_link">
+        <pose frame="">0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-1e-05 0 2e-06 0 -0 0</pose>
+          <pose frame="">-1e-05 0 2e-06 0 -0 0</pose>
           <mass>10.0031</mass>
           <inertia>
             <ixx>0.425046</ixx>
@@ -745,8 +745,8 @@
             <izz>0.850052</izz>
           </inertia>
         </inertial>
-        <collision name='base_link_collision_camera_link'>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+        <collision name="base_link_collision_camera_link">
+          <pose frame="">0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -754,17 +754,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_chassis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="base_link_collision_chassis">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -773,17 +773,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_hokuyo_laser_link'>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+        <collision name="base_link_collision_hokuyo_laser_link">
+          <pose frame="">0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -792,17 +792,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_imu_sensor_link'>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+        <collision name="base_link_collision_imu_sensor_link">
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -810,17 +810,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_left_axis'>
-          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
+        <collision name="base_link_collision_left_axis">
+          <pose frame="">0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -829,17 +829,17 @@
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
-            <bounce/>
+            <bounce />
             <friction>
-              <ode/>
+              <ode />
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
           </surface>
         </collision>
-        <collision name='base_link_collision_right_axis'>
-          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
+        <collision name="base_link_collision_right_axis">
+          <pose frame="">0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -848,25 +848,25 @@
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
-            <bounce/>
+            <bounce />
             <friction>
-              <ode/>
+              <ode />
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
           </surface>
         </collision>
-        <visual name='base_link_visual_camera_link'>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+        <visual name="base_link_visual_camera_link">
+          <pose frame="">0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
             </box>
           </geometry>
         </visual>
-        <visual name='base_link_visual_chassis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="base_link_visual_chassis">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -880,8 +880,8 @@
             </script>
           </material>
         </visual>
-        <visual name='base_link_visual_hokuyo_laser_link'>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+        <visual name="base_link_visual_hokuyo_laser_link">
+          <pose frame="">0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -889,16 +889,16 @@
             </cylinder>
           </geometry>
         </visual>
-        <visual name='base_link_visual_imu_sensor_link'>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+        <visual name="base_link_visual_imu_sensor_link">
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
             </box>
           </geometry>
         </visual>
-        <visual name='base_link_visual_left_axis'>
-          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
+        <visual name="base_link_visual_left_axis">
+          <pose frame="">0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -906,8 +906,8 @@
             </cylinder>
           </geometry>
         </visual>
-        <visual name='base_link_visual_right_axis'>
-          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
+        <visual name="base_link_visual_right_axis">
+          <pose frame="">0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -927,9 +927,9 @@
           <linear>0</linear>
           <angular>0</angular>
         </velocity_decay>
-        <sensor name='camera' type='camera'>
+        <sensor name="camera" type="camera">
           <update_rate>30</update_rate>
-          <camera name='head'>
+          <camera name="head">
             <horizontal_fov>1.39626</horizontal_fov>
             <image>
               <width>800</width>
@@ -946,7 +946,7 @@
               <stddev>0.007</stddev>
             </noise>
           </camera>
-          <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
+          <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
             <alwaysOn>true</alwaysOn>
             <updateRate>0.0</updateRate>
             <cameraName>iRobot/camera</cameraName>
@@ -960,7 +960,7 @@
             <distortionT1>0.0</distortionT1>
             <distortionT2>0.0</distortionT2>
           </plugin>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+          <pose frame="">0 0 0.1 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -968,7 +968,7 @@
           <angular>0</angular>
         </velocity_decay>
         <gravity>1</gravity>
-        <sensor name='head_hokuyo_sensor' type='ray'>
+        <sensor name="head_hokuyo_sensor" type="ray">
           <visualize>0</visualize>
           <update_rate>40</update_rate>
           <ray>
@@ -991,12 +991,12 @@
               <stddev>0</stddev>
             </noise>
           </ray>
-          <plugin name='gazebo_ros_head_hokuyo_controller' filename='libgazebo_ros_laser.so'>
-            <robotNamespace/>
+          <plugin filename="libgazebo_ros_laser.so" name="gazebo_ros_head_hokuyo_controller">
+            <robotNamespace />
             <topicName>laser_scan</topicName>
             <frameName>hokuyo_laser_link</frameName>
           </plugin>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+          <pose frame="">0 0 0.06 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -1005,12 +1005,12 @@
         </velocity_decay>
         <self_collide>0</self_collide>
         <gravity>1</gravity>
-        <sensor name='imu_sensor' type='imu'>
+        <sensor name="imu_sensor" type="imu">
           <always_on>1</always_on>
           <update_rate>1000</update_rate>
           <visualize>1</visualize>
           <topic>__default_topic__</topic>
-          <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+          <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
             <topicName>imu_data</topicName>
             <bodyName>imu_sensor_link</bodyName>
             <updateRateHZ>10.0</updateRateHZ>
@@ -1018,14 +1018,14 @@
             <xyzOffset>0 0 0</xyzOffset>
             <rpyOffset>0 0 0</rpyOffset>
           </plugin>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
         </sensor>
         <kinematic>0</kinematic>
       </link>
-      <link name='left_wheel_link'>
-        <pose frame=''>0 0.14 -0.02 0 -0 0</pose>
+      <link name="left_wheel_link">
+        <pose frame="">0 0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame="">0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -1036,8 +1036,8 @@
             <izz>0.00125</izz>
           </inertia>
         </inertial>
-        <collision name='left_wheel_link_collision'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <collision name="left_wheel_link_collision">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1060,11 +1060,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='left_wheel_link_visual'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <visual name="left_wheel_link_visual">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1087,7 +1087,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='left_wheel_rot_joint' type='revolute'>
+      <joint name="left_wheel_rot_joint" type="revolute">
         <child>left_wheel_link</child>
         <parent>base_link</parent>
         <axis>
@@ -1103,10 +1103,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='right_wheel_link'>
-        <pose frame=''>0 -0.14 -0.02 0 -0 0</pose>
+      <link name="right_wheel_link">
+        <pose frame="">0 -0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame="">0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -1117,8 +1117,8 @@
             <izz>0.00125</izz>
           </inertia>
         </inertial>
-        <collision name='right_wheel_link_collision'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <collision name="right_wheel_link_collision">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1141,11 +1141,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='right_wheel_link_visual'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <visual name="right_wheel_link_visual">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1168,7 +1168,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='right_wheel_rot_joint' type='revolute'>
+      <joint name="right_wheel_rot_joint" type="revolute">
         <child>right_wheel_link</child>
         <parent>base_link</parent>
         <axis>
@@ -1184,10 +1184,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='sphere1'>
-        <pose frame=''>0.14 0 -0.04 0 -0 0</pose>
+      <link name="sphere1">
+        <pose frame="">0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose frame="">0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -1198,8 +1198,8 @@
             <izz>0.0012</izz>
           </inertia>
         </inertial>
-        <collision name='sphere1_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="sphere1_collision">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1221,11 +1221,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='sphere1_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="sphere1_visual">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1247,7 +1247,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='sphere_joint1' type='revolute'>
+      <joint name="sphere_joint1" type="revolute">
         <child>sphere1</child>
         <parent>base_link</parent>
         <axis>
@@ -1265,10 +1265,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='sphere2'>
-        <pose frame=''>-0.14 0 -0.04 0 -0 0</pose>
+      <link name="sphere2">
+        <pose frame="">-0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose frame="">0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -1279,8 +1279,8 @@
             <izz>0.0012</izz>
           </inertia>
         </inertial>
-        <collision name='sphere2_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="sphere2_collision">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1302,11 +1302,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='sphere2_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="sphere2_visual">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1328,7 +1328,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='sphere_joint2' type='revolute'>
+      <joint name="sphere_joint2" type="revolute">
         <child>sphere2</child>
         <parent>base_link</parent>
         <axis>
@@ -1347,7 +1347,7 @@
         </axis>
       </joint>
       <static>0</static>
-      <plugin name='differential_drive_controller' filename='libgazebo_ros_diff_drive.so'>
+      <plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller">
         <rosDebugLevel>Debug</rosDebugLevel>
         <publishWheelTF>false</publishWheelTF>
         <publishWheelJointState>true</publishWheelJointState>
@@ -1364,12 +1364,12 @@
         <robotBaseFrame>base_link</robotBaseFrame>
         <updateRate>10.0</updateRate>
       </plugin>
-      <plugin name='joint_state_publisher' filename='libgazebo_ros_joint_state_publisher.so'>
+      <plugin filename="libgazebo_ros_joint_state_publisher.so" name="joint_state_publisher">
         <jointName>left_wheel_rot_joint, right_wheel_rot_joint</jointName>
         <updateRate>10.0</updateRate>
         <alwaysOn>true</alwaysOn>
       </plugin>
-      <plugin name='imu_plugin' filename='libgazebo_ros_imu.so'>
+      <plugin filename="libgazebo_ros_imu.so" name="imu_plugin">
         <bodyName>base_link</bodyName>
         <updateRate>100.0</updateRate>
         <topicName>imu_data</topicName>
@@ -1378,13 +1378,13 @@
         <xyzOffset>0 0 0</xyzOffset>
         <rpyOffset>0 0 0</rpyOffset>
       </plugin>
-      <pose frame=''>0 -2 0 0 -0 0</pose>
+      <pose frame="">0 -2 0 0 -0 0</pose>
     </model>
-    <model name='iRobot_1'>
-      <link name='base_link'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
+    <model name="iRobot_1">
+      <link name="base_link">
+        <pose frame="">0 0 0 0 -0 0</pose>
         <inertial>
-          <pose frame=''>-1e-05 0 2e-06 0 -0 0</pose>
+          <pose frame="">-1e-05 0 2e-06 0 -0 0</pose>
           <mass>10.0031</mass>
           <inertia>
             <ixx>0.425046</ixx>
@@ -1395,8 +1395,8 @@
             <izz>0.850052</izz>
           </inertia>
         </inertial>
-        <collision name='base_link_collision_camera_link'>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+        <collision name="base_link_collision_camera_link">
+          <pose frame="">0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
@@ -1404,17 +1404,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_chassis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="base_link_collision_chassis">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -1423,17 +1423,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_hokuyo_laser_link'>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+        <collision name="base_link_collision_hokuyo_laser_link">
+          <pose frame="">0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -1442,17 +1442,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_imu_sensor_link'>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+        <collision name="base_link_collision_imu_sensor_link">
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
@@ -1460,17 +1460,17 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
             <friction>
-              <ode/>
+              <ode />
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <collision name='base_link_collision_left_axis'>
-          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
+        <collision name="base_link_collision_left_axis">
+          <pose frame="">0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1479,17 +1479,17 @@
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
-            <bounce/>
+            <bounce />
             <friction>
-              <ode/>
+              <ode />
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
           </surface>
         </collision>
-        <collision name='base_link_collision_right_axis'>
-          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
+        <collision name="base_link_collision_right_axis">
+          <pose frame="">0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1498,25 +1498,25 @@
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
-            <bounce/>
+            <bounce />
             <friction>
-              <ode/>
+              <ode />
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
           </surface>
         </collision>
-        <visual name='base_link_visual_camera_link'>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+        <visual name="base_link_visual_camera_link">
+          <pose frame="">0 0 0.1 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.08 0.05</size>
             </box>
           </geometry>
         </visual>
-        <visual name='base_link_visual_chassis'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="base_link_visual_chassis">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.08</length>
@@ -1530,8 +1530,8 @@
             </script>
           </material>
         </visual>
-        <visual name='base_link_visual_hokuyo_laser_link'>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+        <visual name="base_link_visual_hokuyo_laser_link">
+          <pose frame="">0 0 0.06 0 -0 0</pose>
           <geometry>
             <cylinder>
               <length>0.04</length>
@@ -1539,16 +1539,16 @@
             </cylinder>
           </geometry>
         </visual>
-        <visual name='base_link_visual_imu_sensor_link'>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+        <visual name="base_link_visual_imu_sensor_link">
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
           <geometry>
             <box>
               <size>0.02 0.02 0.02</size>
             </box>
           </geometry>
         </visual>
-        <visual name='base_link_visual_left_axis'>
-          <pose frame=''>0 0.14 -0.02 -1.5708 0 0</pose>
+        <visual name="base_link_visual_left_axis">
+          <pose frame="">0 0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1556,8 +1556,8 @@
             </cylinder>
           </geometry>
         </visual>
-        <visual name='base_link_visual_right_axis'>
-          <pose frame=''>0 -0.14 -0.02 -1.5708 0 0</pose>
+        <visual name="base_link_visual_right_axis">
+          <pose frame="">0 -0.14 -0.02 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1577,9 +1577,9 @@
           <linear>0</linear>
           <angular>0</angular>
         </velocity_decay>
-        <sensor name='camera' type='camera'>
+        <sensor name="camera" type="camera">
           <update_rate>30</update_rate>
-          <camera name='head'>
+          <camera name="head">
             <horizontal_fov>1.39626</horizontal_fov>
             <image>
               <width>800</width>
@@ -1596,7 +1596,7 @@
               <stddev>0.007</stddev>
             </noise>
           </camera>
-          <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
+          <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
             <alwaysOn>true</alwaysOn>
             <updateRate>0.0</updateRate>
             <cameraName>iRobot/camera</cameraName>
@@ -1610,7 +1610,7 @@
             <distortionT1>0.0</distortionT1>
             <distortionT2>0.0</distortionT2>
           </plugin>
-          <pose frame=''>0 0 0.1 0 -0 0</pose>
+          <pose frame="">0 0 0.1 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -1618,7 +1618,7 @@
           <angular>0</angular>
         </velocity_decay>
         <gravity>1</gravity>
-        <sensor name='head_hokuyo_sensor' type='ray'>
+        <sensor name="head_hokuyo_sensor" type="ray">
           <visualize>0</visualize>
           <update_rate>40</update_rate>
           <ray>
@@ -1641,12 +1641,12 @@
               <stddev>0</stddev>
             </noise>
           </ray>
-          <plugin name='gazebo_ros_head_hokuyo_controller' filename='libgazebo_ros_laser.so'>
-            <robotNamespace/>
+          <plugin filename="libgazebo_ros_laser.so" name="gazebo_ros_head_hokuyo_controller">
+            <robotNamespace />
             <topicName>laser_scan</topicName>
             <frameName>hokuyo_laser_link</frameName>
           </plugin>
-          <pose frame=''>0 0 0.06 0 -0 0</pose>
+          <pose frame="">0 0 0.06 0 -0 0</pose>
         </sensor>
         <gravity>1</gravity>
         <velocity_decay>
@@ -1655,12 +1655,12 @@
         </velocity_decay>
         <self_collide>0</self_collide>
         <gravity>1</gravity>
-        <sensor name='imu_sensor' type='imu'>
+        <sensor name="imu_sensor" type="imu">
           <always_on>1</always_on>
           <update_rate>1000</update_rate>
           <visualize>1</visualize>
           <topic>__default_topic__</topic>
-          <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+          <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
             <topicName>imu_data</topicName>
             <bodyName>imu_sensor_link</bodyName>
             <updateRateHZ>10.0</updateRateHZ>
@@ -1668,14 +1668,14 @@
             <xyzOffset>0 0 0</xyzOffset>
             <rpyOffset>0 0 0</rpyOffset>
           </plugin>
-          <pose frame=''>-0.1 0 0.05 0 -0 0</pose>
+          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
         </sensor>
         <kinematic>0</kinematic>
       </link>
-      <link name='left_wheel_link'>
-        <pose frame=''>0 0.14 -0.02 0 -0 0</pose>
+      <link name="left_wheel_link">
+        <pose frame="">0 0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame="">0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -1686,8 +1686,8 @@
             <izz>0.00125</izz>
           </inertia>
         </inertial>
-        <collision name='left_wheel_link_collision'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <collision name="left_wheel_link_collision">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1710,11 +1710,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='left_wheel_link_visual'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <visual name="left_wheel_link_visual">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1737,7 +1737,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='left_wheel_rot_joint' type='revolute'>
+      <joint name="left_wheel_rot_joint" type="revolute">
         <child>left_wheel_link</child>
         <parent>base_link</parent>
         <axis>
@@ -1753,10 +1753,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='right_wheel_link'>
-        <pose frame=''>0 -0.14 -0.02 0 -0 0</pose>
+      <link name="right_wheel_link">
+        <pose frame="">0 -0.14 -0.02 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0.01 0 -1.5708 0 0</pose>
+          <pose frame="">0 0.01 0 -1.5708 0 0</pose>
           <mass>0.5</mass>
           <inertia>
             <ixx>0.00375</ixx>
@@ -1767,8 +1767,8 @@
             <izz>0.00125</izz>
           </inertia>
         </inertial>
-        <collision name='right_wheel_link_collision'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <collision name="right_wheel_link_collision">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1791,11 +1791,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='right_wheel_link_visual'>
-          <pose frame=''>0 0 0 -1.5708 0 0</pose>
+        <visual name="right_wheel_link_visual">
+          <pose frame="">0 0 0 -1.5708 0 0</pose>
           <geometry>
             <cylinder>
               <length>0.02</length>
@@ -1818,7 +1818,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='right_wheel_rot_joint' type='revolute'>
+      <joint name="right_wheel_rot_joint" type="revolute">
         <child>right_wheel_link</child>
         <parent>base_link</parent>
         <axis>
@@ -1834,10 +1834,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='sphere1'>
-        <pose frame=''>0.14 0 -0.04 0 -0 0</pose>
+      <link name="sphere1">
+        <pose frame="">0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose frame="">0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -1848,8 +1848,8 @@
             <izz>0.0012</izz>
           </inertia>
         </inertial>
-        <collision name='sphere1_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="sphere1_collision">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1871,11 +1871,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='sphere1_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="sphere1_visual">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1897,7 +1897,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='sphere_joint1' type='revolute'>
+      <joint name="sphere_joint1" type="revolute">
         <child>sphere1</child>
         <parent>base_link</parent>
         <axis>
@@ -1915,10 +1915,10 @@
           <use_parent_model_frame>1</use_parent_model_frame>
         </axis>
       </joint>
-      <link name='sphere2'>
-        <pose frame=''>-0.14 0 -0.04 0 -0 0</pose>
+      <link name="sphere2">
+        <pose frame="">-0.14 0 -0.04 0 -0 0</pose>
         <inertial>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+          <pose frame="">0 0 0 0 -0 0</pose>
           <mass>0.3</mass>
           <inertia>
             <ixx>0.0012</ixx>
@@ -1929,8 +1929,8 @@
             <izz>0.0012</izz>
           </inertia>
         </inertial>
-        <collision name='sphere2_collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name="sphere2_collision">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1952,11 +1952,11 @@
                 <fdir1>1 0 0</fdir1>
               </ode>
             </friction>
-            <bounce/>
+            <bounce />
           </surface>
         </collision>
-        <visual name='sphere2_visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name="sphere2_visual">
+          <pose frame="">0 0 0 0 -0 0</pose>
           <geometry>
             <sphere>
               <radius>0.01</radius>
@@ -1978,7 +1978,7 @@
         <gravity>1</gravity>
         <kinematic>0</kinematic>
       </link>
-      <joint name='sphere_joint2' type='revolute'>
+      <joint name="sphere_joint2" type="revolute">
         <child>sphere2</child>
         <parent>base_link</parent>
         <axis>
@@ -1997,7 +1997,7 @@
         </axis>
       </joint>
       <static>0</static>
-      <plugin name='differential_drive_controller' filename='libgazebo_ros_diff_drive.so'>
+      <plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller">
         <rosDebugLevel>Debug</rosDebugLevel>
         <publishWheelTF>false</publishWheelTF>
         <publishWheelJointState>true</publishWheelJointState>
@@ -2014,12 +2014,12 @@
         <robotBaseFrame>base_link</robotBaseFrame>
         <updateRate>10.0</updateRate>
       </plugin>
-      <plugin name='joint_state_publisher' filename='libgazebo_ros_joint_state_publisher.so'>
+      <plugin filename="libgazebo_ros_joint_state_publisher.so" name="joint_state_publisher">
         <jointName>left_wheel_rot_joint, right_wheel_rot_joint</jointName>
         <updateRate>10.0</updateRate>
         <alwaysOn>true</alwaysOn>
       </plugin>
-      <plugin name='imu_plugin' filename='libgazebo_ros_imu.so'>
+      <plugin filename="libgazebo_ros_imu.so" name="imu_plugin">
         <bodyName>base_link</bodyName>
         <updateRate>100.0</updateRate>
         <topicName>imu_data</topicName>
@@ -2028,142 +2028,12 @@
         <xyzOffset>0 0 0</xyzOffset>
         <rpyOffset>0 0 0</rpyOffset>
       </plugin>
-      <pose frame=''>1 -2 0 0 -0 0</pose>
-    </model>
-    <state world_name='default'>
-      <sim_time>871 863000000</sim_time>
-      <real_time>18 554406070</real_time>
-      <wall_time>1454693760 490563286</wall_time>
-      <iterations>2760</iterations>
-      <model name='ground_plane'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <link name='link'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='iRobot'>
-        <pose frame=''>-0.999945 -1.99999 0.049897 1e-06 -0 2e-06</pose>
-        <link name='base_link'>
-          <pose frame=''>-0.999945 -1.99999 0.049897 1e-06 -0 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
-          <acceleration>-0 -0 0 0 0 -1.3e-05</acceleration>
-          <wrench>-1e-06 -0 0 0 -0 0</wrench>
-        </link>
-        <link name='left_wheel_link'>
-          <pose frame=''>-0.999945 -1.85999 0.029897 1e-06 4.2e-05 2e-06</pose>
-          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -0</velocity>
-          <acceleration>0 -0 -0 0 1.6e-05 -1.4e-05</acceleration>
-          <wrench>0 -0 -0 0 -0 0</wrench>
-        </link>
-        <link name='right_wheel_link'>
-          <pose frame=''>-0.999944 -2.13999 0.029897 1e-06 4.2e-05 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 1.5e-05 -0</velocity>
-          <acceleration>-0 -0 0 0 -1.5e-05 -1.3e-05</acceleration>
-          <wrench>-0 -0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere1'>
-          <pose frame=''>-0.859945 -1.99999 0.009897 1e-06 -0 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
-          <acceleration>-0 -2e-06 -0 0 -0 0.000549</acceleration>
-          <wrench>-0 -1e-06 -0 0 -0 0</wrench>
-        </link>
-        <link name='sphere2'>
-          <pose frame=''>-1.13994 -1.99999 0.009897 1e-06 -0 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 -0 6e-06</velocity>
-          <acceleration>-0 2e-06 0 0 -0 0.010942</acceleration>
-          <wrench>-0 1e-06 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='iRobot_0'>
-        <pose frame=''>5.2e-05 -1.99999 0.049897 1e-06 -0 2e-06</pose>
-        <link name='base_link'>
-          <pose frame=''>5.2e-05 -1.99999 0.049897 1e-06 -0 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
-          <acceleration>-0 -0 0 0 0 -1.3e-05</acceleration>
-          <wrench>-1e-06 -0 0 0 -0 0</wrench>
-        </link>
-        <link name='left_wheel_link'>
-          <pose frame=''>5.2e-05 -1.85999 0.029897 1e-06 4.2e-05 2e-06</pose>
-          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -0</velocity>
-          <acceleration>0 -0 -0 0 1.6e-05 -1.4e-05</acceleration>
-          <wrench>0 -0 -0 0 -0 0</wrench>
-        </link>
-        <link name='right_wheel_link'>
-          <pose frame=''>5.3e-05 -2.13999 0.029897 1e-06 4.2e-05 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 1.5e-05 -0</velocity>
-          <acceleration>-0 -0 0 0 -1.5e-05 -1.3e-05</acceleration>
-          <wrench>-0 -0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere1'>
-          <pose frame=''>0.140052 -1.99999 0.009897 1e-06 -0 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
-          <acceleration>-0 -2e-06 -0 0 -0 0.000549</acceleration>
-          <wrench>-0 -1e-06 -0 0 -0 0</wrench>
-        </link>
-        <link name='sphere2'>
-          <pose frame=''>-0.139948 -1.99999 0.009897 1e-06 -0 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 -0 5e-06</velocity>
-          <acceleration>-0 2e-06 0 0 -0 0.010918</acceleration>
-          <wrench>-0 1e-06 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='iRobot_1'>
-        <pose frame=''>1.00005 -1.99999 0.049897 1e-06 -0 2e-06</pose>
-        <link name='base_link'>
-          <pose frame=''>1.00005 -1.99999 0.049897 1e-06 -0 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 0 0</velocity>
-          <acceleration>-0 -0 0 0 0 -1.2e-05</acceleration>
-          <wrench>-1e-06 -0 0 0 -0 0</wrench>
-        </link>
-        <link name='left_wheel_link'>
-          <pose frame=''>1.00005 -1.85999 0.029897 1e-06 4.2e-05 2e-06</pose>
-          <velocity>0 0 2.1e-05 -4e-06 1.5e-05 -0</velocity>
-          <acceleration>0 -0 -0 0 1.4e-05 -1.2e-05</acceleration>
-          <wrench>0 -0 -0 0 -0 0</wrench>
-        </link>
-        <link name='right_wheel_link'>
-          <pose frame=''>1.00005 -2.13999 0.029897 1e-06 4.2e-05 2e-06</pose>
-          <velocity>0 0 2.2e-05 -4e-06 1.6e-05 0</velocity>
-          <acceleration>-0 -0 0 -0 -1.3e-05 -1.2e-05</acceleration>
-          <wrench>-0 -0 0 0 -0 0</wrench>
-        </link>
-        <link name='sphere1'>
-          <pose frame=''>1.14005 -1.99999 0.009897 1e-06 -0 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 0 0</velocity>
-          <acceleration>-0 -2e-06 -0 0 0 -0.000575</acceleration>
-          <wrench>-0 -1e-06 -0 0 -0 0</wrench>
-        </link>
-        <link name='sphere2'>
-          <pose frame=''>0.860051 -1.99999 0.009897 1e-06 -0 2e-06</pose>
-          <velocity>0 -0 2.3e-05 -4e-06 -0 5e-06</velocity>
-          <acceleration>-0 2e-06 0 0 -0 0.010925</acceleration>
-          <wrench>-0 1e-06 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='my_box'>
-        <pose frame=''>0 -1 0.1 0 -0 0</pose>
-        <link name='link'>
-          <pose frame=''>0 -1 0.1 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 -0 -0 0 -0 0</acceleration>
-          <wrench>0 -0 -0 0 -0 0</wrench>
-        </link>
-      </model>
-    </state>
-    <gui fullscreen='0'>
-      <camera name='user_camera'>
-        <pose frame=''>5.00352 -4.99385 2.00658 0 0.275643 2.35619</pose>
-        <view_controller>orbit</view_controller>
-        <projection_type>perspective</projection_type>
-      </camera>
-    </gui>
-    <model name='my_box'>
-      <pose frame=''>0 -1 0.1 0 -0 0</pose>
+      <pose frame="">1 -2 0 0 -0 0</pose>
+    </model>   
+    <model name="my_box">
+      <pose frame="">0 -1 0.1 0 -0 0</pose>
       <static>0</static>
-      <link name='link'>
+      <link name="link">
         <inertial>
           <mass>0.3</mass>
           <inertia>
@@ -2175,7 +2045,7 @@
             <izz>0.03125</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <box>
               <size>1 0.5 0.2</size>
@@ -2184,15 +2054,15 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <box>
               <size>1 0.5 0.2</size>
@@ -2210,5 +2080,39 @@
         <gravity>1</gravity>
       </link>
     </model>
+    <state world_name="default">
+      <sim_time>871 863000000</sim_time>
+      <real_time>18 554406070</real_time>
+      <wall_time>1454693760 490563286</wall_time>
+      <iterations>2760</iterations>
+      <model name="ground_plane">
+        <pose frame="">0 0 0 0 -0 0</pose>
+        <link name="link">
+          <pose frame="">0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name="iRobot">
+        <pose frame="">1 0 0 0 0 0</pose>
+      </model>
+      <model name="iRobot_0">
+        <pose frame="">1 -2 0 0 0 0</pose>
+      </model>
+      <model name="iRobot_1">
+        <pose frame="">1 2 0 0 0 0</pose>
+      </model>
+      <model name="my_box">
+        <pose frame="">-1 -1 0 0 0 0.785</pose>
+      </model>
+    </state>
+    <gui fullscreen="0">
+      <camera name="user_camera">
+        <pose frame="">5.00352 -4.99385 2.00658 0 0.275643 2.35619</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
   </world>
 </sdf>
