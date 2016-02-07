@@ -2095,13 +2095,13 @@
         </link>
       </model>
       <model name="iRobot">
-        <pose frame="">1 0 0 0 0 0</pose>
+        <pose frame="">-1 0 0 0 0 0</pose>
       </model>
       <model name="iRobot_0">
-        <pose frame="">1 -2 0 0 0 0</pose>
+        <pose frame="">-1 -2 0 0 0 0</pose>
       </model>
       <model name="iRobot_1">
-        <pose frame="">1 2 0 0 0 0</pose>
+        <pose frame="">-1 2 0 0 0 0</pose>
       </model>
       <model name="my_box">
         <pose frame="">-1 -1 0 0 0 0.785</pose>

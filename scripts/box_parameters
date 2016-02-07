@@ -47,15 +47,18 @@ def box_size(file_name):
         
 
 if __name__ == '__main__':
-    """Load position and size of the box in ROS parameters server. """
-
-    if sys.argv[2] == 'onerobot':
-        position = box_position(sys.argv[1] + '/worlds/onerobot.world')
+    """Load position and size of the box in ROS parameter server. """
     
-    if sys.argv[2] == 'severalrobots':
-        position = box_position(sys.argv[1] + '/worlds/severalrobots.world')
+    package_path = sys.argv[1]
+    world_name = sys.argv[2]
 
-    size = box_size(sys.argv[1] + '/box/box.sdf')
+    if world_name == 'onerobot':
+        position = box_position(package_path + '/worlds/onerobot.world')
+    
+    if world_name == 'severalrobots':
+        position = box_position(package_path + '/worlds/severalrobots.world')
+
+    size = box_size(package_path + '/box/box.sdf')
 
     #Load in ROS parameters server
     rospy.set_param('box', dict(position, **size))

@@ -2,7 +2,7 @@
 import sys
 import xml.etree.ElementTree as ET
 
-def objects_position(file_name, poses):
+def edit_world(file_name, poses):
     """Edit poses in a world file.
     
     Arguments:
@@ -31,13 +31,15 @@ def objects_position(file_name, poses):
     tree.write(file_name)
 
 if __name__ == '__main__':
-    """Call method that is used to edit gazebo world file. """
+    """Edit gazebo world file. """
     args_number = len(sys.argv) - 2
 
+    package_path = sys.argv[1]
+    
     poses = {}
+
     poses['my_box'] = sys.argv[2]
 
-    # Edit dictionary in form {... object: 'x y z phi theta psi' ...} 
     for i in range(3, args_number):
         if i == 3:
             poses['iRobot'] = sys.argv[i]
@@ -45,6 +47,6 @@ if __name__ == '__main__':
             poses['iRobot_' + str(i-4)] = sys.argv[i]
 
     if args_number == 4:
-        objects_position(sys.argv[1] + '/worlds/onerobot.world', poses)
+        edit_world(package_path + '/worlds/onerobot.world', poses)
     if args_number == 6:
-        objects_position(sys.argv[1] + '/worlds/severalrobots.world', poses)
+        edit_world(package_path + '/worlds/severalrobots.world', poses)
