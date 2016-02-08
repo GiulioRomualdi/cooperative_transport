@@ -33,3 +33,6 @@ tramp
 
 # python pyc
 *.pyc
+
+# gazebo world
+*.world
