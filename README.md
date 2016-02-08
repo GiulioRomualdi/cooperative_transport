@@ -10,6 +10,9 @@ Instructions
 ---
 Just clone the repository in the src folder of a catkin workspace. Then run catkin_make.
 
+If you wish to start a simulation you need to copy the stock gazebo worlds, i.e., *.world.original,
+inside /worlds.
+
 Usage
 ---
 To launch the simulation with one robot type:
