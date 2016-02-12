@@ -32,7 +32,7 @@ class BoxStateObserver:
         self.state = [x_0, y_0, theta_0]
 
     def __rectangle (self, x, y, state):
-        """ Rectangle equation based on Lame' curve.
+        """Rectangle equation based on Lame' curve.
 
         Arguments:
         x (float): x coordinate of a point belongs to rectangle perimeter 
@@ -55,7 +55,7 @@ class BoxStateObserver:
         return abs(value)
 
     def __loss_function(self, state, data):
-        """ Loss function evaluation
+        """Loss function evaluation
 
         Arguments:
         state (float[]): rectangle state [x_c, y_c, theta]
@@ -70,7 +70,7 @@ class BoxStateObserver:
         return loss_function
         
     def state_estimation(self, data):
-        """ Evaluation of box state using Monte-Carlo method.
+        """Evaluation of box state using Monte-Carlo method.
         
         Argument:
         data (float[]): points coordinates that belong ti rectangle perimeter
@@ -94,7 +94,7 @@ class BoxStateObserver:
         return self.state
 
 class BoxStatePublisher:
-    """Publish in a topic box state.
+    """Publish the box state in a topic.
 
     Attributes:
     robot_radius (float): robot radius in meters
@@ -137,11 +137,11 @@ class BoxStatePublisher:
         self.clock = rospy.Rate(100)
 
     def enable_service(self):
-        """ Called when the laser service request is received. """
+        """Enable estimation service."""
         self.service_enabled = True
 
     def irsensors_callback(self, data, robot):
-        """Called when the IR sensor data is received.
+        """Update robots_state using data that come from IR sensor.
         
         Arguments:
         data (RoombaIR): data from IR sensor 
@@ -158,7 +158,7 @@ class BoxStatePublisher:
         self.robots_state_lock.release()
 
     def pose_callback(self, data, robot):
-        """Called when the robot state data is received.
+        """Update robots_state using robot's pose.
         
         Arguments:
         data (Odometry): robot pose
@@ -178,7 +178,7 @@ class BoxStatePublisher:
         self.robots_state_lock.release()
 
     def point_coordinates(self, robot, angle_key):
-        """ Convert point expressed in local coordinate (robot frame) into global frame using roto-translation matrix (SE(2))
+        """Convert point expressed in local coordinate (robot frame) into global frame using roto-translation matrix (SE(2))
         p_g = T * p_l
         
             | cos(theta) -sin(theta) x_o |   
@@ -230,7 +230,7 @@ class BoxStatePublisher:
         
 
     def run(self):
-        """Publish box state."""
+        """Run iterative process, main method of the class."""
         rospy.sleep(10)
         while not rospy.is_shutdown():
 
