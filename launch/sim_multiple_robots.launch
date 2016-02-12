@@ -31,4 +31,6 @@
     <arg name="irbumper_topic_name" value="/ir_bumper_2"/>
   </include>
 
+  <include file="$(find cooperative_transport)/launch/box_estimation.launch"/>
+
 </launch>
