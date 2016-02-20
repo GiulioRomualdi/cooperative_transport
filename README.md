@@ -15,23 +15,11 @@ inside /worlds.
 
 Usage
 ---
-To launch the simulation with one robot type:
-```
-roslaunch cooperative_transport sim_one_robot.launch
-```
-
-To launch the simulation with multiple robots type:
+To launch the simulation with three robots type:
 ```
 roslaunch cooperative_transport sim_multiple_robots.launch
 ```
-
-These launch files start gazebo, the main controller (for each simulated robot) and a node that simulates the ir light bumper sensors of the irobot using the Hokuyo laser range finder data provided by gazebo.
+The launch file runs gazebo, the main controller (for each simulated robot) and a node that simulates the ir light bumper sensors of the irobot using the Hokuyo laser range finder data provided by gazebo.
 
 The ir readings are available in the topics /ir_bumper_x where x identifies the robot.
-
-To launch the controller alone, i.e., without gazebo and ir simulator, type:
-```
-roslaunch cooperative_transport controller.launch
-```
-
 
