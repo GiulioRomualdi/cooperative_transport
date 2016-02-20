@@ -109,10 +109,10 @@ class BoxStatePublisher:
         rospy.init_node('box_state_publisher')
 
         # Topics subscription
-        topics_names = {'robot_' + str(i): rospy.get_param('controller_' + str(i) + '/topic_names') for i in range(3)}        
-        for robot, topic_name in topics_names.iteritems():
-            rospy.Subscriber(topic_name['irbumper'], RoombaIR, self.irsensors_callback, callback_args = robot)
-            rospy.Subscriber(topic_name['odom'], Odometry, self.pose_callback, callback_args = robot)
+        topics_names = rospy.get_param('topics_names')
+        for robot_index, item in enumerate(topics_names, start=0):
+            rospy.Subscriber(item['irbumper'], RoombaIR, self.irsensors_callback, callback_args = robot_index)
+            rospy.Subscriber(item['odom'], Odometry, self.pose_callback, callback_args = robot_index)
             
         self.robot_radius = float(rospy.get_param('robot_radius'))
         self.sensors_angles = rospy.get_param('sensors_angles')
@@ -127,8 +127,8 @@ class BoxStatePublisher:
         box_params = rospy.get_param('box')
         self.observer = BoxStateObserver(box_params['length'], box_params['width'], box_params['posx'], box_params['posy'], box_params['yaw'])
         
-        robots_name = topics_names.keys()
-        self.robots_state = {key: {'state':{}, 'irbumper':{}} for key in robots_name}
+        self.number_robots = len(topics_names)
+        self.robots_state = [{'state':{}, 'irbumper':{}} for index in range(self.number_robots)]
 
         # Lock used to avoid contemporary access to robots_state 
         self.robots_state_lock = threading.Lock()
@@ -140,7 +140,7 @@ class BoxStatePublisher:
         """Enable estimation service."""
         self.service_enabled = True
 
-    def irsensors_callback(self, data, robot):
+    def irsensors_callback(self, data, robot_index):
         """Update robots_state using data that come from IR sensor.
         
         Arguments:
@@ -153,11 +153,11 @@ class BoxStatePublisher:
         max_range = 0.233045
         scale_factor =  max_range - self.robot_radius
         robot_max_ir = 4095
-        self.robots_state[robot]['irbumper'][data.header.frame_id] = data.signal * scale_factor / robot_max_ir
+        self.robots_state[robot_index]['irbumper'][data.header.frame_id] = data.signal * scale_factor / robot_max_ir
 
         self.robots_state_lock.release()
 
-    def pose_callback(self, data, robot):
+    def pose_callback(self, data, robot_index):
         """Update robots_state using robot's pose.
         
         Arguments:
@@ -167,17 +167,17 @@ class BoxStatePublisher:
 
         self.robots_state_lock.acquire()
 
-        self.robots_state[robot]['state']['x'] = data.pose.pose.position.x
-        self.robots_state[robot]['state']['y'] = data.pose.pose.position.y
+        self.robots_state[robot_index]['state']['x'] = data.pose.pose.position.x
+        self.robots_state[robot_index]['state']['y'] = data.pose.pose.position.y
         
         # Quaternion conversion into yaw angle
         q0 = data.pose.pose.orientation.w
         q3 = data.pose.pose.orientation.z
-        self.robots_state[robot]['state']['theta'] = np.arctan2(2 * (q0 * q3), 1 - 2 * q3 ** 2)
+        self.robots_state[robot_index]['state']['theta'] = np.arctan2(2 * (q0 * q3), 1 - 2 * q3 ** 2)
 
         self.robots_state_lock.release()
 
-    def point_coordinates(self, robot, angle_key):
+    def point_coordinates(self, robot_index, angle_key):
         """Convert point expressed in local coordinate (robot frame) into global frame using roto-translation matrix (SE(2))
         p_g = T * p_l
         
@@ -192,12 +192,12 @@ class BoxStatePublisher:
         angle_key (string): ir sensor angle in local frame
         """
         
-        x_robot = self.robots_state[robot]['state']['x']
-        y_robot = self.robots_state[robot]['state']['y']
-        theta_robot = self.robots_state[robot]['state']['theta']
+        x_robot = self.robots_state[robot_index]['state']['x']
+        y_robot = self.robots_state[robot_index]['state']['y']
+        theta_robot = self.robots_state[robot_index]['state']['theta']
         sensor_angle = self.sensors_angles[angle_key]
 
-        local_radius = self.robot_radius + self.robots_state[robot]['irbumper'][angle_key]
+        local_radius = self.robot_radius + self.robots_state[robot_index]['irbumper'][angle_key]
         x_global = x_robot + local_radius * np.cos(sensor_angle + theta_robot)
         y_global = y_robot + local_radius * np.sin(sensor_angle + theta_robot)
 
@@ -208,11 +208,10 @@ class BoxStatePublisher:
         """ Publish box state in a topic."""
         self.robots_state_lock.acquire()
 
-        robot_names = self.robots_state.keys()
         angle_keys = self.sensors_angles.keys()
 
-        points = [self.point_coordinates(name, key) for name in robot_names for key in angle_keys \
-                       if self.robots_state[name]['irbumper'][key] != 0]
+        points = [self.point_coordinates(robot_index, key) for robot_index in range(self.number_robots) for key in angle_keys \
+                       if self.robots_state[robot_index]['irbumper'][key] != 0]
 
         self.robots_state_lock.release()
 
@@ -234,8 +233,8 @@ class BoxStatePublisher:
         rospy.sleep(10)
         while not rospy.is_shutdown():
 
-            if not self.service_enabled:
-                continue
+            #if not self.service_enabled:
+            #    continue
                 
             self.publish_box_state()
 

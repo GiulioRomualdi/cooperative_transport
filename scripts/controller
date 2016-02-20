@@ -2,5 +2,5 @@
 import sys
 import cooperative_transport.controller
 if __name__ == '__main__':
-    node_name = sys.argv[1]
-    cooperative_transport.controller.main(node_name)
+    controller_index = sys.argv[1]
+    cooperative_transport.controller.main(controller_index)

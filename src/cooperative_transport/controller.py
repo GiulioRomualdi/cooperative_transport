@@ -1,15 +1,17 @@
 import rospy
 
-def main(node_name):
-    rospy.init_node(node_name)
+class Controller:
 
-    topic_names = rospy.get_param(node_name + "/topic_names")
+    def __init__(self, controller_index):
 
-    rospy.loginfo(node_name + ": topics are {" + topic_names["cmdvel"] + ", " +
-                  topic_names["odom"] + ", " + topic_names["irbumper"] + "}.")
-    
+        rospy.init_node('controller' + str(controller_index))
+        topics_names = rospy.get_param('topics_names')
+
+        print topics_names
+        
+
+def main(controller_index):
     try:
-        while not rospy.is_shutdown():
-            pass
+        controller = Controller(controller_index)
     except rospy.ROSInterruptException:
         pass

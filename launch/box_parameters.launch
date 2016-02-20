@@ -1,7 +1,0 @@
-<launch>
-   
-  <arg name="world"/> 
-
-  <node name="load_boxparameters" pkg="cooperative_transport" type="box_parameters" args="$(find cooperative_transport) $(arg world)" output="screen"/>
-
-</launch>

@@ -17,7 +17,7 @@ Usage
 ---
 To launch the simulation with three robots type:
 ```
-roslaunch cooperative_transport sim_multiple_robots.launch
+roslaunch cooperative_transport simulation.launch
 ```
 The launch file runs gazebo, the main controller (for each simulated robot) and a node that simulates the ir light bumper sensors of the irobot using the Hokuyo laser range finder data provided by gazebo.
 

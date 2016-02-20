@@ -43,20 +43,14 @@ def box_size(file_name):
         break
         
     return {'length': float(size[0]), 'width': float(size[1]), 'height': float(size[2])} 
-    
         
-
 if __name__ == '__main__':
     """Load position and size of the box in ROS parameter server. """
     
     package_path = sys.argv[1]
     world_name = sys.argv[2]
-
-    if world_name == 'onerobot':
-        position = box_position(package_path + '/worlds/onerobot.world')
     
-    if world_name == 'severalrobots':
-        position = box_position(package_path + '/worlds/severalrobots.world')
+    position = box_position(package_path + '/worlds/' + world_name + '.world')
 
     size = box_size(package_path + '/box/box.sdf')
 

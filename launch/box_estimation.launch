@@ -1,5 +1,0 @@
-<launch>
-
-  <node name="box_estimation" pkg="cooperative_transport" type="box_estimation" output="screen"/>
-
-</launch>

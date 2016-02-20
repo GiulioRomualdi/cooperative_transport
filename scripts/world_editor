@@ -38,15 +38,15 @@ if __name__ == '__main__':
     
     poses = {}
 
-    poses['my_box'] = sys.argv[2]
+    world_name = sys.argv[2]
 
-    for i in range(3, args_number):
-        if i == 3:
+    poses['my_box'] = sys.argv[3]
+
+    for i in range(4, args_number):
+        if i == 4:
             poses['iRobot'] = sys.argv[i]
         else:
-            poses['iRobot_' + str(i-4)] = sys.argv[i]
+            poses['iRobot_' + str(i-5)] = sys.argv[i]
 
-    if args_number == 4:
-        edit_world(package_path + '/worlds/onerobot.world', poses)
-    if args_number == 6:
-        edit_world(package_path + '/worlds/severalrobots.world', poses)
+
+    edit_world(package_path + '/worlds/' + world_name + '.world', poses)

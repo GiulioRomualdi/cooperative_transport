@@ -1,0 +1,29 @@
+<launch>
+  <!-- global parameters -->
+
+  <rosparam param="sensors_angles">{base_irbumper_left : 1.0471975511965976, base_irbumper_front_left : 0.6283185307179586, base_irbumper_center_left : 0.20943951023931953, base_irbumper_center_right : -0.20943951023931953, base_irbumper_front_right : -0.6283185307179586, base_irbumper_right : -1.0471975511965976}</rosparam>
+
+  <rosparam param="topics_names">[{cmd_vel : "/iRobot/cmd_vel", odom : "/iRobot/odom", irbumper : "/ir_bumper_0"}, {cmd_vel : "/iRobot_0/cmd_vel", odom: "/iRobot_0/odom", irbumper : "/ir_bumper_1"}, {cmd_vel : "/iRobot_1/cmd_vel", odom : /iRobot_1/odom, irbumper : "/ir_bumper_2"}]</rosparam>
+
+  <param name="robot_radius" value="0.1696"/>
+
+  <!-- launch gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find cooperative_transport)/worlds/robots.world"/>
+  </include>
+
+  <!-- load box parameters from sdf -->
+  <node name="load_boxparameters" pkg="cooperative_transport" type="box_parameters" args="$(find cooperative_transport) robots" output="screen"/>
+
+  <!-- launch ir simulator -->
+  <include file="$(find cooperative_transport)/launch/irsimulator.launch"/>
+
+  <!-- launch box estimation -->
+  <node name="box_estimation" pkg="cooperative_transport" type="box_estimation" output="screen"/>
+
+  <!-- launch controllers -->
+  <node name="controller0" pkg="cooperative_transport" type="controller" args="0" output="screen"/>
+  <node name="controller1" pkg="cooperative_transport" type="controller" args="1" output="screen"/>
+  <node name="controller2" pkg="cooperative_transport" type="controller" args="2" output="screen"/>
+
+</launch>
