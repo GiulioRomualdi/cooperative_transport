@@ -38,7 +38,7 @@ class IrSimulator:
 
 
     def laser_callback(self, data):
-        """Called when the laser data is received.
+        """Publish a new irbumper message given the laser range finder data.
         
         Arguments:
         data(LaserScan): laser range finder data
