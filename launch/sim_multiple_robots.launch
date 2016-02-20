@@ -1,5 +1,4 @@
 <launch>
-
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find cooperative_transport)/worlds/severalrobots.world"/>
   </include>
@@ -9,6 +8,8 @@
   </include>
 
   <include file="$(find cooperative_transport)/launch/irsimulator.launch"/>
+
+  <rosparam param="odom_topic_names">["/iRobot/odom", "/iRobot_0/odom", "/iRobot_1/odom"]</rosparam>
 
   <include file="$(find cooperative_transport)/launch/controller.launch">
     <arg name="node_name" value="controller_0"/>
