@@ -122,7 +122,8 @@ class BoxStatePublisher:
         
         # Service declaration
         self.service_enabled = False
-        rospy.Service('start_box_estimation', Empty, self.enable_service)
+        rospy.Service('start_box_estimation', Empty, self.start_box_estimation)
+        rospy.Service('hold_latest_estimate', Empty, self.hold_latest_estimate)
         
         box_params = rospy.get_param('box')
         self.observer = BoxStateObserver(box_params['length'], box_params['width'], box_params['posx'], box_params['posy'], box_params['yaw'])
@@ -136,9 +137,11 @@ class BoxStatePublisher:
         # Node rate
         self.clock = rospy.Rate(100)
 
-    def enable_service(self):
-        """Enable estimation service."""
+    def start_box_estimation(self):
         self.service_enabled = True
+
+    def hold_latest_estimate(self):
+        self.service_enabled = False
 
     def irsensors_callback(self, data, robot_index):
         """Update robots_state using data that come from IR sensor.
@@ -233,8 +236,8 @@ class BoxStatePublisher:
         rospy.sleep(10)
         while not rospy.is_shutdown():
 
-            #if not self.service_enabled:
-            #    continue
+            if not self.service_enabled:
+                continue
                 
             self.publish_box_state()
 
