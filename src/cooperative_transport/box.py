@@ -6,6 +6,7 @@ import numpy as np
 from irobotcreate2.msg import RoombaIR
 from nav_msgs.msg import Odometry
 from cooperative_transport.msg import BoxState
+from cooperative_transport.utils import quaternion_to_yaw
 from std_srvs.srv import Empty
 
 class BoxStateObserver:
@@ -172,11 +173,7 @@ class BoxStatePublisher:
 
         self.robots_state[robot_index]['state']['x'] = data.pose.pose.position.x
         self.robots_state[robot_index]['state']['y'] = data.pose.pose.position.y
-        
-        # Quaternion conversion into yaw angle
-        q0 = data.pose.pose.orientation.w
-        q3 = data.pose.pose.orientation.z
-        self.robots_state[robot_index]['state']['theta'] = np.arctan2(2 * (q0 * q3), 1 - 2 * q3 ** 2)
+        self.robots_state[robot_index]['state']['theta'] = quaternion_to_yaw(data.pose.pose.orientation)
 
         self.robots_state_lock.release()
 

@@ -1,4 +1,4 @@
-from numpy import sign
+from cooperative_transport.utils import saturation 
 
 def consensus(state, neighbours_state, reference, max_control):
     """Return consensus controller output for a SISO system.
@@ -11,5 +11,5 @@ def consensus(state, neighbours_state, reference, max_control):
     """
     neighbours_state.append(reference)
     output = sum([neighbour_state - state for neighbour_state in neighbours_state])
-    saturated_output = sign(output) * min(abs(output), max_control)
+    saturated_output = saturation(output, max_control)
     return saturated_output
