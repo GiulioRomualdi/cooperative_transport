@@ -1,11 +1,16 @@
 <launch>
   <!-- global parameters -->
-
+  
+  <!-- angular position of ir bumper sensors -->
   <rosparam param="sensors_angles">{base_irbumper_left : 1.0471975511965976, base_irbumper_front_left : 0.6283185307179586, base_irbumper_center_left : 0.20943951023931953, base_irbumper_center_right : -0.20943951023931953, base_irbumper_front_right : -0.6283185307179586, base_irbumper_right : -1.0471975511965976}</rosparam>
 
+  <!-- topics names for all the robots -->
   <rosparam param="topics_names">[{cmdvel : "/iRobot/cmd_vel", odom : "/iRobot/odom", irbumper : "/ir_bumper_0"}, {cmdvel : "/iRobot_0/cmd_vel", odom: "/iRobot_0/odom", irbumper : "/ir_bumper_1"}, {cmdvel : "/iRobot_1/cmd_vel", odom : /iRobot_1/odom, irbumper : "/ir_bumper_2"}]</rosparam>
 
+  <!-- various irobot create parameters -->
   <param name="robot_radius" value="0.1696"/>
+  <param name="max_forward_v" value="0.5"/>
+  <param name="max_angular_v" value="2"/>
 
   <!-- launch gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
