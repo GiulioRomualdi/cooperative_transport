@@ -30,7 +30,11 @@ class BoxStateObserver:
         """
         self.length = length
         self.width = width
-        self.state = [x_0, y_0, theta_0]
+        self._state = [x_0, y_0, theta_0]
+
+    @property
+    def state(self):
+        return self._state
 
     def __rectangle (self, x, y, state):
         """Rectangle equation based on Lame' curve.
@@ -80,9 +84,9 @@ class BoxStateObserver:
         min_value = float('inf')
         
         for i in range(50):
-            x_c = random.gauss(self.state[0], 0.02)
-            y_c = random.gauss(self.state[1], 0.02)
-            theta = random.gauss(self.state[2], 0.002)
+            x_c = random.gauss(self._state[0], 0.02)
+            y_c = random.gauss(self._state[1], 0.02)
+            theta = random.gauss(self._state[2], 0.002)
             
             estimated_state = [x_c, y_c, theta]
             
@@ -90,9 +94,9 @@ class BoxStateObserver:
             min_value = min(min_value, new_value)
             
             if new_value == min_value:
-                self.state = estimated_state
+                self._state = estimated_state
 
-        return self.state
+        return self._state
 
 class BoxStatePublisher:
     """Publish the box state in a topic.
@@ -122,9 +126,9 @@ class BoxStatePublisher:
         self.state_pub = rospy.Publisher('box_state', BoxState, queue_size=50)
         
         # Service declaration
-        self.service_enabled = False
-        rospy.Service('start_box_estimation', Empty, self.start_box_estimation)
-        rospy.Service('hold_latest_estimate', Empty, self.hold_latest_estimate)
+        self.release_estimation = False
+        rospy.Service('release_box_state', Empty, self.release_box_state)
+        rospy.Service('hold_box_state', Empty, self.hold_box_state)
         
         box_params = rospy.get_param('box')
         self.observer = BoxStateObserver(box_params['length'], box_params['width'], box_params['posx'], box_params['posy'], box_params['yaw'])
@@ -132,17 +136,22 @@ class BoxStatePublisher:
         self.number_robots = len(topics_names)
         self.robots_state = [{'state':{}, 'irbumper':{}} for index in range(self.number_robots)]
 
-        # Lock used to avoid contemporary access to robots_state 
+        # Lock used to avoid contemporary access to robots_state and flag 
         self.robots_state_lock = threading.Lock()
+        self.flag_lock = threading.Lock()
 
         # Node rate
         self.clock = rospy.Rate(100)
 
-    def start_box_estimation(self):
-        self.service_enabled = True
+    def release_box_state(self):
+        self.flag_lock.acquire()
+        self.release_estimation = True
+        self.flag_lock.release()
 
-    def hold_latest_estimate(self):
-        self.service_enabled = False
+    def hold_box_state(self):
+        self.flag_lock.acquire()
+        self.release_estimation = False
+        self.flag_lock.release()
 
     def irsensors_callback(self, data, robot_index):
         """Update robots_state using data that come from IR sensor.
@@ -206,17 +215,24 @@ class BoxStatePublisher:
 
     def publish_box_state(self):
         """ Publish box state in a topic."""
-        self.robots_state_lock.acquire()
+        
+        self.flag_lock.acquire()
+        flag = self.release_estimation
+        self.flag_lock.release()
 
-        angle_keys = self.sensors_angles.keys()
+        if flag:
+            self.robots_state_lock.acquire()
+            angle_keys = self.sensors_angles.keys()
+            points = [self.point_coordinates(robot_index, key) \
+                      for robot_index in range(self.number_robots) for key in angle_keys \
+                      if self.robots_state[robot_index]['irbumper'][key] != 0]
+            self.robots_state_lock.release()
+            
+            # Run Estimation process
+            state = self.observer.state_estimation(points)
 
-        points = [self.point_coordinates(robot_index, key) for robot_index in range(self.number_robots) for key in angle_keys \
-                       if self.robots_state[robot_index]['irbumper'][key] != 0]
-
-        self.robots_state_lock.release()
-
-        # Run Estimation process
-        state = self.observer.state_estimation(points)
+        else:
+            state = self.observer.state
 
         msg = BoxState()
         msg.header.stamp = rospy.Time.now()
@@ -229,13 +245,10 @@ class BoxStatePublisher:
         
 
     def run(self):
-        """Run iterative process, main method of the class."""
-        rospy.sleep(10)
+        """Run main method of the class."""
+        #rospy.sleep(10)
         while not rospy.is_shutdown():
 
-            if not self.service_enabled:
-                continue
-                
             self.publish_box_state()
 
             self.clock.sleep()
