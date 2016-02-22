@@ -17,7 +17,7 @@ class Subscriber:
         self.lock.release()
         return value
 
-    @is_renady.setter
+    @is_ready.setter
     def is_ready(self, value):
         self.lock.acquire()
         self._is_ready = value
