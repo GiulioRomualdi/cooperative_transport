@@ -23,8 +23,6 @@ class Controller:
         self.robots_state = [Subscriber(names['odom'], Odometry) for names in topics_names]
         # Subscribe to irbumper topic
         self.irbumper = Subscriber(topics_names[controller_index]['irbumper'], RoombaIR)
-        # Subscribe to box estimation topic
-        self.box = Subscriber('box_state', BoxState)
 
         # Publish to cmdvel
         self.cmdvel_pub = rospy.Publisher(topics_names[controller_index]['cmdvel'], Twist, queue_size=50)

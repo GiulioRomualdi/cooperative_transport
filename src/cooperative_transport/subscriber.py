@@ -16,8 +16,8 @@ class Subscriber:
         value = self._is_ready
         self.lock.release()
         return value
-        
-    @is_ready.setter
+
+    @is_renady.setter
     def is_ready(self, value):
         self.lock.acquire()
         self._is_ready = value
@@ -39,3 +39,5 @@ class Subscriber:
     def callback(self, data):
         self.is_ready = True
         self.data = data
+
+        

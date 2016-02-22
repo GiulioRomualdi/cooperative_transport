@@ -193,4 +193,6 @@ class Planner:
             states = path.getStates()
             vector = [[state[0], state[1]] for state in states]
                         
-            return vector
+            return True, vector
+
+        return False,
