@@ -14,7 +14,7 @@
 
   <!-- RRT* planner bounds -->
   <param name="planner_lower_bound" value="-4"/>
-  <param name="planner_upper_bound" values="4"/>
+  <param name="planner_upper_bound" value="4"/>
 
   <!-- launch gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
