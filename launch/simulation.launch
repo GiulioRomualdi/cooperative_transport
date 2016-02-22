@@ -12,6 +12,10 @@
   <param name="max_forward_v" value="0.5"/>
   <param name="max_angular_v" value="2"/>
 
+  <!-- RRT* planner bounds -->
+  <param name="planner_lower_bound" value="-4"/>
+  <param name="planner_upper_bound" values="4"/>
+
   <!-- launch gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find cooperative_transport)/worlds/robots.world"/>
