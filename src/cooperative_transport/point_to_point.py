@@ -52,7 +52,7 @@ class PointToPoint:
         phi_rg = np.arctan2((self.yg - yr), (self.xg - xr))
         phi_rg_dot = -(vr * np.sin(theta - phi_rg)) / rho_rg
 
-        if rho_rg > 0:
+        if rho_rg > 0.01:
             forward_velocity = rho_rg
             angular_velocity = -k * utils.angle_normalization(theta - phi_rg) + phi_rg_dot
 
@@ -60,6 +60,6 @@ class PointToPoint:
             saturated_angular_velocity = utils.saturation(angular_velocity, self.max_angular_velocity)
             saturated_angular_velocity *= -1 #gazebo bug
                 
-            return True, saturated_forward_velocity, saturated_angular_velocity
+            return False, saturated_forward_velocity, saturated_angular_velocity
 
-        return False, 0, 0
+        return True, 0, 0
