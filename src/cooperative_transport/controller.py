@@ -1,52 +1,42 @@
 import rospy
 import utils
+import smach
+from smach import StateMachine, Iterator, CBState
+from subscriber import Subscriber
 from point_to_point import PointToPoint
-from threading import Lock
 from irobotcreate2.msg import RoombaIR
 from nav_msgs.msg import Odometry
 from cooperative_transport.msg import BoxState
 from geometry_msgs.msg import Twist
 
-class Subscriber:
-    """Topic subscription with locks."""
+class GoToPoint(smach.State):
+    def __init__(self, controller, robot_state, main_controller):
+        smach.State.__init__(self, outcomes=['success'], 
+                             input_keys=['goal', 'max_forward', 'max_angular'])
+        self.clock = rospy.Rate(100)
+        self.robot_state = robot_state
+        self.controller = controller
+        self.main_controller = main_controller
 
-    def __init__(self, topic_name, msg_type):
-
-        rospy.Subscriber(topic_name, msg_type, self.callback)
-        self._is_ready = False
-        self.lock = Lock()
-
-    @property
-    def is_ready(self):
-        self.lock.acquire()
-        value = self._is_ready
-        self.lock.release()
-        return value
+    def execute(self, inputs):
+        self.controller.goal_point(inputs.goal)
         
-    @is_ready.setter
-    def is_ready(self, value):
-        self.lock.acquire()
-        self._is_ready = value
-        self.lock.release()
+        done = False
 
-    @property
-    def data(self):
-        self.lock.acquire()
-        value = self._data
-        self.lock.release()
-        return value
-        
-    @data.setter
-    def data(self, value):
-        self.lock.acquire()
-        self._is_ready = value
-        self.lock.release()
+        while not done:
+            x = self.robot_state.data.pose.pose.position.x
+            y = self.robot_state.data.pose.pose.position.y
+            theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+            forward_v = self.robot_state.data.twist.twist.linear.x
 
-    def callback(self, data):
-        self.is_ready = True
-        self.data = data
+            done, forward_v, angular_v = self.controller.control_law([x, y, theta], forward_v)
 
-    
+            self.main_controller.set_control(forward_v, angular_v)
+
+            self.clock.sleep()
+
+        return 'success'
+
 class Controller:
     """Main controller for cooperative transport."""
 
@@ -58,21 +48,15 @@ class Controller:
 
         # Get the topics names for all the robots
         topics_names = rospy.get_param('topics_names')
-
         # Subscribe to robots odometry
         self.robots_state = [Subscriber(names['odom'], Odometry) for names in topics_names]
-        
         # Subscribe to irbumper topic
         self.irbumper = Subscriber(topics_names[controller_index]['irbumper'], RoombaIR)
-
         # Subscribe to box estimation topic
         self.box = Subscriber('box_state', BoxState)
 
         # Publish to cmdvel
         self.cmdvel_pub = rospy.Publisher(topics_names[controller_index]['cmdvel'], Twist, queue_size=50)
-
-        # Controller rate
-        self.clock = rospy.Rate(100)
 
         #
         self.max_forward_v = 0.5
@@ -97,31 +81,44 @@ class Controller:
 
     def run(self):
 
+        if self.controller_index != 0:
+            return
+
+        while not self.are_callbacks_ready():
+            rospy.sleep(1)
+            continue
+
+        # !!
+        p2p_ctl = PointToPoint(self.max_forward_v, self.max_angular_v)
         this_robot = self.robots_state[self.controller_index]
 
-        point2point_ctl = PointToPoint(self.max_forward_v, self.max_angular_v)
-        point2point_ctl.goal_point([-3,-2])
+        # top level state machine
+        sm_cooperative_transport = StateMachine(outcomes=['transport_successful'])
+        sm_cooperative_transport.userdata.path = [[-2, -3], [-2, -2], [-3, -2], [-3, -3]]
 
-        while not rospy.is_shutdown():
+        with sm_cooperative_transport:
+            box_approach = Iterator(outcomes=['success'], input_keys=[], output_keys=[],
+                                   it=sm_cooperative_transport.userdata.path, it_label='goal',
+                                   exhausted_outcome='success')
 
-            if not self.are_callbacks_ready():
-                self.clock.sleep()
-                continue
+            with box_approach:
+                sm_box_approach = StateMachine(outcomes=['success', 'continue'],input_keys=['goal'])
 
-            data = this_robot.data
-            x = data.pose.pose.position.x
-            y = data.pose.pose.position.y
-            theta = utils.quaternion_to_yaw(data.pose.pose.orientation)
-            forward_v = data.twist.twist.linear.x
+                with sm_box_approach:
+                    state = GoToPoint(main_controller=self, controller=p2p_ctl, robot_state=this_robot)
+                    StateMachine.add('GO_TO_POINT', state, transitions={'success':'continue'})
+                    
+                Iterator.set_contained_state('BOX_APPROACH_SM', sm_box_approach, loop_outcomes=['continue'])
 
-            if self.controller_index == 0:
-                is_controller_done, forward_v, angular_v = point2point_ctl.control_law([x, y, theta], forward_v)
-                self.set_control(forward_v, angular_v)
+            StateMachine.add('BOX_APPROACH', box_approach, transitions={'success':'transport_successful'})
 
-            self.clock.sleep()
+        sm_cooperative_transport.execute()
         
 def main(controller_index):
-    rospy.sleep(10)
+    # wait for gazebo startup
+    #rospy.sleep(10)
+
+    # start the controller
     try:
         controller = Controller(controller_index)
         controller.run()
