@@ -7,13 +7,6 @@ from smach import StateMachine, Iterator
 from cooperative_transport.msg import TaskState.msg
 from threading import Lock
 
-  state_machine = construct_sm(self.controller_index,
-                                     self.robots_state, 
-                                     self.irbumper,
-                                     self.boxstate,
-                                     self.set_control)
-
-
 def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control):
     """Construct the top level state machine for cooperative transport.
 
