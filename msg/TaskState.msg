@@ -1,4 +1,4 @@
 Header header
-int robot_id
-String task_name
+int32 robot_id
+string task_name
 bool status
