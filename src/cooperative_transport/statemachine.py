@@ -18,42 +18,56 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
     set_control (function): function that publish a twist
     """
     sm = StateMachine(outcomes=['transport_ok', 'transport_failed'])
+
     with sm:    
     ##############################################################################################
     # TOP LEVEL STATE MACHINE
     ##############################################################################################
     #
-        box_approach = StateMachine(outcomes=['approach_ok', 'approach_failed'])
-        with box_approach:
+        box_attachment = StateMachine(outcomes=['attachment_ok', 'attachment_failed'])
+        box_attachment.userdata.path = []
+
+        with box_attachment:
         ##########################################################################################
-        # BOX APPROACH STATE MACHINE
+        # BOX ATTACHMENT STATE MACHINE
         ##########################################################################################
         #
+            box_approach = Iterator(outcomes=['approach_ok'],\
+                                    input_keys=['path'],\
+                                    output_keys=[],\
+                                    it=sm.userdata.path,\
+                                    it_label='goal',\
+                                    exhausted_outcome='approach_ok')
+
+            with box_approach:
+            ######################################################################################
+            # RAW BOX APPROACH ITERATOR
+            ######################################################################################
+            #
+                
+            #
+            ######################################################################################
+
             wait_for_turn = WaitForTurn(controller_index)
-            StateMachine.add('WAIT_FOR_TURN', wait_for_turn, transitions={'my_turn':'PLAN_TRAJECTORY'})
+            StateMachine.add('WAIT_FOR_TURN',\
+                             wait_for_turn,\
+                             transitions={'my_turn':'PLAN_TRAJECTORY'})
 
             plan_trajectory = PlanTrajectory(controller_index, robots_state, boxstate)
             StateMachine.add('PLAN_TRAJECTORY', plan_trajectory,\
-                             transitions={'path_found':'TODO', 'plan_failed':'approach_failed'})
+                             transitions={'path_found':'RAW_BOX_APPROACH_ITERATOR',\
+                                          'plan_failed':'attachment_failed'},
+                             remapping={'path':'path'})
+
+            StateMachine.add('BOX_APPROACH',\
+                             box_approach,\
+                             transitions={'approach_ok':'BOX_FINE_APPROACH'})
         #
         ##########################################################################################
 
-        #move_box = StateMachine(outcomes=['moved_ok', 'moved_failed'])
-        #with move_box:
-        ##########################################################################################
-        # MOVE BOX STATE MACHINE
-        ##########################################################################################
-        #
-
-        #
-        ##########################################################################################
-
-        # StateMachine.add('MOVE_BOX', move_box,\
-        #                  transitions={'moved_failed':'transport_failed',\
-        #                               'moved_ok':'transport_ok'})
-        StateMachine.add('BOX_APPROACHING', box_approach,\
-                         transitions={'approach_failed':'transport_failed',\
-                                      'approach_ok':'MOVE_BOX'})
+        StateMachine.add('BOX_ATTACHMENT', box_attachment,\
+                         transitions={'attachment_failed':'transport_failed',\
+                                      'attachment_ok':'MOVE_BOX'})
     #
     ##############################################################################################
             
