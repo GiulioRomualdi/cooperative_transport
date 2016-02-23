@@ -162,13 +162,13 @@ class PlanTrajectory(smach.State):
         # Add obstacles for the neighbor robots
         robot_radius = rospy.get_param('robot_radius')
         for robot_index,robot_state in enumerate(self.robots_state):
-            if robot_index != self.controller_index
+            if robot_index != self.controller_index:
 
-            x_robot = robot_state.data.pose.pose.position.x
-            y_robot = robot_state.data.pose.pose.position.y
-            obstacle = CircularObstacle(robot_radius, x_robot, y_robot , robot_radius)
+                x_robot = robot_state.data.pose.pose.position.x
+                y_robot = robot_state.data.pose.pose.position.y
+                obstacle = CircularObstacle(robot_radius, x_robot, y_robot , robot_radius)
 
-            self.planner.add_obstacle(CircularObstacle())
+                self.planner.add_obstacle(CircularObstacle())
             
         # Add obstacle for the box
         box_parameters = rospy.get_param('box')
