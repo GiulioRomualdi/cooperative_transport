@@ -35,7 +35,7 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
             box_approach = Iterator(outcomes=['approach_ok'],\
                                     input_keys=['path'],\
                                     output_keys=[],\
-                                    it=sm.userdata.path,\
+                                    it=box_attachment.userdata.path,\
                                     it_label='goal',\
                                     exhausted_outcome='approach_ok')
 
@@ -44,7 +44,7 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
             # RAW BOX APPROACH ITERATOR
             ######################################################################################
             #
-                
+                pass
             #
             ######################################################################################
 
