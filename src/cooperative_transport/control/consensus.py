@@ -1,4 +1,4 @@
-from cooperative_transport.utils import saturation 
+from ..utils import saturation 
 
 def consensus(state, neighbours_state, reference, max_control):
     """Return consensus controller output for a SISO system.

@@ -1,5 +1,5 @@
 import numpy as np
-import utils
+import ..utils
 
 class PointToPoint:
     """Point to point control of unicycle-type robot.
