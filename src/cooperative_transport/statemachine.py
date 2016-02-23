@@ -44,7 +44,20 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
             # RAW BOX APPROACH ITERATOR
             ######################################################################################
             #
-                pass
+                box_approach_container = StateMachine(outcomes=['approach_continue'])
+                with box_approach_container:
+                ###################################################################################
+                # RAW BOX APPROACH CONTAINER
+                ###################################################################################
+                #
+                    pass
+                #
+                ###################################################################################
+                
+                Iterator.set_contained_state('CONTAINER_STATE', 
+                                             box_approach_container, 
+                                             loop_outcomes=['approach_continue'])
+
             #
             ######################################################################################
 
