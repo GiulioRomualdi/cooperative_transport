@@ -7,13 +7,22 @@ from smach import StateMachine, Iterator
 from cooperative_transport.msg import TaskState.msg
 from threading import Lock
 
-def construct_sm(robots_state, set_control, controller_index):
+  state_machine = construct_sm(self.controller_index,
+                                     self.robots_state, 
+                                     self.irbumper,
+                                     self.boxstate,
+                                     self.set_control)
+
+
+def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control):
     """Construct the top level state machine for cooperative transport.
 
     Arguments:
-    robots_state (Subscriber[]): list of Subscribers to robots odometry
-    set_control (function): function that publish a twist
     controller_index (int): index of the robot
+    robots_state (Subscriber[]): list of Subscribers to robots odometry
+    irbumper (Subscriber): Subscriber to this robot ir bumper
+    boxstate (Subscriber): Subscriber to the box state estimation
+    set_control (function): function that publish a twist
     """
     sm = StateMachine(outcomes=['transport_ok', 'transport_failed'])
     with sm:    
