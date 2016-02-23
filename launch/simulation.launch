@@ -12,6 +12,9 @@
   <param name="max_forward_v" value="0.5"/>
   <param name="max_angular_v" value="2"/>
 
+  <!-- box goal -->	 
+  <rosparam param="box_goal">{x : "4", y : "4", theta : "3.14"}</rosparam>
+
   <!-- RRT* planner bounds -->
   <param name="planner_lower_bound" value="-4"/>
   <param name="planner_upper_bound" value="4"/>
