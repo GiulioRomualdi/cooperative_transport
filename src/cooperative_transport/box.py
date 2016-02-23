@@ -10,12 +10,15 @@ from cooperative_transport.utils import quaternion_to_yaw
 from std_srvs.srv import Empty
 
 class BoxStateObserver:
-    """Estimate box state using noisy coordinates of points that belong to rectangle perimeter
+    """Estimate box state using noisy coordinates of points that belong to a rectangular perimeter
 
     Attributes:
     length (float): box length in meters
     width (float): box width in meters
     state (float[]): box state [x_c, y_c, theta]
+
+    ToDo:
+    document main method 'state_estimation'
     """
 
     def __init__(self, length, width, x_0, y_0, theta_0):
@@ -37,11 +40,11 @@ class BoxStateObserver:
         return self._state
 
     def __rectangle (self, x, y, state):
-        """Rectangle equation based on Lame' curve.
+        """Evaluate the rectangle equation based on a Lame' curve.
 
         Arguments:
-        x (float): x coordinate of a point belongs to rectangle perimeter 
-        y (float): y coordinate of a point belongs to rectangle perimeter 
+        x (float): x coordinate of a point that belongs to a rectangular perimeter
+        y (float): y coordinate of a point that belongs to a rectangular perimeter
         state (float[]): rectangle state [x_c, y_c, theta]
         """
         x_c = state[0]
@@ -59,26 +62,25 @@ class BoxStateObserver:
 
         return abs(value)
 
-    def __loss_function(self, state, data):
-        """Loss function evaluation
+    def __loss_function(self, state, coordinates):
+        """Evaluate the loss function.
 
         Arguments:
         state (float[]): rectangle state [x_c, y_c, theta]
-        data (float[]): points coordinates that belong ti rectangle perimeter
+        coordinates (float[]): coordinates of points that belong to a rectangular perimeter
         """
         loss_function = 0
-        coordinates = data
 
         for coordinate in coordinates:
             loss_function += self.__rectangle(coordinate[0], coordinate[1], state)
 
         return loss_function
         
-    def state_estimation(self, data):
-        """Evaluation of box state using Monte-Carlo method.
+    def state_estimation(self, coordinates):
+        """Evaluate the box state using a montecarlo-based approach.
         
         Argument:
-        data (float[]): points coordinates that belong ti rectangle perimeter
+        coordinates (float[]): points coordinates
         """
         random.seed()
         min_value = float('inf')
@@ -90,7 +92,7 @@ class BoxStateObserver:
             
             estimated_state = [x_c, y_c, theta]
             
-            new_value = self.__loss_function(estimated_state, data)
+            new_value = self.__loss_function(estimated_state, coordinates)
             min_value = min(min_value, new_value)
             
             if new_value == min_value:
@@ -99,15 +101,7 @@ class BoxStateObserver:
         return self._state
 
 class BoxStatePublisher:
-    """Publish the box state in a topic.
-
-    Attributes:
-    robot_radius (float): robot radius in meters
-    sensors_angles (dict): keys sensors name, value sensors angle position (radians) 
-    service_enabled (boolean): flag that allows to start box estimation
-    observer (BoxStateObserver): BoxStateObserver object
-    robots_state (dict): state and IR sensors data of each robot are saved
-    """
+    """Publish the box state in a topic."""
 
     def __init__(self):
         """Initialize the object."""
@@ -130,14 +124,16 @@ class BoxStatePublisher:
         rospy.Service('release_box_state', Empty, self.release_box_state)
         rospy.Service('hold_box_state', Empty, self.hold_box_state)
         
+        # Initialize the box state observer
         box_params = rospy.get_param('box')
         self.observer = BoxStateObserver(box_params['length'], box_params['width'], box_params['posx'], box_params['posy'], box_params['yaw'])
         
         self.number_robots = len(topics_names)
         self.robots_state = [{'state':{}, 'irbumper':{}} for index in range(self.number_robots)]
 
-        # Lock used to avoid contemporary access to robots_state and flag 
+        # Lock used to avoid concurrent access to robots_state
         self.robots_state_lock = threading.Lock()
+        # Lock used to avoid concurrent access to release_estimation
         self.flag_lock = threading.Lock()
 
         # Node rate
@@ -154,7 +150,7 @@ class BoxStatePublisher:
         self.flag_lock.release()
 
     def irsensors_callback(self, data, robot_index):
-        """Update robots_state using data that come from IR sensor.
+        """Update robots_state using data from IR sensor.
         
         Arguments:
         data (RoombaIR): data from IR sensor 
@@ -162,7 +158,7 @@ class BoxStatePublisher:
         """
         self.robots_state_lock.acquire()
 
-        # IR signal conversion into meters 
+        # convert IR signal in meters
         max_range = 0.233045
         scale_factor =  max_range - self.robot_radius
         robot_max_ir = 4095
@@ -171,7 +167,7 @@ class BoxStatePublisher:
         self.robots_state_lock.release()
 
     def pose_callback(self, data, robot_index):
-        """Update robots_state using robot's pose.
+        """Update robots_state using robot odometry.
         
         Arguments:
         data (Odometry): robot pose
@@ -187,18 +183,21 @@ class BoxStatePublisher:
         self.robots_state_lock.release()
 
     def point_coordinates(self, robot_index, angle_key):
-        """Convert point expressed in local coordinate (robot frame) into global frame using roto-translation matrix (SE(2))
-        p_g = T * p_l
+        """Convert the <angle_key>-th range measure of the <robot_index>-th robot
+        from the robot-fixed reference frame to a ground-fixed reference frame
+        using an SE2 matrix.
+
+        p_g = T * p_b
         
             | cos(theta) -sin(theta) x_o |   
         T = | sin(theta)  cos(theta) y_o |
             |      0          0       1  |
         
-        Where theta is robot yaw angle, x_o and y_o are robot pose
+        where theta is the robot yaw angle and [x_o, y_0]' is the robot pose
 
         Arguments:
         robot (string): robot name
-        angle_key (string): ir sensor angle in local frame
+        angle_key (string): ir sensor key representing its angular position in the body-fixed reference frame
         """
         
         x_robot = self.robots_state[robot_index]['state']['x']
@@ -246,13 +245,14 @@ class BoxStatePublisher:
 
     def run(self):
         """Run main method of the class."""
-        #rospy.sleep(10)
+        
+        # do we need some sleep here?!?
+
         while not rospy.is_shutdown():
 
             self.publish_box_state()
 
             self.clock.sleep()
-
 
 def main():
     """Initialize BoxStatePublisher."""
