@@ -4,7 +4,7 @@ from subscriber import Subscriber
 from planner import Planner
 from point_to_point import PointToPoint
 from smach import StateMachine, Iterator
-from cooperative_transport.msg import TaskState.msg
+from cooperative_transport.msg import TaskState
 from threading import Lock
 
 def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control):
@@ -23,7 +23,7 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
     # TOP LEVEL STATE MACHINE
     ##############################################################################################
     #
-        box_approaching = StateMachine(outcomes=['approach_ok', 'approach_failed'])
+        box_approach = StateMachine(outcomes=['approach_ok', 'approach_failed'])
         with box_approach:
         ##########################################################################################
         # BOX APPROACH STATE MACHINE
@@ -33,7 +33,7 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
             StateMachine.add('WAIT_FOR_TURN', WaitForTurn(controller_index),\
                              transitions={'my_turn':'PLAN_TRAJECTORY'})
 
-            StateMachine.add('PLAN_TRAJECTORY', PlanTrajectory(),\
+            StateMachine.add('PLAN_TRAJECTORY', PlanTrajectory(controller_index, robots_state),\
                              transitions={'path_found':'TODO', 'plan_failed':'approach_failed'})
         #
         ##########################################################################################
@@ -137,7 +137,7 @@ class PlanTrajectory(smach.State):
     Outputs:
     path: the path found by the planning algorithm
     """
-    def __init__(self, robots_state, controller_index):
+    def __init__(self, controller_index, robots_state):
         """Initialize the state of the fsm.
 
         Arguments:
