@@ -1,7 +1,7 @@
 import rospy
 import smach
 from subscriber import Subscriber
-from planner import Planner
+from planner import Planner, RectangularObstacle, CircularObstacle
 from point_to_point import PointToPoint
 from smach import StateMachine, Iterator
 from cooperative_transport.msg import TaskState
@@ -29,11 +29,11 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
         # BOX APPROACH STATE MACHINE
         ##########################################################################################
         #
+            wait_for_turn = WaitForTurn(controller_index)
+            StateMachine.add('WAIT_FOR_TURN', wait_for_turn, transitions={'my_turn':'PLAN_TRAJECTORY'})
 
-            StateMachine.add('WAIT_FOR_TURN', WaitForTurn(controller_index),\
-                             transitions={'my_turn':'PLAN_TRAJECTORY'})
-
-            StateMachine.add('PLAN_TRAJECTORY', PlanTrajectory(controller_index, robots_state),\
+            plan_trajectory = PlanTrajectory(controller_index, robots_state, boxstate)
+            StateMachine.add('PLAN_TRAJECTORY', plan_trajectory,\
                              transitions={'path_found':'TODO', 'plan_failed':'approach_failed'})
         #
         ##########################################################################################
@@ -83,6 +83,7 @@ class WaitForTurn(smach.State):
 
         # Subscribe and publish to the topic 'task_state'
         # Robots use this topic to wait for their turn to approach to the box
+
         self.turn_state_pub = rospy.Publisher('task_state', TaskState, queue_size=50)
         self.turn_state_sub = rospy.Subscriber('task_state', TaskState, self.callback)
         self.turn__state = []
@@ -137,19 +138,52 @@ class PlanTrajectory(smach.State):
     Outputs:
     path: the path found by the planning algorithm
     """
-    def __init__(self, controller_index, robots_state):
+    def __init__(self, controller_index, robots_state, boxstate):
         """Initialize the state of the fsm.
 
         Arguments:
         controller_index (int): index of the robot
         robots_state (Subscriber[]): list of Subscribers to robots odometry
+        boxstate (Subscriber): Subscriber to box state
         """
         smach.State.__init__(self, outcomes=['path_found','plan_failed'], output_keys=['path'])
+        
+        self.controller_index = controller_index
+        self.robots_state = robots_state
+        self.boxstate = boxstate
+
+    def execute(self, userdata):
 
         # Initialize the planner
         lower_bound = rospy.get_param('planner_lower_bound')
         upper_bound = rospy.get_param('planner_upper_bound')
         self.planner = Planner(lower_bound, upper_bound)
+
+        # Add obstacles for the neighbor robots
+        robot_radius = rospy.get_param('robot_radius')
+        for robot_index,robot_state in enumerate(self.robots_state):
+            if robot_index != self.controller_index
+
+            x_robot = robot_state.data.pose.pose.position.x
+            y_robot = robot_state.data.pose.pose.position.y
+            obstacle = CircularObstacle(robot_radius, x_robot, y_robot , robot_radius)
+
+            self.planner.add_obstacle(CircularObstacle())
+            
+        # Add obstacle for the box
+        box_parameters = rospy.get_param('box')
+        length = box_parameters['length']
+        width = box_parameters['width']
+        x_box = self.box_state.data.x
+        y_box = self.box_state.data.y
+        theta_box = self.box_state.data.theta
+        obstacle = RectangularObstacle(length, width, x_box, y_box, theta_box)
+        self.planner.add_obstacle(obstacle)
+
+        # TODO:
+        
+
+        
         
 class GoToPoint(smach.State):
     """State of the fsm in which the robot moves to a precise location.
