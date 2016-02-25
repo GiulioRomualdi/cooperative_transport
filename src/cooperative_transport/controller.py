@@ -26,7 +26,7 @@ class Controller:
         # Subscribe to robots odometry
         self.robots_state = [Subscriber(names['odom'], Odometry) for names in topics_names]
         # Subscribe to irbumper topic
-        self.irbumper = Subscriber(topics_names[controller_index]['irbumper'], RoombaIR)
+        # self.irbumper = Subscriber(topics_names[controller_index]['irbumper'], RoombaIR)
         # Subscribe to box state topic
         self.boxstate = Subscriber('box_state', BoxState)
 
@@ -40,8 +40,8 @@ class Controller:
         for robot_state in self.robots_state:
             condition = condition and robot_state.is_ready
 
-        condition = condition and self.irbumper.is_ready and\
-                    self.boxstate.is_ready
+        condition = condition and self.boxstate.is_ready
+        #self.irbumper.is_ready and self.boxstate.is_ready
 
         return condition
 
@@ -68,8 +68,7 @@ class Controller:
 
         # create the top level state machine
         state_machine = construct_sm(self.controller_index,
-                                     self.robots_state, 
-                                     self.irbumper,
+                                     self.robots_state,
                                      self.boxstate,
                                      self.set_control)
 
