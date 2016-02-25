@@ -1,5 +1,5 @@
 import numpy as np
-import ..utils
+import cooperative_transport.utils as utils
 
 class PointToPoint:
     """Point to point control of unicycle-type robot.

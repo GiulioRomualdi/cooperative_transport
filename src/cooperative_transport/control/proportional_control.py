@@ -1,4 +1,4 @@
-from ..utils import saturation
+from cooperative_transport.utils import saturation
 
 def proportional_control(k_p, r, y, u_max):
     """Implement proportional control law.
