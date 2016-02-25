@@ -58,7 +58,6 @@ class PointToPoint:
 
             saturated_forward_velocity = utils.saturation(rho_rg, self.max_forward_velocity)
             saturated_angular_velocity = utils.saturation(angular_velocity, self.max_angular_velocity)
-            saturated_angular_velocity *= -1 #gazebo bug
                 
             return False, saturated_forward_velocity, saturated_angular_velocity
 

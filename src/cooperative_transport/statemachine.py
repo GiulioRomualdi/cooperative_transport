@@ -268,7 +268,8 @@ class Alignment(smach.State):
 
             # Evaluate the control
             angular_v = proportional_control(self.kp, reference_input, theta, self.max_angular_v)
-
+            angular_v *= -1 # Gazebo Bug
+            
             # Set the control
             self.set_control(0, angular_v)
 
@@ -327,6 +328,7 @@ class GoToPoint(smach.State):
 
             # Evaluate the control
             done, forward_v, angular_v = self.controller.control_law([x, y, theta], forward_v)
+            angular_v *= -1 # Gazebo Bug
 
             # Set the control
             self.set_control(forward_v, angular_v)
