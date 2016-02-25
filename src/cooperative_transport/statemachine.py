@@ -1,8 +1,10 @@
 import rospy
 import smach
+import numpy as np
 from subscriber import Subscriber
 from planner import Planner, RectangularObstacle, CircularObstacle
-from point_to_point import PointToPoint
+from control.point_to_point import PointToPoint
+from control.proportional_control import proportional_control
 from smach import StateMachine, Iterator
 from cooperative_transport.msg import TaskState
 from threading import Lock
@@ -41,16 +43,25 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
 
             with box_approach:
             ######################################################################################
-            # RAW BOX APPROACH ITERATOR
+            # BOX APPROACH ITERATOR
             ######################################################################################
             #
                 box_approach_container = StateMachine(outcomes=['approach_continue'])
                 with box_approach_container:
                 ###################################################################################
-                # RAW BOX APPROACH CONTAINER
+                # BOX APPROACH CONTAINER
                 ###################################################################################
                 #
-                    pass
+                    alignment = Alignment(robots_state[controller_index], set_control)
+                    StateMachine.add('ALIGNMENT',\
+                                     alignment,\
+                                     transitions={'alignment_ok':'GO_TO_POINT'})
+
+                    go_to_point = GoToPoint(robots_state[controller_index], set_control)
+                    StateMachine.add('GO_TO_POINT',\
+                                     go_to_point,\
+                                     transitions={'point_reached':'approach_continue'})
+
                 #
                 ###################################################################################
                 
@@ -209,14 +220,67 @@ class PlanTrajectory(smach.State):
 
         # TODO:
         
+class Alignment(smach.State):
+    """State of the fsm in which the robot rotates in order to align
+    itself with the line of sight between its center and the next goal.
+    
+    Outcomes:
+    alignment_ok: the robot rotated successfully
 
+    Inputs:
+    goal (float[]): the goal position
+    
+    Outputs:
+    none
+    """
+    def __init__(self, robot_state, set_control):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        set_control (function): function that publish a twist
+        """
+        smach.State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
+
+        self.robot_state = robot_state
+        self.set_control = set_control
+
+        self.max_angular_v = float(rospy.get_param('max_angular_v'))
+        self.kp = 10
         
+        # State clock
+        self.clock = rospy.Rate(100)
+        
+    def execute(self, userdata):
+        # Read the sensors
+        x = self.robot_state.data.pose.pose.position.x
+        y = self.robot_state.data.pose.pose.position.y
+        theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+
+        # Parameter of control
+        reference_input = np.arctan2(userdata.goal[1] - y, userdata.goal[0] - x)  
+        error = reference_input - theta
+        tolerance = 0.1
+
+        while error > tolerance:
+            # Read the sensors
+            theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+
+            # Evaluate the control
+            angular_v = proportional_control(self.kp, reference_input, theta, self.max_angular_v)
+
+            # Set the control
+            self.set_control(0, angular_v)
+
+            self.clock.sleep()
+        
+        return 'alignment_ok'
         
 class GoToPoint(smach.State):
     """State of the fsm in which the robot moves to a precise location.
 
     Outcomes:
-    success: the robot moved successfully
+    point_reached: the robot moved successfully
     
     Inputs:
     goal (float[]): the goal position
@@ -231,7 +295,7 @@ class GoToPoint(smach.State):
         robots_state (Subscriber[]): list of Subscribers to robots odometry
         set_control (function): function that publish a twist
         """
-        smach.State.__init__(self, outcomes=['success'], input_keys=['goal'])
+        smach.State.__init__(self, outcomes=['point_reached'], input_keys=['goal'])
         
         self.robot_state = robot_state
         self.set_control = set_control
@@ -269,5 +333,5 @@ class GoToPoint(smach.State):
 
             self.clock.sleep()
 
-        return 'success'
+        return 'point_reached'
 
