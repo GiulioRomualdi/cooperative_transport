@@ -79,7 +79,7 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
 
             plan_trajectory = PlanTrajectory(controller_index, robots_state, boxstate)
             StateMachine.add('PLAN_TRAJECTORY', plan_trajectory,\
-                             transitions={'path_found':'RAW_BOX_APPROACH_ITERATOR',\
+                             transitions={'path_found':'BOX_APPROACH',\
                                           'plan_failed':'attachment_failed'},
                              remapping={'path':'path'})
 
