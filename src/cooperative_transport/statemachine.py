@@ -27,18 +27,18 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     # TOP LEVEL STATE MACHINE
     ##############################################################################################
     #
-        box_attachment = StateMachine(outcomes=['attachment_ok', 'attachment_failed'])
-        box_attachment.userdata.path = []
+        box_docking = StateMachine(outcomes=['docking_ok', 'docking_failed'])
+        box_docking.userdata.path = []
 
-        with box_attachment:
+        with box_docking:
         ##########################################################################################
-        # BOX ATTACHMENT STATE MACHINE
+        # BOX DOCKING STATE MACHINE
         ##########################################################################################
         #
             box_approach = Iterator(outcomes=['approach_ok'],\
                                     input_keys=['path'],\
                                     output_keys=[],\
-                                    it=box_attachment.userdata.path,\
+                                    it=box_docking.userdata.path,\
                                     it_label='goal',\
                                     exhausted_outcome='approach_ok')
 
@@ -83,7 +83,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             plan_trajectory = PlanTrajectory(controller_index, robots_state, boxstate)
             StateMachine.add('PLAN_TRAJECTORY', plan_trajectory,\
                              transitions={'path_found':'BOX_APPROACH',\
-                                          'plan_failed':'attachment_failed'},
+                                          'plan_failed':'docking_failed'},
                              remapping={'path':'path'})
 
             StateMachine.add('BOX_APPROACH',\
@@ -92,15 +92,15 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
             box_fine_approach = BoxFineApproach(robots_state[controller_index], controller_index, set_control)
             StateMachine.add('BOX_FINE_APPROACH',box_fine_approach,\
-                             transitions={'fine_approach_ok':'attachment_ok'})
+                             transitions={'fine_approach_ok':'docking_ok'})
 
 
         #
         ##########################################################################################
 
-        StateMachine.add('BOX_ATTACHMENT', box_attachment,\
-                         transitions={'attachment_failed':'transport_failed',\
-                                      'attachment_ok':'MOVE_BOX'})
+        StateMachine.add('BOX_DOCKING', box_docking,\
+                         transitions={'docking_failed':'transport_failed',\
+                                      'docking_ok':'MOVE_BOX'})
     #
     ##############################################################################################
             
