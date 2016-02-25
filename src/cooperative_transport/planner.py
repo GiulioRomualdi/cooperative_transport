@@ -27,7 +27,7 @@ class RectangularObstacle:
         robot_radius (float): robot radius in meters
         """
         # Define an obstacle region in C-Space
-        tolerance = 0.03
+        tolerance = 0.05
         self.length = length + robot_radius + tolerance
         self.width = width + robot_radius + tolerance
         self.xc = xc
