@@ -2,6 +2,7 @@ import rospy
 import smach
 import numpy as np
 from subscriber import Subscriber
+from irobotcreate2.msg import RoombaIR
 from planner import Planner, RectangularObstacle, CircularObstacle
 from control.point_to_point import PointToPoint
 from control.proportional_control import proportional_control
@@ -9,7 +10,7 @@ from smach import StateMachine, Iterator
 from cooperative_transport.msg import TaskState
 from threading import Lock
 
-def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control):
+def construct_sm(controller_index, robots_state, boxstate, set_control):
     """Construct the top level state machine for cooperative transport.
 
     Arguments:
@@ -72,6 +73,8 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
             #
             ######################################################################################
 
+            
+
             wait_for_turn = WaitForTurn(controller_index)
             StateMachine.add('WAIT_FOR_TURN',\
                              wait_for_turn,\
@@ -86,6 +89,12 @@ def construct_sm(controller_index, robots_state, irbumper, boxstate, set_control
             StateMachine.add('BOX_APPROACH',\
                              box_approach,\
                              transitions={'approach_ok':'BOX_FINE_APPROACH'})
+
+            box_fine_approach = BoxFineApproach(robots_state[controller_index], controller_index, set_control)
+            StateMachine.add('BOX_FINE_APPROACH',box_fine_approach,\
+                             transitions={'fine_approach_ok':'attachment_ok'})
+
+
         #
         ##########################################################################################
 
@@ -247,7 +256,8 @@ class Alignment(smach.State):
 
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
         self.kp = 10
-        
+        self.tolerance = 0.1
+
         # State clock
         self.clock = rospy.Rate(100)
         
@@ -257,12 +267,10 @@ class Alignment(smach.State):
         y = self.robot_state.data.pose.pose.position.y
         theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
-        # Parameter of control
         reference_input = np.arctan2(userdata.goal[1] - y, userdata.goal[0] - x)  
         error = reference_input - theta
-        tolerance = 0.1
-
-        while error > tolerance:
+        
+        while error > self.tolerance:
             # Read the sensors
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
@@ -337,3 +345,100 @@ class GoToPoint(smach.State):
 
         return 'point_reached'
 
+class BoxFineApproach(smach.State):
+    """State of the fsm in which the robot approaches the box.
+
+    Outcomes:
+    fine_approach_ok: the robot moved successfully
+    
+    Inputs:
+    none
+
+    Outputs:
+    none
+    """
+    def __init__(self, robot_state, controller_index, set_control):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        controller_index (int): index of the robot
+        set_control (function): function that publish a twist
+        """
+        smach.State.__init__(self, outcomes=['fine_approach_ok'])
+
+        self.robot_state = robot_state
+        self.set_control = set_control
+
+        self.max_forward_v = float(rospy.get_param('max_forward_v'))
+        self.max_angular_v = float(rospy.get_param('max_angular_v'))
+        
+        self.angle_tolerance = 0.01
+        self.kp = 10
+
+        self.linear_tolerance = 4000
+
+        # Topic subscrption
+        topic_name = rospy.get_param('topics_names')[controller_index]
+        rospy.Subscriber(topic_name['irbumper'], RoombaIR, self.irsensors_callback)
+        
+        self.angle_ref = 1 #ME LO DA NICOLA
+        self.ir_data = {}
+        
+        # Lock used to avoid concurrent access to ir_data
+        self.ir_data_lock = Lock()
+
+        # State clock
+        self.clock = rospy.Rate(100)
+
+    def min_ir_data(self):
+        """Return the minimum value in ir_data"""
+        self.ir_data_lock.acquire()
+        min_value = min(self.ir_data.values())
+        self.ir_data_lock.release()
+        
+        return min_value
+
+    def irsensors_callback(self, data):
+        """Update ir_data using data from IR sensor.
+        
+        Arguments:
+        data (RoombaIR): data from IR sensor 
+        """
+        self.ir_data_lock.acquire()
+
+        self.ir_data[data.header.frame_id] = data.signal
+
+        self.ir_data_lock.release()
+
+    def execute(self, userdata):
+        """Execute the main activity of the fsm state.
+
+        Arguments:
+        userdata: inputs and outputs of the fsm state."""
+
+        theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+        
+        # Parameter of control
+        angle_error = self.angle_ref - theta
+        
+        
+        while angle_error > self.angle_tolerance:
+            # Read the sensors
+            theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+
+            # Evaluate the control
+            angular_v = proportional_control(self.kp, reference_input, theta, self.max_angular_v)
+            angular_v *= -1 # Gazebo Bug
+            
+            # Set the control
+            self.set_control(0, angular_v)
+
+            self.clock.sleep()
+
+        linear_v = 0.01
+
+        while self.min_ir_data() < self.linear_tollerance:
+            self.set_control(0, linear_v)
+        
+        return 'fine_approach_ok'
