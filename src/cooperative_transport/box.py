@@ -3,11 +3,105 @@ import random
 import rospy
 import threading
 import numpy as np
+import math3d as m3d
 from irobotcreate2.msg import RoombaIR
 from nav_msgs.msg import Odometry
 from cooperative_transport.msg import BoxState
 from cooperative_transport.utils import quaternion_to_yaw
 from std_srvs.srv import Empty
+from utils import Segment, angle_normalization
+
+class BoxGeometry:
+    """Box geometry"""
+    
+    def __init__(self, length, width, center, theta):
+        """Initialize box geometry.
+
+        Attributes:
+        length (float): box length in meters
+        width (float): box length in meters
+        center (float[2]): box center [x_c, y_c] in meters
+        orientation (float): box orientation
+        """
+        self.length = length
+        self.width = width
+        self.center = center
+        self.theta = theta
+
+    def vertex(self, vertex_index):
+        """Return the requested box vertex.
+
+        Arguments:
+        vertex (int): the index of the requested vertex"""
+        
+        # Find the vertex coordinates in a box-fixed reference frame
+        #
+        #  D --------- C
+        #  -           -
+        #  -   (0,0)   -
+        #  -           -
+        #  A --------- B
+        #
+        vertex_index %= 4
+        delta_x = float(self.length)/2
+        delta_y = float(self.width)/2
+        x_vertex = 0
+        y_vertex = 0
+        #A
+        if vertex_index == 0:
+            x_vertex = - delta_x
+            y_vertex = - delta_y
+        #B
+        elif vertex_index == 1:
+            x_vertex = + delta_x
+            y_vertex = - delta_y
+        #C
+        elif vertex_index == 2:
+            x_vertex = + delta_x
+            y_vertex = + delta_y
+        #D
+        else:
+            x_vertex = - delta_x
+            y_vertex = + delta_y
+
+        # Calculate the vector
+        vector = m3d.Vector(x_vertex, y_vertex)
+        # Rotatate the vector by theta
+        rotation = m3d.Orientation.new_rot_z(self.theta)
+        rotated_vector = rotation * vector        
+        # Translate the vector
+        p_c = m3d.Vector(self.center)
+        transl_vector = p_c + rotated_vector
+
+        vector = transl_vector.get_list()
+        # we need 2D vector
+        vector.pop()
+
+        return vector
+
+    def vertices(self):
+        """Return the vertices in ccw order."""
+
+        return [self.vertex(i) for i in range(4)]
+
+    def edge(self, edge_i, edge_j):
+        """Return a segment representing the edge between vertices (edge_i) and (edge_j).
+
+        Arguments:
+        edge_i (int): i-th edge index
+        edje_j (int): j-th edge index
+        """
+
+        edge_i %= 4
+        edge_j %= 4
+
+        # Get the vertices
+        vertices = self.vertices()
+
+        # Create the segment
+        segment = Segment (vertices[edge_i], vertices[edge_j])
+
+        return segment
 
 class BoxStateObserver:
     """Estimate box state using noisy coordinates of points that belong to a rectangular perimeter
@@ -88,7 +182,7 @@ class BoxStateObserver:
         for i in range(50):
             x_c = random.gauss(self._state[0], 0.02)
             y_c = random.gauss(self._state[1], 0.02)
-            theta = random.gauss(self._state[2], 0.002)
+            theta = angle_normalization(random.gauss(self._state[2], 0.002))
             
             estimated_state = [x_c, y_c, theta]
             
@@ -241,7 +335,6 @@ class BoxStatePublisher:
 
         if not rospy.is_shutdown():        
             self.state_pub.publish(msg)
-        
 
     def run(self):
         """Run main method of the class."""
@@ -257,4 +350,7 @@ class BoxStatePublisher:
 def main():
     """Initialize BoxStatePublisher."""
     box_state_publisher = BoxStatePublisher()
-    box_state_publisher.run()
+    try:
+        box_state_publisher.run()
+    except rospy.ROSInterruptException:
+        pass
