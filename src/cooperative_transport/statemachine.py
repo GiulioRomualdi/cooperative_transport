@@ -32,7 +32,6 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     ##############################################################################################
     #
         box_docking = StateMachine(outcomes=['docking_ok', 'docking_failed'])
-        box_docking.userdata.path = []
 
         with box_docking:
         ##########################################################################################
@@ -40,9 +39,9 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
         ##########################################################################################
         #
             box_approach = Iterator(outcomes=['approach_ok'],\
-                                    input_keys=['path'],\
+                                    input_keys=[],\
                                     output_keys=[],\
-                                    it=box_docking.userdata.path,\
+                                    it= lambda:[item for item in box_docking.userdata.path],\
                                     it_label='goal',\
                                     exhausted_outcome='approach_ok')
 
@@ -78,7 +77,6 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
             #
             ######################################################################################
-
             
 
             wait_for_turn = WaitForTurn(controller_index)
@@ -90,7 +88,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             StateMachine.add('PLAN_TRAJECTORY', plan_trajectory,\
                              transitions={'path_found':'BOX_APPROACH',\
                                           'plan_failed':'docking_failed'},
-                             remapping={'path':'path'})
+                             remapping={'plan_trajectory_out':'path'})
 
             StateMachine.add('BOX_APPROACH',\
                              box_approach,\
@@ -202,7 +200,9 @@ class PlanTrajectory(smach.State):
         robots_state (Subscriber[]): list of Subscribers to robots odometry
         boxstate (Subscriber): Subscriber to box state
         """
-        smach.State.__init__(self, outcomes=['path_found','plan_failed'], output_keys=['path'])
+        smach.State.__init__(self, 
+                             outcomes=['path_found','plan_failed'], 
+                             output_keys=['plan_trajectory_out'])
         
         self.controller_index = controller_index
         self.robots_state = robots_state
@@ -247,7 +247,7 @@ class PlanTrajectory(smach.State):
         # Plan trajectory
         this_robot = self.robots_state[self.controller_index].data.pose.pose.position
 
-        tolerance = - np.array(response.normal) * 0.04 
+        tolerance = - np.array(response.normal) * 0.02 
 
         start_point = [this_robot.x, this_robot.y]
         goal_point = (np.array(response.point) + tolerance).tolist()
@@ -255,7 +255,7 @@ class PlanTrajectory(smach.State):
         state, path = self.planner.plan(start_point, goal_point)
 
         if state:
-            userdata.path = path
+            userdata.plan_trajectory_out = path
             return 'path_found'
 
         else:
