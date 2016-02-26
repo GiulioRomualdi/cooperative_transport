@@ -175,6 +175,7 @@ class WaitForTurn(smach.State):
         # Wait for turn
         if self.controller_index == 0:
             return 'my_turn'
+
         while self.turn_number != self.controller_index:
             self.clock.sleep()
 
@@ -286,7 +287,7 @@ class Alignment(smach.State):
         self.set_control = set_control
 
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
-        self.kp = 1
+        self.kp = 10
         self.tolerance = 0.1
 
         # State clock
@@ -407,7 +408,7 @@ class BoxFineApproach(smach.State):
 
         self.robot_state = robot_state
         self.set_control = set_control
-
+        self.controller_index = controller_index 
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
         
@@ -417,14 +418,23 @@ class BoxFineApproach(smach.State):
         self.linear_tolerance = 4000
 
         # Topic subscrption
-        topic_name = rospy.get_param('topics_names')[controller_index]
+        topic_name = rospy.get_param('topics_names')[self.controller_index]
         rospy.Subscriber(topic_name['irbumper'], RoombaIR, self.irsensors_callback)
         
-        self.angle_ref = 1 #ME LO DA NICOLA
         self.ir_data = {}
         
         # Lock used to avoid concurrent access to ir_data
         self.ir_data_lock = Lock()
+
+        # Get normal from service box_get_docking_point
+        rospy.wait_for_service('box_get_docking_point')
+        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
+        try:
+            response = docking(self.controller_index)
+        except rospy.ServiceException:
+            pass
+        
+        self.angle_ref = np.arctan2(response.normal[1], response.normal[0])
 
         # State clock
         self.clock = rospy.Rate(100)
