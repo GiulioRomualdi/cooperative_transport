@@ -112,7 +112,7 @@ class BoxInformationServices():
         # The response
         response = BoxGetDockingPointResponse()
         docking = self.docking[request.robot_id]
-        response.docking = docking['point']
+        response.point = docking['point']
         response.normal = docking['normal']
         
         return response

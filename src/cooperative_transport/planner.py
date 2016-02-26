@@ -192,7 +192,8 @@ class Planner:
             path = self.pdef.getSolutionPath()
             states = path.getStates()
             vector = [[state[0], state[1]] for state in states]
-                        
+            print vector
+
             return True, vector
 
         return False,

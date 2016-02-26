@@ -1,6 +1,7 @@
 import rospy
 import smach
 import numpy as np
+import utils
 from subscriber import Subscriber
 from irobotcreate2.msg import RoombaIR
 from planner import Planner, RectangularObstacle, CircularObstacle
@@ -9,6 +10,9 @@ from control.proportional_control import proportional_control
 from smach import StateMachine, Iterator
 from cooperative_transport.msg import TaskState
 from threading import Lock
+from cooperative_transport.srv import BoxGetDockingPoint
+from cooperative_transport.srv import BoxGetDockingPointResponse
+from cooperative_transport.srv import BoxGetDockingPointRequest
 
 def construct_sm(controller_index, robots_state, boxstate, set_control):
     """Construct the top level state machine for cooperative transport.
@@ -47,7 +51,8 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             # BOX APPROACH ITERATOR
             ######################################################################################
             #
-                box_approach_container = StateMachine(outcomes=['approach_continue'])
+                box_approach_container = StateMachine(outcomes=['approach_continue'],\
+                                                      input_keys=['goal'])
                 with box_approach_container:
                 ###################################################################################
                 # BOX APPROACH CONTAINER
@@ -57,11 +62,12 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                     StateMachine.add('ALIGNMENT',\
                                      alignment,\
                                      transitions={'alignment_ok':'GO_TO_POINT'})
-
+                    
                     go_to_point = GoToPoint(robots_state[controller_index], set_control)
                     StateMachine.add('GO_TO_POINT',\
                                      go_to_point,\
                                      transitions={'point_reached':'approach_continue'})
+                    
 
                 #
                 ###################################################################################
@@ -100,7 +106,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
         StateMachine.add('BOX_DOCKING', box_docking,\
                          transitions={'docking_failed':'transport_failed',\
-                                      'docking_ok':'MOVE_BOX'})
+                                      'docking_ok':'transport_ok'})
     #
     ##############################################################################################
             
@@ -167,6 +173,8 @@ class WaitForTurn(smach.State):
         Arguments:
         userdata: inputs and outputs of the fsm state."""
         # Wait for turn
+        if self.controller_index == 0:
+            return 'my_turn'
         while self.turn_number != self.controller_index:
             self.clock.sleep()
 
@@ -198,7 +206,7 @@ class PlanTrajectory(smach.State):
         self.controller_index = controller_index
         self.robots_state = robots_state
         self.boxstate = boxstate
-
+        
     def execute(self, userdata):
 
         # Initialize the planner
@@ -215,19 +223,42 @@ class PlanTrajectory(smach.State):
                 y_robot = robot_state.data.pose.pose.position.y
                 obstacle = CircularObstacle(robot_radius, x_robot, y_robot , robot_radius)
 
-                self.planner.add_obstacle(CircularObstacle())
+                self.planner.add_obstacle(obstacle)
             
         # Add obstacle for the box
         box_parameters = rospy.get_param('box')
         length = box_parameters['length']
         width = box_parameters['width']
-        x_box = self.box_state.data.x
-        y_box = self.box_state.data.y
-        theta_box = self.box_state.data.theta
-        obstacle = RectangularObstacle(length, width, x_box, y_box, theta_box)
+        x_box = self.boxstate.data.x
+        y_box = self.boxstate.data.y
+        theta_box = self.boxstate.data.theta
+        obstacle = RectangularObstacle(length, width, x_box, y_box, theta_box, robot_radius)
         self.planner.add_obstacle(obstacle)
 
-        # TODO:
+        # Get docking point from service box_get_docking_point
+        rospy.wait_for_service('box_get_docking_point')
+        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
+        try:
+            response = docking(self.controller_index)
+        except rospy.ServiceException:
+            pass
+            
+        # Plan trajectory
+        this_robot = self.robots_state[self.controller_index].data.pose.pose.position
+
+        tolerance = - np.array(response.normal) * 0.04 
+
+        start_point = [this_robot.x, this_robot.y]
+        goal_point = (np.array(response.point) + tolerance).tolist()
+
+        state, path = self.planner.plan(start_point, goal_point)
+
+        if state:
+            userdata.path = path
+            return 'path_found'
+
+        else:
+            return 'plan_failed'
         
 class Alignment(smach.State):
     """State of the fsm in which the robot rotates in order to align
@@ -255,7 +286,7 @@ class Alignment(smach.State):
         self.set_control = set_control
 
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
-        self.kp = 10
+        self.kp = 1
         self.tolerance = 0.1
 
         # State clock
@@ -270,18 +301,23 @@ class Alignment(smach.State):
         reference_input = np.arctan2(userdata.goal[1] - y, userdata.goal[0] - x)  
         error = reference_input - theta
         
-        while error > self.tolerance:
+        while abs(error) > self.tolerance:
             # Read the sensors
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
             # Evaluate the control
             angular_v = proportional_control(self.kp, reference_input, theta, self.max_angular_v)
             angular_v *= -1 # Gazebo Bug
-            
+
+            # Evaluate error
+            error = reference_input - theta
+
             # Set the control
             self.set_control(0, angular_v)
 
             self.clock.sleep()
+
+        self.set_control(0, 0)
         
         return 'alignment_ok'
         
@@ -342,6 +378,8 @@ class GoToPoint(smach.State):
             self.set_control(forward_v, angular_v)
 
             self.clock.sleep()
+
+        self.set_control(0, 0)        
 
         return 'point_reached'
 
@@ -421,24 +459,28 @@ class BoxFineApproach(smach.State):
         
         # Parameter of control
         angle_error = self.angle_ref - theta
-        
-        
-        while angle_error > self.angle_tolerance:
+                
+        while abs(angle_error) > self.angle_tolerance:
             # Read the sensors
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
             # Evaluate the control
-            angular_v = proportional_control(self.kp, reference_input, theta, self.max_angular_v)
+            angular_v = proportional_control(self.kp, self.angle_ref, theta, self.max_angular_v)
             angular_v *= -1 # Gazebo Bug
+
+            # Evaluate error
+            angle_error = self.angle_ref - theta
             
             # Set the control
             self.set_control(0, angular_v)
 
             self.clock.sleep()
 
+        self.set_control(0, 0)
+            
         linear_v = 0.01
 
-        while self.min_ir_data() < self.linear_tollerance:
+        while self.min_ir_data() < self.linear_tolerance:
             self.set_control(0, linear_v)
         
         return 'fine_approach_ok'
