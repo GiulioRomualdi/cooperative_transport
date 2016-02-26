@@ -16,8 +16,8 @@
   <rosparam param="box_goal">{x : 4.0, y : 4.0, theta : 3.14}</rosparam>
 
   <!-- RRT* planner bounds -->
-  <param name="planner_lower_bound" value="-4"/>
-  <param name="planner_upper_bound" value="4"/>
+  <param name="planner_lower_bound" value="-5"/>
+  <param name="planner_upper_bound" value="5"/>
 
   <!-- launch gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
