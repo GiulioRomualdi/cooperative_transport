@@ -5,6 +5,7 @@ Ros node implementation.
 Prerequisites
 ---
 * [irobotcreate2](https://github.com/MirkoFerrati/irobotcreate2ros.git)
+* [math3d](https://pypi.python.org/pypi/math3d/3.0.0)
 
 Instructions
 ---
