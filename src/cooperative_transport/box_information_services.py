@@ -34,7 +34,6 @@ def find_docking_points(box_current_pose, box_goal_pose, box_length, box_width):
     # Test if (box_goal_pose - box_pose) is parallel to an edge of the box
     difference = np.array(box_goal_pose) - np.array(box_pose)
     angle_between = angle_normalization(np.arctan2(difference[1], difference[0]) - box_theta)
-    print angle_between
     tolerance = 0.1
     for angle in [0, + np.pi / 2, - np.pi / 2, np.pi]:
         if abs(angle_between - angle) < tolerance:
@@ -62,13 +61,9 @@ def find_docking_points(box_current_pose, box_goal_pose, box_length, box_width):
     if pair_02[0] == 0 and pair_02[1] == 3:
         pair_02.reverse()
 
-    print(pair_01)
-    print(pair_02)
-
     points = []
     edges = []
     # Find docking points and normals
-    print singularity
     if singularity == True:
         edges.append(box_geometry.edge(*pair_01))
         edges.append(box_geometry.edge((pair_01[0] - 1) % 4, (pair_01[1] - 1) % 4))
@@ -87,7 +82,7 @@ def find_docking_points(box_current_pose, box_goal_pose, box_length, box_width):
     return [{'point' : edges[i].point(points[i]) , 'normal' : edges[i].normal() } for i in range(3)]
 
                 
-class Boxinformationservices ():
+class BoxInformationServices():
     """Provide box information services."""
 
     def __init__(self):
@@ -100,8 +95,8 @@ class Boxinformationservices ():
         self.box_length = rospy.get_param('box')['length']
         self.box_width = rospy.get_param('box')['width']
 
-        # Provide 'box_get_attachment_point' service
-        rospy.Service('box_get_attachment_point', BoxGetDockingPoint, self.box_get_docking_point)
+        # Provide 'box_get_docking_point' service
+        rospy.Service('box_get_docking_point', BoxGetDockingPoint, self.box_get_docking_point)
         # Provide 'box_set_goal' service
         rospy.Service('box_set_goal', BoxSetGoal, self.box_set_goal)
 
@@ -134,18 +129,18 @@ class Boxinformationservices ():
         box_y = latest_boxstate.y
         box_theta = latest_boxstate.theta
         
-        # Update the attachment points
-        self.docking = find_attachment_points([box_x, box_y, box_theta],
+        # Update the docking points/normals
+        self.docking = find_docking_points([box_x, box_y, box_theta],
                                                         [request.x_goal, request.y_goal],
                                                         self.box_length, self.box_width)
     def run(self):
         """Main activity of the node."""
         # Wait for boxstate to be ready
-        while not boxstate.is_ready:
+        while not self.boxstate.is_ready:
             rospy.sleep(1)
         
         # Get the initial box goal pose
-        initial_boxgoal = rospy.get_parameter('box_goal')
+        initial_boxgoal = rospy.get_param('box_goal')
         goal_x = initial_boxgoal['x']
         goal_y = initial_boxgoal['y']
 

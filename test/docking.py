@@ -6,7 +6,7 @@ NAME = 'docking_test'
 import unittest
 import rosunit
 import numpy as np
-from cooperative_transport.box_info_services import find_docking_points
+from cooperative_transport.box_information_services import find_docking_points
 
 class TestDocking(unittest.TestCase):
     """TestCase class for cooperative_transport.box_info_services.find_docking_points function."""
@@ -98,6 +98,3 @@ class TestDocking(unittest.TestCase):
 
 if __name__ == '__main__':
     rosunit.unitrun(PKG, 'box_geometry_test', TestDocking, coverage_packages=['cooperative_transport.box'])
-
-
-

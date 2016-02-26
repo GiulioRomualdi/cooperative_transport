@@ -13,7 +13,7 @@
   <param name="max_angular_v" value="2"/>
 
   <!-- box goal -->	 
-  <rosparam param="box_goal">{x : "4", y : "4", theta : "3.14"}</rosparam>
+  <rosparam param="box_goal">{x : 4.0, y : 4.0, theta : 3.14}</rosparam>
 
   <!-- RRT* planner bounds -->
   <param name="planner_lower_bound" value="-4"/>
@@ -32,6 +32,9 @@
 
   <!-- launch box estimation -->
   <node name="box_estimation" pkg="cooperative_transport" type="box_estimation" output="screen"/>
+
+  <!-- launch box information services -->
+  <node name="box_information_services" pkg="cooperative_transport" type="box_information_services" output="screen"/>
 
   <!-- launch controllers -->
   <node name="controller0" pkg="cooperative_transport" type="controller" args="0" output="screen"/>
