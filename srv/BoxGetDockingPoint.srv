@@ -1,0 +1,4 @@
+int32 robot_id
+---
+float32[] docking
+float32[] normal

@@ -52,11 +52,11 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+   FILES
+   BoxGetDockingPoint.srv
+   BoxSetGoal.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -187,4 +187,5 @@ include_directories(
 # endif()
 
 ## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+catkin_add_nosetests(test/box_geometry.py)
+catkin_add_nosetests(test/docking.py)
