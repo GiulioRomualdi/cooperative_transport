@@ -189,3 +189,4 @@ include_directories(
 ## Add folders to be run by python nosetests
 catkin_add_nosetests(test/box_geometry.py)
 catkin_add_nosetests(test/docking.py)
+catkin_add_nosetests(test/planner.py)
