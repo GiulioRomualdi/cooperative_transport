@@ -277,11 +277,11 @@ class Alignment(smach.State):
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
 
         # Tuning
-        self.kp = 10
-        self.tolerance = 0.1
+        self.kp = 2
+        self.tolerance = 0.017
 
         # State clock
-        self.clock = rospy.Rate(100)
+        self.clock = rospy.Rate(200)
         
     def execute(self, userdata):
         # Read the sensors
@@ -294,6 +294,7 @@ class Alignment(smach.State):
         error = reference_input - theta
         
         while abs(error) > self.tolerance:
+            print error
             # Read the sensors
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
@@ -412,11 +413,11 @@ class BoxFineApproach(smach.State):
         self.ir_data = {}
 
         # State clock
-        self.clock = rospy.Rate(100)
+        self.clock = rospy.Rate(200)
 
         # Tuning
-        self.kp = 10        
-        self.linear_tolerance = 3000
+        self.kp = 2
+        self.linear_tolerance = 4000
         self.angle_tolerance = 0.017
 
     def max_ir_data(self):
