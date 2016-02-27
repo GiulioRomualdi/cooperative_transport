@@ -89,9 +89,14 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             StateMachine.add('BOX_APPROACH',\
                              box_approach,\
                              transitions={'approach_ok':'BOX_FINE_APPROACH'})
+ 
             box_fine_approach = BoxFineApproach(robots_state[controller_index], controller_index, set_control)
             StateMachine.add('BOX_FINE_APPROACH',box_fine_approach,\
-                             transitions={'fine_approach_ok':'docking_ok'})
+                             transitions={'fine_approach_ok':'SYNCHRONIZER'})
+
+            synchronizer = Synchronizer(controller_index)
+            StateMachine.add('SYNCHRONIZER',synchronizer,\
+                             transitions={'synchronization_ok':'docking_ok'})
         #
         ##########################################################################################
 
@@ -127,9 +132,9 @@ class WaitForTurn(smach.State):
 
         # Subscribe and publish to the topic 'turn_state'
         # Robots use this topic to wait for their turn to approach to the box
-        self.turn_state_pub = rospy.Publisher('turn_state', TaskState, queue_size=50)
-        self.turn_state_sub = rospy.Subscriber('turn_state', TaskState, self.callback)
-        self.turn_state = []
+        self.turn_state_pub = rospy.Publisher('wait', TaskState, queue_size=50)
+        self.turn_state_sub = rospy.Subscriber('wait', TaskState, self.callback)
+        self.turn_state = set()
 
         # Lock used to protect the variable turn_state
         self.lock = Lock()
@@ -143,11 +148,11 @@ class WaitForTurn(smach.State):
         Arguments:
         data (TaskState): last task state received by the node.
         """
-        self.lock.acquire()
-        # Add robot_id to the turn_state list for every new robot
-        if not data.robot_id in self.turn_state:
-            self.turn_state.append(data.robot_id)
-        self.lock.release()
+        if data.task_name == 'wait_for_turn':
+            self.lock.acquire()
+            # Add robot_id to the turn_state list for every new robot
+            self.turn_state.add(data.robot_id)
+            self.lock.release()
         
     def turn_number(self):
         """Return the number of robots in the turn_state list."""
@@ -445,9 +450,10 @@ class BoxFineApproach(smach.State):
         userdata: inputs and outputs of the fsm state.
         """
         # Let the other robots know that it's their turn
-        pub = rospy.Publisher('turn_state', TaskState, queue_size=50)
+        pub = rospy.Publisher('wait', TaskState, queue_size=50)
         msg = TaskState()
         msg.robot_id = self.controller_index
+        msg.task_name = 'wait_for_turn'
         pub.publish(msg)
         pub.publish(msg)
         pub.publish(msg)
@@ -495,3 +501,73 @@ class BoxFineApproach(smach.State):
         self.set_control(0,0)
 
         return 'fine_approach_ok'
+
+
+class Synchronizer(smach.State):
+    """State of the fsm in which the robot synchronize themsel.
+
+    Outcomes:
+    fine_approach_ok: the robot moved successfully
+    
+    Inputs:
+    none
+
+    Outputs:
+    none
+    """
+    def __init__(self, controller_index):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        controller_index (int): index of the robot
+        """
+        smach.State.__init__(self, outcomes=['synchronization_ok'])
+
+        self.controller_index = controller_index 
+
+        self.robots_state_pub = rospy.Publisher('wait', TaskState, queue_size=50)
+        self.robots_state_sub = rospy.Subscriber('wait', TaskState, self.callback)
+        self.robots_state = set()
+
+        self.lock = Lock()
+        
+    def callback(self, data):
+        """Update ir_data using data from IR sensor.
+        
+        Arguments:
+        data (RoombaIR): data from IR sensor 
+        """
+        if data.task_name == 'synchronization':
+            self.lock.acquire()
+            self.robots_state.add(data.robot_id)
+            self.lock.release()
+
+    def get_dimension(self):
+        """Return the dimension of robots_state."""
+        self.lock.acquire()
+        number = len(self.robots_state)
+        self.lock.release()
+        return number
+    
+    def execute(self, userdata):
+        """Execute the main activity of the fsm state.
+
+        Arguments:
+        userdata: inputs and outputs of the fsm state.
+        """
+
+        msg = TaskState()
+        msg.robot_id = self.controller_index
+        msg.task_name = 'synchronization'
+        
+        while self.get_dimension() != 3:
+            self.robots_state_pub.publish(msg)
+            rospy.sleep(1)
+
+        self.robots_state_pub.publish(msg)
+        self.robots_state_pub.publish(msg)
+        self.robots_state_pub.publish(msg)
+
+        rospy.sleep(1)
+
+        return 'synchronization_ok'
