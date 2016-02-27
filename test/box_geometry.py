@@ -113,6 +113,6 @@ class TestBoxGeometry(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    rosunit.unitrun(PKG, 'box_geometry_test', TestBoxGeometry, coverage_packages=['cooperative_transport.box'])
+    rosunit.unitrun(PKG, 'box_geometry_test', TestBoxGeometry)
 
     
