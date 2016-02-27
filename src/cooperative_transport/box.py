@@ -233,12 +233,12 @@ class BoxStatePublisher:
         # Node rate
         self.clock = rospy.Rate(100)
 
-    def release_box_state(self):
+    def release_box_state(self, request):
         self.flag_lock.acquire()
         self.release_estimation = True
         self.flag_lock.release()
 
-    def hold_box_state(self):
+    def hold_box_state(self, request):
         self.flag_lock.acquire()
         self.release_estimation = False
         self.flag_lock.release()
