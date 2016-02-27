@@ -66,18 +66,14 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                     StateMachine.add('GO_TO_POINT',\
                                      go_to_point,\
                                      transitions={'point_reached':'approach_continue'})
-                    
-
                 #
                 ###################################################################################
                 
                 Iterator.set_contained_state('CONTAINER_STATE', 
                                              box_approach_container, 
                                              loop_outcomes=['approach_continue'])
-
             #
             ######################################################################################
-            
 
             wait_for_turn = WaitForTurn(controller_index)
             StateMachine.add('WAIT_FOR_TURN',\
@@ -92,13 +88,10 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
             StateMachine.add('BOX_APPROACH',\
                              box_approach,\
-#                             transitions={'approach_ok':'BOX_FINE_APPROACH'})
-                             transitions={'approach_ok':'docking_ok'})
+                             transitions={'approach_ok':'BOX_FINE_APPROACH'})
             box_fine_approach = BoxFineApproach(robots_state[controller_index], controller_index, set_control)
             StateMachine.add('BOX_FINE_APPROACH',box_fine_approach,\
                              transitions={'fine_approach_ok':'docking_ok'})
-
-
         #
         ##########################################################################################
 
@@ -132,12 +125,11 @@ class WaitForTurn(smach.State):
         
         self.controller_index = controller_index
 
-        # Subscribe and publish to the topic 'task_state'
+        # Subscribe and publish to the topic 'turn_state'
         # Robots use this topic to wait for their turn to approach to the box
-
-        self.turn_state_pub = rospy.Publisher('task_state', TaskState, queue_size=50)
-        self.turn_state_sub = rospy.Subscriber('task_state', TaskState, self.callback)
-        self.turn__state = []
+        self.turn_state_pub = rospy.Publisher('turn_state', TaskState, queue_size=50)
+        self.turn_state_sub = rospy.Subscriber('turn_state', TaskState, self.callback)
+        self.turn_state = []
 
         # Lock used to protect the variable turn_state
         self.lock = Lock()
@@ -153,16 +145,15 @@ class WaitForTurn(smach.State):
         """
         self.lock.acquire()
         # Add robot_id to the turn_state list for every new robot
-        if not data.robot_id in self.task_state:
-            self.task_state.append(data.robot_id)
+        if not data.robot_id in self.turn_state:
+            self.turn_state.append(data.robot_id)
         self.lock.release()
         
     def turn_number(self):
         """Return the number of robots in the turn_state list."""
         self.lock.acquire()
-        number = len(self.task_state)
+        number = len(self.turn_state)
         self.lock.release()
-
         return number
         
     def execute(self, userdata):
@@ -248,7 +239,7 @@ class PlanTrajectory(smach.State):
         this_robot = self.robots_state[self.controller_index].data.pose.pose.position
         # Tolerance and robot radius are taken into account
         robot_radius = rospy.get_param('robot_radius')
-        tolerance = - np.array(response.normal) * (0.05 + robot_radius)
+        tolerance = - np.array(response.normal) * (0.06 + robot_radius)
         start_point = [this_robot.x, this_robot.y]
         goal_point = (np.array(response.point) + tolerance).tolist()
         state, path = self.planner.plan(start_point, goal_point)
@@ -283,8 +274,9 @@ class Alignment(smach.State):
 
         self.robot_state = robot_state
         self.set_control = set_control
-
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
+
+        # Tuning
         self.kp = 10
         self.tolerance = 0.1
 
@@ -297,6 +289,7 @@ class Alignment(smach.State):
         y = self.robot_state.data.pose.pose.position.y
         theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
+        # Set point
         reference_input = np.arctan2(userdata.goal[1] - y, userdata.goal[0] - x)  
         error = reference_input - theta
         
@@ -304,7 +297,7 @@ class Alignment(smach.State):
             # Read the sensors
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
-            # Evaluate the control
+            # Evaluate the control effort
             angular_v = proportional_control(self.kp, reference_input, theta, self.max_angular_v)
             angular_v *= -1 # Gazebo Bug
 
@@ -316,6 +309,7 @@ class Alignment(smach.State):
 
             self.clock.sleep()
 
+        # Stop the robot
         self.set_control(0, 0)
         
         return 'alignment_ok'
@@ -378,6 +372,7 @@ class GoToPoint(smach.State):
 
             self.clock.sleep()
 
+        # Stop the robot
         self.set_control(0, 0)        
 
         return 'point_reached'
@@ -409,41 +404,28 @@ class BoxFineApproach(smach.State):
         self.controller_index = controller_index 
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
-        
-        self.angle_tolerance = 0.01
-        self.kp = 10
 
-        self.linear_tolerance = 4000
-
-        # Topic subscrption
+        # Topic subscription
         topic_name = rospy.get_param('topics_names')[self.controller_index]
         rospy.Subscriber(topic_name['irbumper'], RoombaIR, self.irsensors_callback)
-        
-        self.ir_data = {}
-        
-        # Lock used to avoid concurrent access to ir_data
         self.ir_data_lock = Lock()
-
-        # Get normal from service box_get_docking_point
-        rospy.wait_for_service('box_get_docking_point')
-        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
-        try:
-            response = docking(self.controller_index)
-        except rospy.ServiceException:
-            pass
-        
-        self.angle_ref = np.arctan2(response.normal[1], response.normal[0])
+        self.ir_data = {}
 
         # State clock
         self.clock = rospy.Rate(100)
 
-    def min_ir_data(self):
-        """Return the minimum value in ir_data"""
+        # Tuning
+        self.kp = 10        
+        self.linear_tolerance = 3000
+        self.angle_tolerance = 0.017
+
+    def max_ir_data(self):
+        """Return the maximum value in ir_data.values()"""
         self.ir_data_lock.acquire()
-        min_value = min(self.ir_data.values())
+        max_value = max(self.ir_data.values())
         self.ir_data_lock.release()
-        
-        return min_value
+
+        return max_value
 
     def irsensors_callback(self, data):
         """Update ir_data using data from IR sensor.
@@ -452,9 +434,7 @@ class BoxFineApproach(smach.State):
         data (RoombaIR): data from IR sensor 
         """
         self.ir_data_lock.acquire()
-
         self.ir_data[data.header.frame_id] = data.signal
-
         self.ir_data_lock.release()
 
     def execute(self, userdata):
@@ -463,21 +443,32 @@ class BoxFineApproach(smach.State):
         Arguments:
         userdata: inputs and outputs of the fsm state."""
 
+        # Get normal from service box_get_docking_point
+        rospy.wait_for_service('box_get_docking_point')
+        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
+        try:
+            response = docking(self.controller_index)
+        except rospy.ServiceException:
+            pass
+
+        # Read the sensors
         theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
-        
-        # Parameter of control
-        angle_error = self.angle_ref - theta
-                
+
+        # Set point
+        angle_reference = np.arctan2(response.normal[1], response.normal[0])
+        angle_error = angle_reference - theta
+
+        # Align the robot to the normal pointing inward
         while abs(angle_error) > self.angle_tolerance:
             # Read the sensors
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
             # Evaluate the control
-            angular_v = proportional_control(self.kp, self.angle_ref, theta, self.max_angular_v)
+            angular_v = proportional_control(self.kp, angle_reference, theta, self.max_angular_v)
             angular_v *= -1 # Gazebo Bug
 
             # Evaluate error
-            angle_error = self.angle_ref - theta
+            angle_error = angle_reference - theta
             
             # Set the control
             self.set_control(0, angular_v)
@@ -486,9 +477,12 @@ class BoxFineApproach(smach.State):
 
         self.set_control(0, 0)
             
+        # Move the robot as close to the box as possible
         linear_v = 0.01
 
-        while self.min_ir_data() < self.linear_tolerance:
-            self.set_control(0, linear_v)
+        while self.max_ir_data() < self.linear_tolerance:
+            self.set_control(linear_v, 0)
+
+        self.set_control(0,0)
         
         return 'fine_approach_ok'
