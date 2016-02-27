@@ -97,4 +97,4 @@ class TestDocking(unittest.TestCase):
         self.assertTrue(outcome)
 
 if __name__ == '__main__':
-    rosunit.unitrun(PKG, 'box_geometry_test', TestDocking, coverage_packages=['cooperative_transport.box'])
+    rosunit.unitrun(PKG, 'docking_test', TestDocking)
