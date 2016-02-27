@@ -28,8 +28,8 @@ class RectangularObstacle:
         """
         # Define an obstacle region in C-Space
         tolerance = 0.05
-        self.length = length + robot_radius + tolerance
-        self.width = width + robot_radius + tolerance
+        self.length = length + 2*robot_radius + tolerance
+        self.width = width + 2*robot_radius + tolerance
         self.xc = xc
         self.yc = yc
         self.theta = theta
