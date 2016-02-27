@@ -113,12 +113,13 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             consensus = Consensus(controller_index, robots_state, boxstate, set_control)
             StateMachine.add('CONSENSUS',\
                              consensus,\
-                             transitions={'robot_ready':'goal_reached'})
+                             transitions={'robot_ready':'PUSH_BOX'})
 
-            # push_box = PushBox(controller_index, robots_state, boxstate)
-            # StateMachine.add('PUSH_BOX',\
-            #                  push_box,\
-            #                  transitions={'box_pushed':'goal_reached'})
+            push_box = PushBox(robots_state[controller_index], boxstate, set_control )
+            StateMachine.add('PUSH_BOX',\
+                             push_box,\
+                             transitions={'box_pushed':'goal_reached',\
+                                          'box_rotated':'CONSENSUS'})
 
         #
         ##########################################################################################
@@ -687,3 +688,79 @@ class Consensus(smach.State):
             pass
         
         return 'robot_ready'
+
+class PushBox(smach.State):
+    """State of the fsm in which the robot pushes the box into goal point 
+    
+    Outcomes:
+    box_pushed: box has arrived at goal point
+    box_rotated: box rotates during the transport
+    Inputs:
+    none
+
+    Outputs:
+    none
+    """
+    def __init__(self, robot_state, boxstate, set_control):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        controller_index (int): index of the robot
+        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        boxstate (Subscriber): Subscriber to the box state estimation
+        set_control (function): function that publish a twist
+        """
+        smach.State.__init__(self, outcomes=['box_pushed','box_rotated'])
+        self.robot_state = robot_state
+        self.boxstate  = boxstate
+        self.set_control = set_control
+        self.max_forward_v = float(rospy.get_param('max_forward_v'))
+
+        self.linear_tolerance = 0.01
+        self.angular_tolerance = 0.1
+        
+        self.clock = rospy.Rate(200)
+            
+    def execute(self, userdata):
+        """Execute the main activity of the fsm state.
+
+        Arguments:
+        userdata: inputs and outputs of the fsm state.
+        """
+
+        # Get the latest box state
+        latest_boxstate = self.boxstate.data
+        box_x = latest_boxstate.x
+        box_y = latest_boxstate.y
+
+        # Get goal position
+        goal = rospy.get_param('box_goal')
+        goal_x = goal['x']
+        goal_y = goal['y']
+
+        distance = np.sqrt((goal_x - box_x) ** 2 + (goal_y - box_y) ** 2)
+
+        while abs(distance) > self.linear_tolerance:
+            theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+
+            # Get the latest box state
+            latest_boxstate = self.boxstate.data
+            box_x = latest_boxstate.x
+            box_y = latest_boxstate.y
+
+            angular_error = utils.angle_normalization(np.arctan2(goal_y - box_y,  goal_x - box_x) - theta)
+            
+            # if abs(angular_error) > self.angular_tolerance:
+            #     self.set_control(0, 0)
+            #     return 'box_rotated'
+            
+            forward_v = 0.5
+
+            # Set the control
+            self.set_control(forward_v, 0)
+
+            self.clock.sleep()
+            
+        self.set_control(0, 0)
+        
+        return 'box_pushed'
