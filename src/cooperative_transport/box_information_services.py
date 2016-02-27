@@ -77,7 +77,7 @@ def find_docking_points(box_current_pose, box_goal_pose, box_length, box_width):
         edges.append(shorter_edge)
         edges.append(longer_edge)
         edges.append(longer_edge)
-        points = [1.0 / 2, 1.0 / 3, 2.0 / 3]
+        points = [1.0 / 2, 1.0 / 4, 3.0 / 4]
         
     return [{'point' : edges[i].point(points[i]) , 'normal' : edges[i].normal() } for i in range(3)]
 

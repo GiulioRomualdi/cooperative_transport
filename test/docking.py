@@ -68,8 +68,8 @@ class TestDocking(unittest.TestCase):
           *=============*
         
         """
-        box_length = 3
-        box_width = 1
+        box_length = 4
+        box_width = 2
         box_current_pose = [5.0, 5.0, 0.0]
         box_goal_pose = [7.0, 10.0]
 
@@ -83,7 +83,7 @@ class TestDocking(unittest.TestCase):
             normals.append(item['normal'])
 
         # Expected
-        expected_points = [[3.5, 5], [4.5, 4.5], [5.5, 4.5]]
+        expected_points = [[3, 5], [4, 4], [6, 4]]
         expected_normals = [[1, 0], [0, 1], [0, 1]]
 
         outcome = True
@@ -94,7 +94,13 @@ class TestDocking(unittest.TestCase):
         if not np.allclose(normals, expected_normals):
             outcome = False
 
-        self.assertTrue(outcome)
+        err_msg = 'wrong result is: '
+        for i in range(3):
+            err_msg += '[' + `points[i][0]` + ', ' + `points[i][1]` + ']'
+        for i in range(3):
+            err_msg += '[' + `normals[i][0]` + ', ' + `normals[i][1]` + ']'
+
+        self.assertTrue(outcome, err_msg)
 
 if __name__ == '__main__':
     rosunit.unitrun(PKG, 'docking_test', TestDocking)
