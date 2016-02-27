@@ -137,7 +137,7 @@ class WaitForTurn(smach.State):
         # State clock
         self.clock = rospy.Rate(1)
 
-    def callback(data):
+    def callback(self, data):
         """Update the turn_state variable.
 
         Arguments:
@@ -162,10 +162,7 @@ class WaitForTurn(smach.State):
         Arguments:
         userdata: inputs and outputs of the fsm state."""
         # Wait for turn
-        if self.controller_index == 0:
-            return 'my_turn'
-
-        while self.turn_number != self.controller_index:
+        while self.turn_number() != self.controller_index:
             self.clock.sleep()
 
         return 'my_turn'
@@ -232,6 +229,7 @@ class PlanTrajectory(smach.State):
         docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
         try:
             response = docking(self.controller_index)
+
         except rospy.ServiceException:
             pass
             
@@ -297,7 +295,6 @@ class Alignment(smach.State):
         error = reference_input - theta
         
         while abs(error) > self.tolerance:
-            print error
             # Read the sensors
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
 
@@ -315,7 +312,7 @@ class Alignment(smach.State):
 
         # Stop the robot
         self.set_control(0, 0)
-        
+
         return 'alignment_ok'
         
 class GoToPoint(smach.State):
@@ -445,7 +442,15 @@ class BoxFineApproach(smach.State):
         """Execute the main activity of the fsm state.
 
         Arguments:
-        userdata: inputs and outputs of the fsm state."""
+        userdata: inputs and outputs of the fsm state.
+        """
+        # Let the other robots know that it's their turn
+        pub = rospy.Publisher('turn_state', TaskState, queue_size=50)
+        msg = TaskState()
+        msg.robot_id = self.controller_index
+        pub.publish(msg)
+        pub.publish(msg)
+        pub.publish(msg)
 
         # Get normal from service box_get_docking_point
         rospy.wait_for_service('box_get_docking_point')
@@ -488,5 +493,5 @@ class BoxFineApproach(smach.State):
             self.set_control(linear_v, 0)
 
         self.set_control(0,0)
-        
+
         return 'fine_approach_ok'

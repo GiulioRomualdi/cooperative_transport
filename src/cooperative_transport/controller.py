@@ -66,25 +66,24 @@ class Controller:
             rospy.sleep(1)
             continue
 
-        if self.controller_index == 0:
-            # create the top level state machine
-            state_machine = construct_sm(self.controller_index,
+        # create the top level state machine
+        state_machine = construct_sm(self.controller_index,
                                      self.robots_state,
                                      self.boxstate,
                                      self.set_control)
 
-            # create and start an introspection server
-            # sis = smach_ros.IntrospectionServer('cooperative_transport' + str(self.controller_index), 
-            #                                     state_machine, 
-            #                                     'COOPERATIVE_TRANSPORT' + str(self.controller_index))
-            # sis.start()
+        # create and start an introspection server
+        # sis = smach_ros.IntrospectionServer('cooperative_transport' + str(self.controller_index), 
+        #                                     state_machine, 
+        #                                     'COOPERATIVE_TRANSPORT' + str(self.controller_index))
+        # sis.start()
 
-            # start the state machine
-            state_machine.execute()
+        # start the state machine
+        state_machine.execute()
 
 def main(controller_index):
     # wait for gazebo startup
-    # rospy.sleep(10)
+    rospy.sleep(10)
 
     # start the controller
     try:
