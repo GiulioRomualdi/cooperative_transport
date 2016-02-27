@@ -8,7 +8,8 @@
   <rosparam param="topics_names">[{cmdvel : "/iRobot/cmd_vel", odom : "/iRobot/odom", irbumper : "/ir_bumper_0"}, {cmdvel : "/iRobot_0/cmd_vel", odom: "/iRobot_0/odom", irbumper : "/ir_bumper_1"}, {cmdvel : "/iRobot_1/cmd_vel", odom : /iRobot_1/odom, irbumper : "/ir_bumper_2"}]</rosparam>
 
   <!-- various irobot create parameters -->
-  <param name="robot_radius" value="0.1696"/>
+  <!-- <param name="robot_radius" value="0.1696"/> -->
+  <param name="robot_radius" value="0.17"/>
   <param name="max_forward_v" value="0.5"/>
   <param name="max_angular_v" value="2"/>
 
