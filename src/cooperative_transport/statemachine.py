@@ -244,6 +244,9 @@ class PlanTrajectory(smach.State):
         goal_point = (np.array(response.point) + tolerance).tolist()
         state, path = self.planner.plan(start_point, goal_point)
 
+        # the first point in the path is the actual robot position
+        path.pop(0)
+
         if state:
             userdata.plan_trajectory_out = path
             return 'path_found'
