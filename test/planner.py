@@ -23,7 +23,7 @@ class TestPlanner(unittest.TestCase):
 
         # start and goal
         start_point = [3.0, 3.0]
-        tolerance = 0.02
+        tolerance = 0.06
         goal_point = [-0.5 -robot_radius -tolerance, 0]
 
         # plan
