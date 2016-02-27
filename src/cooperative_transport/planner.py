@@ -28,8 +28,8 @@ class RectangularObstacle:
         """
         # Define an obstacle region in C-Space
         tolerance = 0.05
-        self.length = length + 2*robot_radius + tolerance
-        self.width = width + 2*robot_radius + tolerance
+        self.length = length + 2*robot_radius + 2*tolerance
+        self.width = width + 2*robot_radius + 2*tolerance
         self.xc = xc
         self.yc = yc
         self.theta = theta
@@ -83,7 +83,7 @@ class CircularObstacle:
         """
 
         # Define obstacle ragion in C-Space
-        tolerance = 0.03
+        tolerance = 0.05
         self.radius = radius + robot_radius + tolerance
         self.xc = xc
         self.yc = yc
