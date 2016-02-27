@@ -1,9 +1,9 @@
 <launch>
   <!--Pose format is: posx posy posz roll pitch yaw -->
-  <arg name="box_pose" value="'1.16 -1.02 0 0 0 0.785'"/>
-  <arg name="iRobot_pose" value="'0.68 -0.91 0 0 0 0'"/>
-  <arg name="iRobot_0_pose" value="'0.67 -1.49 0 0 0 0'"/>
-  <arg name="iRobot_1_pose" value="'1.02 -0.56 0 0 0 0'"/>
+  <arg name="box_pose" value="'0 0 0 0 0 0'"/>
+  <arg name="iRobot_pose" value="'3 3 0 0 0 0'"/>
+  <arg name="iRobot_0_pose" value="'-1 1 0 0 0 0'"/>
+  <arg name="iRobot_1_pose" value="'-2 -2 0 0 0 0'"/>
   <arg name="world_name" value="robots"/>
   
   <node name="robots_world_editor" required="true"  pkg="cooperative_transport" type="world_editor" args="$(find cooperative_transport) $(arg world_name) $(arg box_pose) $(arg iRobot_pose) $(arg iRobot_0_pose) $(arg iRobot_1_pose)" output="screen"/>
