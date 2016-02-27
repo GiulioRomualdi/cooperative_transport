@@ -6,6 +6,7 @@ from subscriber import Subscriber
 from irobotcreate2.msg import RoombaIR
 from planner import Planner, RectangularObstacle, CircularObstacle
 from control.point_to_point import PointToPoint
+from control.consensus import consensus
 from control.proportional_control import proportional_control
 from smach import StateMachine, Iterator
 from cooperative_transport.msg import TaskState
@@ -13,6 +14,7 @@ from threading import Lock
 from cooperative_transport.srv import BoxGetDockingPoint
 from cooperative_transport.srv import BoxGetDockingPointResponse
 from cooperative_transport.srv import BoxGetDockingPointRequest
+from std_srvs.srv import Empty
 
 def construct_sm(controller_index, robots_state, boxstate, set_control):
     """Construct the top level state machine for cooperative transport.
@@ -100,9 +102,32 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
         #
         ##########################################################################################
 
+        move_box = StateMachine(outcomes=['goal_reached'])
+
+        with move_box:
+        ##########################################################################################
+        # MOVE BOX STATE MACHINE
+        ##########################################################################################
+        #
+
+            consensus = Consensus(controller_index, robots_state, boxstate, set_control)
+            StateMachine.add('CONSENSUS',\
+                             consensus,\
+                             transitions={'robot_ready':'goal_reached'})
+
+            # push_box = PushBox(controller_index, robots_state, boxstate)
+            # StateMachine.add('PUSH_BOX',\
+            #                  push_box,\
+            #                  transitions={'box_pushed':'goal_reached'})
+
+        #
+        ##########################################################################################
         StateMachine.add('BOX_DOCKING', box_docking,\
                          transitions={'docking_failed':'transport_failed',\
-                                      'docking_ok':'transport_ok'})
+                                      'docking_ok':'MOVE_BOX'})
+
+        StateMachine.add('MOVE_BOX', move_box,\
+                         transitions={'goal_reached':'transport_ok'})
     #
     ##############################################################################################
             
@@ -504,10 +529,10 @@ class BoxFineApproach(smach.State):
 
 
 class Synchronizer(smach.State):
-    """State of the fsm in which the robot synchronize themsel.
+    """State of the fsm in which the robot synchronize themself.
 
     Outcomes:
-    fine_approach_ok: the robot moved successfully
+    synchronization_ok: robots are synchronized
     
     Inputs:
     none
@@ -532,10 +557,10 @@ class Synchronizer(smach.State):
         self.lock = Lock()
         
     def callback(self, data):
-        """Update ir_data using data from IR sensor.
+        """Update robots_state using data from wait topic.
         
         Arguments:
-        data (RoombaIR): data from IR sensor 
+        data (TaskState): data from wait topic 
         """
         if data.task_name == 'synchronization':
             self.lock.acquire()
@@ -571,3 +596,94 @@ class Synchronizer(smach.State):
         rospy.sleep(1)
 
         return 'synchronization_ok'
+
+class Consensus(smach.State):
+    """State of the fsm in which the robot rotates in order to align
+    itself with the line of sight between its center and the goal and
+    start box estimation service.
+    
+    Outcomes:
+    robot_ready: robot is ready to push the box
+
+    Inputs:
+    none
+
+    Outputs:
+    none
+    """
+    def __init__(self, controller_index, robots_state, boxstate, set_control):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        controller_index (int): index of the robot
+        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        boxstate (Subscriber): Subscriber to the box state estimation
+        set_control (function): function that publish a twist
+        """
+        smach.State.__init__(self, outcomes=['robot_ready'])
+
+        self.robots_state = []
+        self.boxstate  = boxstate
+        self.set_control = set_control
+        self.max_angular_v = float(rospy.get_param('max_angular_v'))
+
+        for i in range(3):
+            if i == controller_index:
+                self.this_robot = robots_state[i]
+                
+            else:
+                self.robots_state.append(robots_state[i])
+
+        self.tolerance = 0.001
+        
+        self.clock = rospy.Rate(200)
+            
+    def execute(self, userdata):
+        """Execute the main activity of the fsm state.
+
+        Arguments:
+        userdata: inputs and outputs of the fsm state.
+        """
+
+        goal = rospy.get_param('box_goal')
+        goal_x = goal['x']
+        goal_y = goal['y']
+
+        # Get the latest box state
+        latest_boxstate = self.boxstate.data
+        box_x = latest_boxstate.x
+        box_y = latest_boxstate.y
+
+        reference_input = np.arctan2(goal_y - box_y,  goal_x - box_x)
+        this_robot_theta = utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation)
+
+        error = reference_input - this_robot_theta
+        
+        while abs(error) > self.tolerance:
+            this_robot_theta = utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation)
+            angles = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.robots_state]
+
+            angular_v = consensus(this_robot_theta, angles, reference_input, self.max_angular_v)
+            angular_v *= -1 # Gazebo Bug
+
+            # Evaluate error
+            error = reference_input - this_robot_theta 
+
+            # Set the control
+            self.set_control(0, angular_v)
+
+            self.clock.sleep()
+            
+        self.set_control(0, 0)
+  
+        # Start box state observer      
+        rospy.wait_for_service('release_box_state')
+
+        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+        try:
+            start_box_estimation()
+
+        except rospy.ServiceException:
+            pass
+        
+        return 'robot_ready'
