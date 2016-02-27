@@ -92,8 +92,8 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
             StateMachine.add('BOX_APPROACH',\
                              box_approach,\
-                             transitions={'approach_ok':'BOX_FINE_APPROACH'})
-
+#                             transitions={'approach_ok':'BOX_FINE_APPROACH'})
+                             transitions={'approach_ok':'docking_ok'})
             box_fine_approach = BoxFineApproach(robots_state[controller_index], controller_index, set_control)
             StateMachine.add('BOX_FINE_APPROACH',box_fine_approach,\
                              transitions={'fine_approach_ok':'docking_ok'})
@@ -246,18 +246,16 @@ class PlanTrajectory(smach.State):
             
         # Plan trajectory
         this_robot = self.robots_state[self.controller_index].data.pose.pose.position
-
-        tolerance = - np.array(response.normal) * 0.02 
-
+        # Tolerance and robot radius are taken into account
+        robot_radius = rospy.get_param('robot_radius')
+        tolerance = - np.array(response.normal) * (0.05 + robot_radius)
         start_point = [this_robot.x, this_robot.y]
         goal_point = (np.array(response.point) + tolerance).tolist()
-
         state, path = self.planner.plan(start_point, goal_point)
 
         if state:
             userdata.plan_trajectory_out = path
             return 'path_found'
-
         else:
             return 'plan_failed'
         
