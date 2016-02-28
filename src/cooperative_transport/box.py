@@ -209,6 +209,12 @@ class BoxStatePublisher:
             rospy.Subscriber(item['odom'], Odometry, self.pose_callback, callback_args = robot_index)
             
         self.robot_radius = float(rospy.get_param('robot_radius'))
+        #in case of real scenario
+        #self.min_range = self.robot_radius - self.robot_radius
+        #
+        self.min_range = 0.184265 - self.robot_radius
+        self.max_range = 0.233445 - self.robot_radius
+
         self.sensors_angles = rospy.get_param('sensors_angles')
 
         # Publish to the box_state topic
@@ -254,10 +260,9 @@ class BoxStatePublisher:
         self.robots_state_lock.acquire()
 
         # convert IR signal in meters
-        max_range = 0.233045
-        scale_factor =  max_range - self.robot_radius
+        delta_range = self.max_range - self.min_range
         robot_max_ir = 4095
-        self.robots_state[robot_index]['irbumper'][data.header.frame_id] = data.signal * scale_factor / robot_max_ir
+        self.robots_state[robot_index]['irbumper'][data.header.frame_id] = self.max_range - delta_range / robot_max_ir * data.signal
 
         self.robots_state_lock.release()
 
@@ -319,7 +324,7 @@ class BoxStatePublisher:
             angle_keys = self.sensors_angles.keys()
             points = [self.point_coordinates(robot_index, key) \
                       for robot_index in range(self.number_robots) for key in angle_keys \
-                      if self.robots_state[robot_index]['irbumper'][key] != 0]
+                      if self.robots_state[robot_index]['irbumper'][key] < self.max_range]
             self.robots_state_lock.release()
             
             # Run Estimation process

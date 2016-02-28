@@ -144,7 +144,7 @@ class IrSensor():
         # if range_at_ir_angle is less than the lower bound relative to 
         # the angle = ir_angle  then the object cannot be identified by the ir detector
         if range_at_ir_angle < self.bounds[0][0]:
-            return irobot_min_ir
+           return irobot_min_ir
 
         # find all the admissible ranges, i.e, inside [lower_bound, upper_bound],
         # and evaluate them wrt to the center of the emitter/detector housing
@@ -157,13 +157,13 @@ class IrSensor():
         if not admissible_ranges:
             return irobot_min_ir
 
-        # take the minimum and offset it wrt the lower bound of the ir detection area
+        # take the minimum
         distance = min(admissible_ranges)
-        distance -= (self.bounds[0][0] - self.robot_radius)
 
         # scale the value so that it adhere with the irobot create 2 open specification (0-4095)
-        max_distance = self.bounds[0][1] - self.bounds[0][0]
-        ir_value = int(round((1 - distance/max_distance)*irobot_max_ir))
+        max_range = self.bounds[0][1]
+        min_range = self.bounds[0][0]
+        ir_value = int(round(-4095 / (max_range - min_range) * (distance - (max_range - self.robot_radius))))
         
         return ir_value
 
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     laser_resolution = data_length*k/360
 
     # robot specs
-    robot_radius = 0.1696
+    robot_radius = 0.17
     max_radius = robot_radius + 0.065
 
     # istance of IrSensor
