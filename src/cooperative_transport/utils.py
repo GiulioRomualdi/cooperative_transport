@@ -43,7 +43,7 @@ class Line:
         self.b = p2[0] - p1[0]
         self.c = p1[1] * (p1[0] - p2[0]) + p1[0] * (p2[1] - p1[1])
 
-    def update(self, p1 ,p2):
+    def set_points(self, p1 ,p2):
         self.a = p1[1] - p2[1]
         self.b = p2[0] - p1[0]
         self.c = p1[1] * (p1[0] - p2[0]) + p1[0] * (p2[1] - p1[1])
@@ -55,6 +55,9 @@ class Line:
                    np.sqrt(self.a ** 2 + self.b ** 2)
         
         return distance
+
+    def coefficients(self):
+        return [self.a, self.b, self.c]
 
 class Segment:
     """Segment between two points p0 and p1.
