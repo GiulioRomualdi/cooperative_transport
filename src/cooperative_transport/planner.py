@@ -8,23 +8,23 @@ class RectangularObstacle:
     """Implement obstacle in C-Space as rectangular shape.
 
     Attributes:
-    length (float): box length in meters
-    width (float): box width in meters
-    xc (float): barycenter x-coordinate
-    yc (float): barycenter y-coordinate
-    theta (float): rectangle asset
+        length (float): box length in meters
+        width (float): box width in meters
+        xc (float): barycenter x-coordinate
+        yc (float): barycenter y-coordinate
+        theta (float): rectangle asset
     """
 
     def __init__(self, length, width, xc, yc, theta, robot_radius):
         """Initialize the object.
         
         Arguments:
-        length (float): box length in meters
-        width (float): box width in meters 
-        xc (float): barycenter x-coordinate
-        yc (float): barycenter y-coordinate
-        theta (float): rectangle attitude
-        robot_radius (float): robot radius in meters
+            length (float): box length in meters
+            width (float): box width in meters 
+            xc (float): barycenter x-coordinate
+            yc (float): barycenter y-coordinate
+            theta (float): rectangle attitude
+            robot_radius (float): robot radius in meters
         """
         # Define an obstacle region in C-Space
         tolerance = 0.05
@@ -38,8 +38,8 @@ class RectangularObstacle:
         """Return True if the point is outside the obstacle region.
         
         Arguments:
-        x (float): x-coordinate
-        y (float): y-coordinate
+            x (float): x-coordinate
+            y (float): y-coordinate
         """
         value = 2 * (-1 + abs(((self.width * x - self.width * self.xc -\
                 self.length * y + self.length * self.yc) * np.cos(self.theta) +\
@@ -56,9 +56,9 @@ class RectangularObstacle:
         """Change the obstacle coordinates.
 
         Arguments:
-        x (float): barycenter x-coordinate
-        y (float): barycenter y-coordinate
-        theta (float): rectangle attitude  
+            x (float): barycenter x-coordinate
+            y (float): barycenter y-coordinate
+            theta (float): rectangle attitude  
         """
         self.xc = x
         self.yc = y
@@ -68,18 +68,18 @@ class CircularObstacle:
     """Implement obstacle in C-Space as circular shape.
                                                                                 
     Attributes:                                                                 
-    radius (float): circle radius in meters                                       
-    xc (float): barycenter x-coordinate
-    yc (float): barycenter y-coordinate
+        radius (float): circle radius in meters                                       
+        xc (float): barycenter x-coordinate
+        yc (float): barycenter y-coordinate
     """
     def __init__(self, radius, xc, yc, robot_radius):
         """Initialize the object.
         
         Arguments:
-        radius (float): circle radius in meters                                       
-        xc (float): barycenter x-coordinate
-        yc (float): barycenter y-coordinate
-        robot_radius (float): robot radius in meters
+            radius (float): circle radius in meters                                       
+            xc (float): barycenter x-coordinate
+            yc (float): barycenter y-coordinate
+            robot_radius (float): robot radius in meters
         """
 
         # Define obstacle ragion in C-Space
@@ -92,8 +92,8 @@ class CircularObstacle:
         """ Return True if the coordinate is extern to obstacle region.
         
         Arguments:
-        x (float): x-coordinate
-        y (float): y-coordinate
+            x (float): x-coordinate
+            y (float): y-coordinate
         """
         value = float(np.sqrt((x - self.xc)**2 + (y - self.yc)**2) - self.radius)
         return value > 0
@@ -102,8 +102,8 @@ class CircularObstacle:
         """Change the obstacle coordinates.
 
         Arguments:
-        x (float): barycenter x-coordinate
-        y (float): barycenter y-coordinate
+            x (float): barycenter x-coordinate
+            y (float): barycenter y-coordinate
         """
         self.xc = x
         self.yc = y
@@ -142,7 +142,7 @@ class Planner:
         """Add an obstacle region in C-Space.
 
         Arguments:
-        obstacle (Obstacle*): obstacle region
+            obstacle (Obstacle*): obstacle region
         """
         self.obstacles.append(obstacle)
         
@@ -150,7 +150,7 @@ class Planner:
         """Return True if the state is within an obstacle region.
 
         Arguments:
-        state (): point coordinates
+            state (): point coordinates
         """
         x = state[0]
         y = state[1]
@@ -165,8 +165,8 @@ class Planner:
         """ Return the optimized path.
 
         Argument:
-        start (float[]): the starting point
-        goal (float[]): the goal point
+            start (float[]): the starting point
+            goal (float[]): the goal point
         """        
         # Set start point
         start_state = ob.State(self.space)

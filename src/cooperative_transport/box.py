@@ -18,10 +18,10 @@ class BoxGeometry:
         """Initialize box geometry.
 
         Attributes:
-        length (float): box length in meters
-        width (float): box length in meters
-        center (float[2]): box center [x_c, y_c] in meters
-        orientation (float): box orientation
+            length (float): box length in meters
+            width (float): box length in meters
+            center (float[2]): box center [x_c, y_c] in meters
+            orientation (float): box orientation
         """
         self.length = length
         self.width = width
@@ -32,7 +32,8 @@ class BoxGeometry:
         """Return the requested box vertex.
 
         Arguments:
-        vertex (int): the index of the requested vertex"""
+            vertex (int): the index of the requested vertex
+        """
         
         # Find the vertex coordinates in a box-fixed reference frame
         #
@@ -88,8 +89,8 @@ class BoxGeometry:
         """Return a segment representing the edge between vertices (edge_i) and (edge_j).
 
         Arguments:
-        edge_i (int): i-th edge index
-        edje_j (int): j-th edge index
+            edge_i (int): i-th edge index
+            edje_j (int): j-th edge index
         """
 
         edge_i %= 4
@@ -107,9 +108,9 @@ class BoxStateObserver:
     """Estimate box state using noisy coordinates of points that belong to a rectangular perimeter
 
     Attributes:
-    length (float): box length in meters
-    width (float): box width in meters
-    state (float[]): box state [x_c, y_c, theta]
+        length (float): box length in meters
+        width (float): box width in meters
+        state (float[]): box state [x_c, y_c, theta]
 
     ToDo:
     document main method 'state_estimation'
@@ -119,11 +120,11 @@ class BoxStateObserver:
         """Initialize the object.
         
         Arguments:
-        length (float): box length in meters
-        width (float): box width in meters
-        x_0 (float): initial x coordinate of the box
-        y_0 (float): initial y coordinate of the box
-        theta_0 (float): initial yaw angle
+            length (float): box length in meters
+            width (float): box width in meters
+            x_0 (float): initial x coordinate of the box
+            y_0 (float): initial y coordinate of the box
+            theta_0 (float): initial yaw angle
         """
         self.length = length
         self.width = width
@@ -137,9 +138,9 @@ class BoxStateObserver:
         """Evaluate the rectangle equation based on a Lame' curve.
 
         Arguments:
-        x (float): x coordinate of a point that belongs to a rectangular perimeter
-        y (float): y coordinate of a point that belongs to a rectangular perimeter
-        state (float[]): rectangle state [x_c, y_c, theta]
+            x (float): x coordinate of a point that belongs to a rectangular perimeter
+            y (float): y coordinate of a point that belongs to a rectangular perimeter
+            state (float[]): rectangle state [x_c, y_c, theta]
         """
         x_c = state[0]
         y_c = state[1]
@@ -160,8 +161,8 @@ class BoxStateObserver:
         """Evaluate the loss function.
 
         Arguments:
-        state (float[]): rectangle state [x_c, y_c, theta]
-        coordinates (float[]): coordinates of points that belong to a rectangular perimeter
+            state (float[]): rectangle state [x_c, y_c, theta]
+            coordinates (float[]): coordinates of points that belong to a rectangular perimeter
         """
         loss_function = 0
 
@@ -174,7 +175,7 @@ class BoxStateObserver:
         """Evaluate the box state using a montecarlo-based approach.
         
         Argument:
-        coordinates (float[]): points coordinates
+            coordinates (float[]): points coordinates
         """
         random.seed()
         min_value = float('inf')
@@ -247,8 +248,8 @@ class BoxStatePublisher:
         """Update robots_state using data from IR sensor.
         
         Arguments:
-        data (RoombaIR): data from IR sensor 
-        robot (string): robot name 
+            data (RoombaIR): data from IR sensor 
+            robot (string): robot name 
         """
         self.robots_state_lock.acquire()
 
@@ -264,8 +265,8 @@ class BoxStatePublisher:
         """Update robots_state using robot odometry.
         
         Arguments:
-        data (Odometry): robot pose
-        robot (string): robot name 
+            data (Odometry): robot pose
+            robot (string): robot name 
         """
 
         self.robots_state_lock.acquire()
@@ -290,8 +291,8 @@ class BoxStatePublisher:
         where theta is the robot yaw angle and [x_o, y_0]' is the robot pose
 
         Arguments:
-        robot (string): robot name
-        angle_key (string): ir sensor key representing its angular position in the body-fixed reference frame
+            robot (string): robot name
+            angle_key (string): ir sensor key representing its angular position in the body-fixed reference frame
         """
         
         x_robot = self.robots_state[robot_index]['state']['x']

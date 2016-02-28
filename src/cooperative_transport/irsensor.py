@@ -6,31 +6,31 @@ class IrSensor():
     The sensor modelling is taken from the USA patent US2014/0188325.
     
     Attributes:
-    alpha_o (float): ir emitter/detector outer spread off-center angle (rad)
-    alpha_i (float): ir emitter/detector inner spread off-center angle (rad)
-    beta (float): angle between emission and detection fields (rad)
-    housing_length (float): emitter and detector housing length (meters)    
-    laser_resolution (float): laser angular resolution (rad)
-    epsilon_max (float): maximum positive angle of a laser ray intersecting the ir detection area (rad)
-    robot_radius (float): irobot create radius (meters)
-    bounds (dictionary): minimum and maximum lengths describing the ir detection area (meters)
-    sweep_angles_indexes(int[]): list of indexes j such that a laser ray with angle 
-                                 j*laser_resolution intersects the ir detection area
+        alpha_o (float): ir emitter/detector outer spread off-center angle (rad)
+        alpha_i (float): ir emitter/detector inner spread off-center angle (rad)
+        beta (float): angle between emission and detection fields (rad)
+        housing_length (float): emitter and detector housing length (meters)    
+        laser_resolution (float): laser angular resolution (rad)
+        epsilon_max (float): maximum positive angle of a laser ray intersecting the ir detection area (rad)
+        robot_radius (float): irobot create radius (meters)
+        bounds (dictionary): minimum and maximum lengths describing the ir detection area (meters)
+        sweep_angles_indexes(int[]): list of indexes j such that a laser ray with angle 
+                                     j*laser_resolution intersects the ir detection area
 
-    Public methods:
-    laser_to_ir(data, angle_0, ir_angle) : convert laser range finder data to ir sensor reading
+    Methods:
+        laser_to_ir(data, angle_0, ir_angle) : convert laser range finder data to ir sensor reading
     """
 
     def __init__(self, alpha_o, alpha_i, beta, housing_length, laser_resolution, robot_radius):
         """Initialize the object.
 
         Arguments:
-        alpha_o (float): ir emitter/detector outer spread off-center angle (rad)
-        alpha_i (float): ir emitter/detector inner spread off-center angle (rad)
-        beta (float): angle between emission and detection fields (rad)
-        housing_length (float): emitter and detector housing length (meters)    
-        laser_resolution (float): laser angular resolution (rad)
-        robot_radius (float): irobot create radius (meters)
+            alpha_o (float): ir emitter/detector outer spread off-center angle (rad)
+            alpha_i (float): ir emitter/detector inner spread off-center angle (rad)
+            beta (float): angle between emission and detection fields (rad)
+            housing_length (float): emitter and detector housing length (meters)    
+            laser_resolution (float): laser angular resolution (rad)
+            robot_radius (float): irobot create radius (meters)
         """
         self.alpha_o = alpha_o
         self.alpha_i = alpha_i
@@ -77,7 +77,7 @@ class IrSensor():
         """Evaluate the lower bound given the index of the laser ray sweep angle.
 
         Args:
-        index (int): laseer ray sweep angle index
+            index (int): laseer ray sweep angle index
         """        
         angle = index * self.laser_resolution
         lower_bound = 1./2 * csc(self.alpha_i + self.beta/2 - abs(angle)) * (self.housing_length * cos(self.alpha_i + self.beta/2) +\
@@ -89,7 +89,7 @@ class IrSensor():
         """Return the upper bound given the index of the laser ray sweep angle.
 
         Args:
-        index (int): laser sweep angle index
+            index (int): laser sweep angle index
         """        
         angle = index * self.laser_resolution
         upper_bound = 1./2 * sqrt(((sec(angle))**2 * (self.housing_length - 2 * self.robot_radius * tan(self.alpha_o -\
@@ -106,8 +106,8 @@ class IrSensor():
         """Return the distance from the center of the emitter/detector housing.
         
         Args:
-        distance_from_laser (float): distance from the center of laser range finder
-        index (int): sweep angle index
+            distance_from_laser (float): distance from the center of laser range finder
+            index (int): sweep angle index
         """
         angle = self.laser_resolution * index
         distance = sqrt(distance_from_laser**2 + (self.robot_radius)**2 -\
@@ -121,9 +121,9 @@ class IrSensor():
         Return an ir sensor reading between 0 and 4095.
 
         Args:
-        data (float[]): laser range finder data
-        angle_0 (int): angle corresponding to the first item of data (rad)
-        ir_angle (float): angular position of the emitter/detector housing (rad)
+            data (float[]): laser range finder data
+            angle_0 (int): angle corresponding to the first item of data (rad)
+            ir_angle (float): angular position of the emitter/detector housing (rad)
         """
 
         # ir light bumper sensor values range as reported in the

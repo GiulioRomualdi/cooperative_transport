@@ -4,7 +4,7 @@ def quaternion_to_yaw(quaternion):
     """Extract euler yaw angle from a quaternion.
 
     Arguments:
-    quaternion (Quaternion): quaternion 
+        quaternion (Quaternion): quaternion 
     """
     q0 = quaternion.w
     q3 = quaternion.z
@@ -15,7 +15,7 @@ def angle_normalization(angle):
     """Keep angle between -pi and +pi
 
     Arguments:
-    angle (float): angle
+        angle (float): angle
     """
     if angle <= -np.pi:
         normalized_angle = 2 * np.pi + angle
@@ -29,8 +29,8 @@ def saturation(input_value, max_value):
     """Impose upper limit on an input signal.    
 
     Arguments:
-    input_value (float): input signal
-    max_value (float): saturation value
+        input_value (float): input signal
+        max_value (float): saturation value
     """
     saturated_value = np.sign(input_value) * min(abs(input_value), max_value)
     return saturated_value
@@ -94,7 +94,7 @@ class Segment:
         """Return the point p(t) = (1 - t) * p0 + t * p1.
 
         Arguments:
-        t (float): parameter t in [0,1]
+            t (float): parameter t in [0,1]
         """
         
         p = (1 - t) * self._p0 + t * self._p1

@@ -7,11 +7,10 @@ from irobotcreate2.msg import RoombaIR
 class IrSimulator:
     """Simulate the ir readings from a laser_scan topic and publish them.
 
-
     Attributes:
-    ir_sensor(IrSensor): the object containing the ir sensor model
-    sensors_angles(int[]): angular positions of the sensors (rad)
-    angle_0 (int): angle corresponding to the first item of the laser_scan data (rad)
+        ir_sensor(IrSensor): the object containing the ir sensor model
+        sensors_angles(int[]): angular positions of the sensors (rad)
+        angle_0 (int): angle corresponding to the first item of the laser_scan data (rad)
     
     """
 
@@ -19,11 +18,11 @@ class IrSimulator:
         """Initialize the object.
 
         Arguments: 
-        index(int): the index of the robot
-        topic_name(string): the name of the laser_scan topic
-        ir_sensor(IrSensor): the object containing the ir sensor model
-        sensors_angles(int[]): angular positions of the sensors
-        angle_0 (int): angle corresponding to the first item of data (rad)
+            index(int): the index of the robot
+            topic_name(string): the name of the laser_scan topic
+            ir_sensor(IrSensor): the object containing the ir sensor model
+            sensors_angles(int[]): angular positions of the sensors
+            angle_0 (int): angle corresponding to the first item of data (rad)
         """
 
         self.sensors_angles = sensors_angles
@@ -41,7 +40,7 @@ class IrSimulator:
         """Publish a new irbumper message given the laser range finder data.
         
         Arguments:
-        data(LaserScan): laser range finder data
+            data(LaserScan): laser range finder data
         """
         irbumper = RoombaIR()
         irbumper.header.stamp = rospy.Time.now()

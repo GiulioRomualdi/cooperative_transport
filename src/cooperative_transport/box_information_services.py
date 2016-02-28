@@ -16,13 +16,13 @@ def find_docking_points(box_current_pose, box_goal_pose, box_length, box_width):
     by the robots in order to move the box to the goal position.
 
     Arguments:
-    box_current_pose (float[]): current box pose
-    box_goal_pose (float[]): goal box pose
-    length (float): box length in meters
-    width (float): box width in meters
+        box_current_pose (float[]): current box pose
+        box_goal_pose (float[]): goal box pose
+        length (float): box length in meters
+        width (float): box width in meters
 
-    Return:
-    A list containing the docking points and the normal directions, one for each robot.
+    Returns:
+        A list containing the docking points and the normal directions, one for each robot.
     """
     singularity = False
     box_pose = [box_current_pose[0], box_current_pose[1]]
@@ -107,7 +107,7 @@ class BoxInformationServices():
         """Provide a robot with the docking point/normal on the perimeter of the box in its current position.
 
         Arguments:
-        request (BoxGetDockingPointRequest): the request
+            request (BoxGetDockingPointRequest): the request
         """
         # The response
         response = BoxGetDockingPointResponse()
@@ -121,7 +121,7 @@ class BoxInformationServices():
         """Set a new box goal position and update the docking points/normals accordingly.
 
         Arguments:
-        request (BoxSetGoalRequest): the request
+            request (BoxSetGoalRequest): the request
         """
         # Get the latest box state
         latest_boxstate = self.boxstate.data
