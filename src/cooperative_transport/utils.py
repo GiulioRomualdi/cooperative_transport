@@ -35,6 +35,27 @@ def saturation(input_value, max_value):
     saturated_value = np.sign(input_value) * min(abs(input_value), max_value)
     return saturated_value
 
+class Line:
+    """Line between two points p0 and p1."""
+
+    def __init__(self, p1 ,p2):
+        self.a = p1[1] - p2[1]
+        self.b = p2[0] - p1[0]
+        self.c = p1[1] * (p1[0] - p2[0]) + p1[0] * (p2[1] - p1[1])
+
+    def update(self, p1 ,p2):
+        self.a = p1[1] - p2[1]
+        self.b = p2[0] - p1[0]
+        self.c = p1[1] * (p1[0] - p2[0]) + p1[0] * (p2[1] - p1[1])
+    
+    def distance(self, p):
+        x = p[0]
+        y = p[1]
+        distance = abs(self.a * x + self.b *y + self.c) /\
+                   np.sqrt(self.a ** 2 + self.b ** 2)
+        
+        return distance
+
 class Segment:
     """Segment between two points p0 and p1.
 
