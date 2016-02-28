@@ -5,19 +5,19 @@ class PointToPoint:
     """Point to point control of unicycle-type robot.
 
     Attributes:
-    xg (float): goal x-coordinate
-    yg (float): goal y-coordinate
-    max_forward_velocity (float): forward velocity saturation value
-    max_angular_velocity (float): angular velocity saturation value
-    
+        xg (float): goal x-coordinate
+        yg (float): goal y-coordinate
+        max_forward_velocity (float): forward velocity saturation value
+        max_angular_velocity (float): angular velocity saturation value
+
     """
     def __init__(self, max_forward_velocity, max_angular_velocity):
         """Initilize the object.
 
         Arguments:
-        max_forward_velocity (float): forward velocity saturation value
-        max_angular_velocity (float): angular velocity saturation value
-        robot_state_0 (float[]): robot initial state
+            max_forward_velocity (float): forward velocity saturation value
+            max_angular_velocity (float): angular velocity saturation value
+            robot_state_0 (float[]): robot initial state
         """
         self.xg = 0
         self.yg = 0
@@ -29,7 +29,7 @@ class PointToPoint:
         """Set goal point.
 
         Arguments:
-        point (float[]): goal point coordinates
+            point (float[]): goal point coordinates
         """
         self.xg = point[0]
         self.yg = point[1]
@@ -38,8 +38,8 @@ class PointToPoint:
         """Return controller output
 
         Arguments:
-        robot_state (float[]): goal point coordinates
-        robot_velocity (float): forward robot velocity
+            robot_state (float[]): goal point coordinates
+            robot_velocity (float): forward robot velocity
         """
         xr = robot_state[0]
         yr = robot_state[1]
