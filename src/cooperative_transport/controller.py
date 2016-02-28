@@ -7,6 +7,7 @@ from nav_msgs.msg import Odometry
 from cooperative_transport.msg import BoxState
 from geometry_msgs.msg import Twist
 from statemachine import construct_sm
+from std_srvs.srv import Empty
 
 class Controller:
     """Main controller for cooperative transport."""
@@ -80,7 +81,15 @@ class Controller:
         # sis.start()
 
         # start the state machine
-        state_machine.execute()
+        #state_machine.execute()
+
+        # Box estimation debugging
+        rospy.wait_for_service('release_box_state')
+        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+        try:
+            start_box_estimation()
+        except rospy.ServiceException:
+            pass
 
 def main(controller_index):
     # wait for gazebo startup
