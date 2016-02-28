@@ -119,7 +119,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             StateMachine.add('PUSH_BOX',\
                              push_box,\
                              transitions={'box_pushed':'goal_reached',\
-                                          'box_rotated':'CONSENSUS'})
+                                          'box_drifted':'CONSENSUS'})
 
         #
         ##########################################################################################
@@ -694,7 +694,7 @@ class PushBox(smach.State):
     
     Outcomes:
     box_pushed: box has arrived at goal point
-    box_rotated: box rotates during the transport
+    box_drifted: box drifts during the transport
     Inputs:
     none
 
@@ -710,16 +710,29 @@ class PushBox(smach.State):
         boxstate (Subscriber): Subscriber to the box state estimation
         set_control (function): function that publish a twist
         """
-        smach.State.__init__(self, outcomes=['box_pushed','box_rotated'])
+        smach.State.__init__(self, outcomes=['box_pushed','box_drifted'])
         self.robot_state = robot_state
         self.boxstate  = boxstate
         self.set_control = set_control
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
 
-        self.linear_tolerance = 0.01
-        self.angular_tolerance = 0.1
+        self.tolerance = 0.01
         
+        # Get goal position
+        self.goal = rospy.get_param('box_goal')
+        self.goal_x = self.goal['x']
+        self.goal_y = self.goal['y']
+
+        # Get the latest box state
+        latest_boxstate = self.boxstate.data
+        box_x = latest_boxstate.x
+        box_y = latest_boxstate.y
+        
+        self.line = utils.Line([box_x, box_y], [self.goal_x, self.goal_y])
+
         self.clock = rospy.Rate(200)
+
+        
             
     def execute(self, userdata):
         """Execute the main activity of the fsm state.
@@ -733,26 +746,24 @@ class PushBox(smach.State):
         box_x = latest_boxstate.x
         box_y = latest_boxstate.y
 
-        # Get goal position
-        goal = rospy.get_param('box_goal')
-        goal_x = goal['x']
-        goal_y = goal['y']
+        self.line.update([box_x, box_y], [self.goal_x, self.goal_y])
 
-        distance = np.sqrt((goal_x - box_x) ** 2 + (goal_y - box_y) ** 2)
+        error = np.sqrt((self.goal_x - box_x) ** 2 + (self.goal_y - box_y) ** 2)
 
-        while abs(distance) > self.linear_tolerance:
-            theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+        while abs(error) > self.tolerance:
+            
+            error = np.sqrt((self.goal_x - box_x) ** 2 + (self.goal_y - box_y) ** 2)
 
             # Get the latest box state
             latest_boxstate = self.boxstate.data
             box_x = latest_boxstate.x
             box_y = latest_boxstate.y
-
-            angular_error = utils.angle_normalization(np.arctan2(goal_y - box_y,  goal_x - box_x) - theta)
             
-            # if abs(angular_error) > self.angular_tolerance:
-            #     self.set_control(0, 0)
-            #     return 'box_rotated'
+            distance = self.line.distance([box_x, box_y])
+            
+            if distance > self.tolerance:
+                self.set_control(0, 0)
+                return 'box_drifted'
             
             forward_v = 0.5
 
