@@ -22,7 +22,6 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     Arguments:
     controller_index (int): index of the robot
     robots_state (Subscriber[]): list of Subscribers to robots odometry
-    irbumper (Subscriber): Subscriber to this robot ir bumper
     boxstate (Subscriber): Subscriber to the box state estimation
     set_control (function): function that publish a twist
     """
@@ -113,12 +112,12 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             consensus = Consensus(controller_index, robots_state, boxstate, set_control)
             StateMachine.add('CONSENSUS',\
                              consensus,\
-                             transitions={'robot_ready':'PUSH_BOX'})
+                             transitions={'consensus_ok':'PUSH_BOX'})
 
-            push_box = PushBox(robots_state[controller_index], boxstate, set_control )
+            push_box = PushBox(robots_state[controller_index], boxstate, set_control)
             StateMachine.add('PUSH_BOX',\
                              push_box,\
-                             transitions={'box_pushed':'goal_reached',\
+                             transitions={'box_at_goal':'goal_reached',\
                                           'box_drifted':'CONSENSUS'})
 
         #
@@ -156,10 +155,9 @@ class WaitForTurn(smach.State):
         
         self.controller_index = controller_index
 
-        # Subscribe and publish to the topic 'turn_state'
-        # Robots use this topic to wait for their turn to approach to the box
-        self.turn_state_pub = rospy.Publisher('wait', TaskState, queue_size=50)
-        self.turn_state_sub = rospy.Subscriber('wait', TaskState, self.callback)
+        # Subscribe and publish to the topic 'robots_common'
+        rospy.Publisher('robots_common', TaskState, queue_size=50)
+        rospy.Subscriber('robots_common', TaskState, self.callback)
         self.turn_state = set()
 
         # Lock used to protect the variable turn_state
@@ -228,7 +226,10 @@ class PlanTrajectory(smach.State):
         self.boxstate = boxstate
         
     def execute(self, userdata):
+        """Execute the main activity of the fsm state.
 
+        Arguments:
+        userdata: inputs and outputs of the fsm state."""
         # Initialize the planner
         lower_bound = rospy.get_param('planner_lower_bound')
         upper_bound = rospy.get_param('planner_upper_bound')
@@ -238,7 +239,6 @@ class PlanTrajectory(smach.State):
         robot_radius = rospy.get_param('robot_radius')
         for robot_index,robot_state in enumerate(self.robots_state):
             if robot_index != self.controller_index:
-
                 x_robot = robot_state.data.pose.pose.position.x
                 y_robot = robot_state.data.pose.pose.position.y
                 obstacle = CircularObstacle(robot_radius, x_robot, y_robot , robot_radius)
@@ -260,7 +260,6 @@ class PlanTrajectory(smach.State):
         docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
         try:
             response = docking(self.controller_index)
-
         except rospy.ServiceException:
             pass
             
@@ -299,7 +298,7 @@ class Alignment(smach.State):
         """Initialize the state of the fsm.
 
         Arguments:
-        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        robot_state (Subscriber): Subscriber to robot odometry
         set_control (function): function that publish a twist
         """
         smach.State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
@@ -314,37 +313,34 @@ class Alignment(smach.State):
 
         # State clock
         self.clock = rospy.Rate(200)
-        
+
     def execute(self, userdata):
-        # Read the sensors
-        x = self.robot_state.data.pose.pose.position.x
-        y = self.robot_state.data.pose.pose.position.y
-        theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+        """Execute the main activity of the fsm state.
+
+        Arguments:
+        userdata: inputs and outputs of the fsm state."""
 
         # Set point
-        reference_input = np.arctan2(userdata.goal[1] - y, userdata.goal[0] - x)  
-        error = reference_input - theta
-        
-        while abs(error) > self.tolerance:
-            # Read the sensors
+        x = self.robot_state.data.pose.pose.position.x
+        y = self.robot_state.data.pose.pose.position.y
+        reference = np.arctan2(userdata.goal[1] - y, userdata.goal[0] - x)  
+
+        # Perform alignment
+        while True:
+            # Check error
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+            error = reference - theta
+            if abs(error) > self.tolerance:
+                # Set control
+                angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v, True)
+                self.set_control(0, angular_v)
+            else:
+                # Stop the robot
+                self.set_control(0, 0)
+                return 'alignment_ok'
 
-            # Evaluate the control effort
-            angular_v = proportional_control(self.kp, reference_input, theta, self.max_angular_v)
-            angular_v *= -1 # Gazebo Bug
-
-            # Evaluate error
-            error = reference_input - theta
-
-            # Set the control
-            self.set_control(0, angular_v)
-
+            # Wait for next clock
             self.clock.sleep()
-
-        # Stop the robot
-        self.set_control(0, 0)
-
-        return 'alignment_ok'
         
 class GoToPoint(smach.State):
     """State of the fsm in which the robot moves to a precise location.
@@ -362,7 +358,7 @@ class GoToPoint(smach.State):
         """Initialize the state of the fsm.
 
         Arguments:
-        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        robot_state (Subscriber): Subscriber to robot odometry
         set_control (function): function that publish a twist
         """
         smach.State.__init__(self, outcomes=['point_reached'], input_keys=['goal'])
@@ -370,7 +366,7 @@ class GoToPoint(smach.State):
         self.robot_state = robot_state
         self.set_control = set_control
 
-        # Initialize the point2point controller
+        # Initialize the point to point controller
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
         self.controller = PointToPoint(self.max_forward_v, self.max_angular_v)
@@ -389,19 +385,17 @@ class GoToPoint(smach.State):
         # Move the robot to the goal point
         done = False
         while not done:
-            # Read the sensors
+            # Current robot pose and forward velocity
             x = self.robot_state.data.pose.pose.position.x
             y = self.robot_state.data.pose.pose.position.y
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
             forward_v = self.robot_state.data.twist.twist.linear.x
 
-            # Evaluate the control
-            done, forward_v, angular_v = self.controller.control_law([x, y, theta], forward_v)
-            angular_v *= -1 # Gazebo Bug
-
             # Set the control
+            done, forward_v, angular_v = self.controller.control_law([x, y, theta], forward_v)
             self.set_control(forward_v, angular_v)
 
+            # Wait for next clock
             self.clock.sleep()
 
         # Stop the robot
@@ -410,10 +404,10 @@ class GoToPoint(smach.State):
         return 'point_reached'
 
 class BoxFineApproach(smach.State):
-    """State of the fsm in which the robot approaches the box.
+    """State of the fsm in which the robot slowly and accurately approaches the box.
 
     Outcomes:
-    fine_approach_ok: the robot moved successfully
+    fine_approach_ok: the robot approached the box
     
     Inputs:
     none
@@ -425,7 +419,7 @@ class BoxFineApproach(smach.State):
         """Initialize the state of the fsm.
 
         Arguments:
-        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        robot_state (Subscriber): Subscriber to robot odometry
         controller_index (int): index of the robot
         set_control (function): function that publish a twist
         """
@@ -437,33 +431,32 @@ class BoxFineApproach(smach.State):
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
 
-        # Topic subscription
-        topic_name = rospy.get_param('topics_names')[self.controller_index]
-        rospy.Subscriber(topic_name['irbumper'], RoombaIR, self.irsensors_callback)
+        # Subscribe to irbumper topic
+        names = rospy.get_param('topics_names')[self.controller_index]
+        rospy.Subscriber(names['irbumper'], RoombaIR, self.irsensors_callback)
         self.ir_data_lock = Lock()
         self.ir_data = {}
-
-        # State clock
-        self.clock = rospy.Rate(200)
 
         # Tuning
         self.kp = 2
         self.linear_tolerance = 4000
-        self.angle_tolerance = 0.017
+        self.angular_tolerance = 0.017
+
+        # State clock
+        self.clock = rospy.Rate(200)
 
     def max_ir_data(self):
-        """Return the maximum value in ir_data.values()"""
+        """Return the maximum ir bumper sensor reading."""
         self.ir_data_lock.acquire()
         max_value = max(self.ir_data.values())
         self.ir_data_lock.release()
-
         return max_value
 
     def irsensors_callback(self, data):
-        """Update ir_data using data from IR sensor.
+        """Update ir_data using data from IR sensors.
         
         Arguments:
-        data (RoombaIR): data from IR sensor 
+        data (RoombaIR): data from one IR sensor 
         """
         self.ir_data_lock.acquire()
         self.ir_data[data.header.frame_id] = data.signal
@@ -476,15 +469,16 @@ class BoxFineApproach(smach.State):
         userdata: inputs and outputs of the fsm state.
         """
         # Let the other robots know that it's their turn
-        pub = rospy.Publisher('wait', TaskState, queue_size=50)
+        pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
         msg = TaskState()
         msg.robot_id = self.controller_index
         msg.task_name = 'wait_for_turn'
+        # Three pubs should suffice
         pub.publish(msg)
         pub.publish(msg)
         pub.publish(msg)
 
-        # Get normal from service box_get_docking_point
+        # Get the normal direction pointing inward from service box_get_docking_point
         rospy.wait_for_service('box_get_docking_point')
         docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
         try:
@@ -492,48 +486,46 @@ class BoxFineApproach(smach.State):
         except rospy.ServiceException:
             pass
 
-        # Read the sensors
-        theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
-
+        ################################
+        # First align to the normal
+        #
         # Set point
-        angle_reference = np.arctan2(response.normal[1], response.normal[0])
-        angle_error = angle_reference - theta
-
-        # Align the robot to the normal pointing inward
-        while abs(angle_error) > self.angle_tolerance:
-            # Read the sensors
+        reference = np.arctan2(response.normal[1], response.normal[0])
+        # Perform alignment
+        done = False
+        while not done:
+            # Check error
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
-
-            # Evaluate the control
-            angular_v = proportional_control(self.kp, angle_reference, theta, self.max_angular_v)
-            angular_v *= -1 # Gazebo Bug
-
-            # Evaluate error
-            angle_error = angle_reference - theta
-            
-            # Set the control
-            self.set_control(0, angular_v)
-
-            self.clock.sleep()
-
-        self.set_control(0, 0)
-            
-        # Move the robot as close to the box as possible
+            error = reference - theta
+            if abs(error) > self.angular_tolerance:
+                # Set control
+                angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v, True)
+                self.set_control(0, angular_v)
+            else:
+                # Stop the robot
+                self.set_control(0, 0)
+                done = True
+        #
+        ################################
+    
+        ##############################################################
+        # Next move the robot as close as possible to the box using IR
         linear_v = 0.01
-
         while self.max_ir_data() < self.linear_tolerance:
             self.set_control(linear_v, 0)
 
+        #Stop the robot
         self.set_control(0,0)
+        #
+        ##############################################################
 
         return 'fine_approach_ok'
 
-
 class Synchronizer(smach.State):
-    """State of the fsm in which the robot synchronize themself.
+    """State of the fsm in which the robot synchronize with neighbors.
 
     Outcomes:
-    synchronization_ok: robots are synchronized
+    synchronization_ok: robot completed synchronization
     
     Inputs:
     none
@@ -550,12 +542,22 @@ class Synchronizer(smach.State):
         smach.State.__init__(self, outcomes=['synchronization_ok'])
 
         self.controller_index = controller_index 
+        self.max_number_robots = 3
+        self.task_name = 'synchronization'
 
-        self.robots_state_pub = rospy.Publisher('wait', TaskState, queue_size=50)
-        self.robots_state_sub = rospy.Subscriber('wait', TaskState, self.callback)
+        # Subscribe and publish to the topic 'robots_common'
+        self.pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
+        rospy.Subscriber('robots_common', TaskState, self.callback)
         self.robots_state = set()
-
         self.lock = Lock()
+
+        # Synchronization message
+        self.msg = TaskState()
+        self.msg.robot_id = self.controller_index
+        self.msg.task_name = self.task_name
+        
+        # State clock
+        self.clock = rospy.Rate(10)
         
     def callback(self, data):
         """Update robots_state using data from wait topic.
@@ -563,17 +565,17 @@ class Synchronizer(smach.State):
         Arguments:
         data (TaskState): data from wait topic 
         """
-        if data.task_name == 'synchronization':
+        if data.task_name == self.task_name:
             self.lock.acquire()
             self.robots_state.add(data.robot_id)
             self.lock.release()
 
-    def get_dimension(self):
-        """Return the dimension of robots_state."""
+    def robots_ready(self):
+        """Return True if all the robots are ready."""
         self.lock.acquire()
         number = len(self.robots_state)
         self.lock.release()
-        return number
+        return number == self.max_number_robots        
     
     def execute(self, userdata):
         """Execute the main activity of the fsm state.
@@ -581,30 +583,21 @@ class Synchronizer(smach.State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
-
-        msg = TaskState()
-        msg.robot_id = self.controller_index
-        msg.task_name = 'synchronization'
-        
-        while self.get_dimension() != 3:
-            self.robots_state_pub.publish(msg)
+        # Wait until all robots are ready
+        while not self.robots_ready():
             rospy.sleep(1)
-
-        self.robots_state_pub.publish(msg)
-        self.robots_state_pub.publish(msg)
-        self.robots_state_pub.publish(msg)
-
-        rospy.sleep(1)
+            self.pub.publish(self.msg)
+            self.clock.sleep()
 
         return 'synchronization_ok'
 
 class Consensus(smach.State):
     """State of the fsm in which the robot rotates in order to align
     itself with the line of sight between its center and the goal and
-    start box estimation service.
+    start the box estimation service.
     
     Outcomes:
-    robot_ready: robot is ready to push the box
+    consensus_ok: the robot completed consensus 
 
     Inputs:
     none
@@ -621,80 +614,70 @@ class Consensus(smach.State):
         boxstate (Subscriber): Subscriber to the box state estimation
         set_control (function): function that publish a twist
         """
-        smach.State.__init__(self, outcomes=['robot_ready'])
+        smach.State.__init__(self, outcomes=['consensus_ok'])
 
-        self.robots_state = []
         self.boxstate  = boxstate
         self.set_control = set_control
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
+        self.this_robot = robots_state[controller_index]
+        self.neigh_robots = [robots_state[i] for i in range(len(robots_state)) if i != controller_index]
 
-        for i in range(3):
-            if i == controller_index:
-                self.this_robot = robots_state[i]
-                
-            else:
-                self.robots_state.append(robots_state[i])
-
+        # Tuning
         self.tolerance = 0.001
         
+        # State clock
         self.clock = rospy.Rate(200)
-            
+        
     def execute(self, userdata):
         """Execute the main activity of the fsm state.
 
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
-
+        # Set point
         goal = rospy.get_param('box_goal')
         goal_x = goal['x']
         goal_y = goal['y']
-
-        # Get the latest box state
         latest_boxstate = self.boxstate.data
         box_x = latest_boxstate.x
         box_y = latest_boxstate.y
+        reference = np.arctan2(goal_y - box_y,  goal_x - box_x)
 
-        reference_input = np.arctan2(goal_y - box_y,  goal_x - box_x)
-        this_robot_theta = utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation)
+        # Perform consensus
+        done = False
+        while not done:
+            # Check error
+            this_theta = utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation)
+            error = reference - this_theta
+            if abs(error) > self.tolerance:
+                # Set the control
+                neigh_thetas = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.neigh_robots]
+                angular_v = consensus(this_theta, neigh_thetas, reference, self.max_angular_v)
+                self.set_control(0, angular_v)
+            else:
+                # Stop the robot
+                self.set_control(0, 0)
+                done = True
 
-        error = reference_input - this_robot_theta
-        
-        while abs(error) > self.tolerance:
-            this_robot_theta = utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation)
-            angles = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.robots_state]
-
-            angular_v = consensus(this_robot_theta, angles, reference_input, self.max_angular_v)
-            angular_v *= -1 # Gazebo Bug
-
-            # Evaluate error
-            error = reference_input - this_robot_theta 
-
-            # Set the control
-            self.set_control(0, angular_v)
-
+            # Wait for next clock
             self.clock.sleep()
-            
-        self.set_control(0, 0)
   
-        # Start box state observer      
+        # Start the box state estimation service
         rospy.wait_for_service('release_box_state')
-
         start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
         try:
             start_box_estimation()
-
         except rospy.ServiceException:
             pass
         
-        return 'robot_ready'
+        return 'consensus_ok'
 
 class PushBox(smach.State):
-    """State of the fsm in which the robot pushes the box into goal point 
+    """State of the fsm in which the robot pushes the box.
     
     Outcomes:
-    box_pushed: box has arrived at goal point
-    box_drifted: box drifts during the transport
+    box_at_goal: box at goal point
+    box_drifted: box is drifting
     Inputs:
     none
 
@@ -705,73 +688,81 @@ class PushBox(smach.State):
         """Initialize the state of the fsm.
 
         Arguments:
-        controller_index (int): index of the robot
-        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        robot_state (Subscriber): Subscriber to robot odometry
         boxstate (Subscriber): Subscriber to the box state estimation
         set_control (function): function that publish a twist
         """
-        smach.State.__init__(self, outcomes=['box_pushed','box_drifted'])
+        smach.State.__init__(self, outcomes=['box_at_goal','box_drifted'])
         self.robot_state = robot_state
         self.boxstate  = boxstate
         self.set_control = set_control
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
 
-        self.tolerance = 0.01
-        
-        # Get goal position
+        # Box goal pose
         self.goal = rospy.get_param('box_goal')
-        self.goal_x = self.goal['x']
-        self.goal_y = self.goal['y']
-
-        # Get the latest box state
-        latest_boxstate = self.boxstate.data
-        box_x = latest_boxstate.x
-        box_y = latest_boxstate.y
         
-        self.line = utils.Line([box_x, box_y], [self.goal_x, self.goal_y])
-
+        # Tuning
+        self.distance_tolerance = 0.01
+        self.drift_tolerance = 0.01
+        
+        # State clock
         self.clock = rospy.Rate(200)
+          
+    def distance_error(self, current_box_pose):
+        """Evaluate the feedback distance error.
 
-        
-            
+        Arguments:
+        reference (float): current_box_pose
+        """
+        box_x = current_box_pose[0]
+        box_y = current_box_pose[1]
+        error = np.sqrt((self.goal['x'] - box_x) ** 2 +\
+                        (self.goal['y'] - box_y) ** 2)
+        return error
+
+    def drift_distance(self, current_box_pose):
+        """Evaluate the current drift distance.
+
+        Arguments:
+        reference (float): current_box_pose
+        """
+        box_x = current_box_pose[0]
+        box_y = current_box_pose[1]
+        distance = self.desired_traj.distance([box_x, box_y])
+        return distance
+  
     def execute(self, userdata):
         """Execute the main activity of the fsm state.
 
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
-
-        # Get the latest box state
+        # The desired trajectory of the box center is a line
         latest_boxstate = self.boxstate.data
         box_x = latest_boxstate.x
         box_y = latest_boxstate.y
+        self.desired_traj = utils.Line([box_x, box_y],
+                                       [self.goal['x'], self.goal['y']])
 
-        self.line.update([box_x, box_y], [self.goal_x, self.goal_y])
-
-        error = np.sqrt((self.goal_x - box_x) ** 2 + (self.goal_y - box_y) ** 2)
-
-        while abs(error) > self.tolerance:
-            
-            error = np.sqrt((self.goal_x - box_x) ** 2 + (self.goal_y - box_y) ** 2)
-
-            # Get the latest box state
+        # Push the box
+        forward_v = 0.5
+        while True:
             latest_boxstate = self.boxstate.data
             box_x = latest_boxstate.x
             box_y = latest_boxstate.y
-            
-            distance = self.line.distance([box_x, box_y])
-            
-            if distance > self.tolerance:
+
+            if self.drift_distance([box_x, box_y]) > self.drift_tolerance:
+                # Stop the robot
                 self.set_control(0, 0)
                 return 'box_drifted'
-            
-            forward_v = 0.5
 
-            # Set the control
-            self.set_control(forward_v, 0)
+            if self.distance_error([box_x, box_y]) > self.distance_tolerance:
+                #Set the control
+                self.set_control(forward_v, 0)
+            else:
+                #Stop the robot
+                self.set_control(0,0)
+                return 'box_at_goal'
 
+            # Wait for next clock
             self.clock.sleep()
-            
-        self.set_control(0, 0)
-        
-        return 'box_pushed'
