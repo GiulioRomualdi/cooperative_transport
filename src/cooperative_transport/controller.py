@@ -54,7 +54,8 @@ class Controller:
         """
         twist = Twist()
         twist.linear.x = forward_v
-        twist.angular.z = angular_v
+        # Gazebo requires angular velocities with opposite sign
+        twist.angular.z = - angular_v
 
         self.cmdvel_pub.publish(twist)
 
