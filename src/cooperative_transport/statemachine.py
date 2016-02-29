@@ -1,16 +1,30 @@
 import rospy
 import smach
-import numpy as np
 import utils
+import numpy as np
+
+# State Machine
+from smach import StateMachine, Iterator
+
+# Threading
+from threading import Lock
+
+# Subscriber
 from subscriber import Subscriber
-from irobotcreate2.msg import RoombaIR
+
+# Planner 
 from planner import Planner, RectangularObstacle, CircularObstacle
+
+# Control
 from control.point_to_point import PointToPoint
 from control.consensus import consensus
 from control.proportional_control import proportional_control
-from smach import StateMachine, Iterator
-from cooperative_transport.msg import TaskState
-from threading import Lock
+
+# Msgs
+from cooperative_transport.msg import TaskState, TimeSync
+from irobotcreate2.msg import RoombaIR
+
+# Services
 from cooperative_transport.srv import BoxGetDockingPoint
 from cooperative_transport.srv import BoxGetDockingPointResponse
 from cooperative_transport.srv import BoxGetDockingPointRequest
@@ -93,11 +107,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
  
             box_fine_approach = BoxFineApproach(robots_state[controller_index], controller_index, set_control)
             StateMachine.add('BOX_FINE_APPROACH',box_fine_approach,\
-                             transitions={'fine_approach_ok':'SYNCHRONIZER'})
-
-            synchronizer = Synchronizer(controller_index)
-            StateMachine.add('SYNCHRONIZER',synchronizer,\
-                             transitions={'synchronization_ok':'docking_ok'})
+                             transitions={'fine_approach_ok':'docking_ok'})
         #
         ##########################################################################################
 
@@ -109,16 +119,20 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
         ##########################################################################################
         #
 
+            synchronizer = Synchronizer(controller_index)
+            StateMachine.add('SYNCHRONIZER',synchronizer,\
+                             transitions={'synchronization_ok':'CONSENSUS'})
+
             consensus = Consensus(controller_index, robots_state, boxstate, set_control)
             StateMachine.add('CONSENSUS',\
                              consensus,\
                              transitions={'consensus_ok':'PUSH_BOX'})
 
-            push_box = PushBox(robots_state[controller_index], boxstate, set_control)
+            push_box = PushBox(controller_index, robots_state[controller_index], boxstate, set_control)
             StateMachine.add('PUSH_BOX',\
                              push_box,\
                              transitions={'box_at_goal':'goal_reached',\
-                                          'box_drifted':'CONSENSUS'})
+                                          'box_drifted':'SYNCHRONIZER'})
 
         #
         ##########################################################################################
@@ -623,7 +637,7 @@ class Consensus(smach.State):
         self.neigh_robots = [robots_state[i] for i in range(len(robots_state)) if i != controller_index]
 
         # Tuning
-        self.tolerance = 0.001
+        self.tolerance = 0.002
         
         # State clock
         self.clock = rospy.Rate(200)
@@ -684,15 +698,17 @@ class PushBox(smach.State):
     Outputs:
     none
     """
-    def __init__(self, robot_state, boxstate, set_control):
+    def __init__(self, controller_index, robot_state, boxstate, set_control):
         """Initialize the state of the fsm.
 
         Arguments:
+        controller_index (int): index of the robot
         robot_state (Subscriber): Subscriber to robot odometry
         boxstate (Subscriber): Subscriber to the box state estimation
         set_control (function): function that publish a twist
         """
         smach.State.__init__(self, outcomes=['box_at_goal','box_drifted'])
+        self.controller_index = controller_index
         self.robot_state = robot_state
         self.boxstate  = boxstate
         self.set_control = set_control
@@ -703,9 +719,9 @@ class PushBox(smach.State):
         
         # Tuning
         self.distance_tolerance = 0.01
-        self.drift_tolerance = 0.01
+        self.drift_tolerance = 0.005
         
-        # State clock
+        # State Clock
         self.clock = rospy.Rate(200)
           
     def distance_error(self, current_box_pose):
@@ -744,8 +760,32 @@ class PushBox(smach.State):
         self.desired_traj = utils.Line([box_x, box_y],
                                        [self.goal['x'], self.goal['y']])
 
+        # Debug
+        print([box_x, box_y])
+
+        # Synchronization required
+        tolerance = 1000
+        if self.controller_index == 0:
+            time_sync_pub = rospy.Publisher('sync_time', TimeSync, tcp_nodelay = True, queue_size = 10)
+            departure = rospy.Time.now() + rospy.Duration.from_sec(0.5)
+            sync_time = TimeSync(departure)
+            
+            while not (departure - rospy.Time.now()).to_nsec() < tolerance:
+                print (departure - rospy.Time.now()).to_sec()
+                time_sync_pub.publish(sync_time)
+
+            time_sync_pub.unregister()
+        else:
+            sync_time = rospy.wait_for_message("sync_time", TimeSync)
+            departure = sync_time.departure
+
+            while not (departure - rospy.Time.now()).to_nsec() < tolerance:
+                pass
+
+        print(`self.controller_index` + ': sync @ ' + str((departure - rospy.Time.now()).to_nsec()))
+
         # Push the box
-        forward_v = 0.5
+        forward_v = 0.3
         while True:
             latest_boxstate = self.boxstate.data
             box_x = latest_boxstate.x
