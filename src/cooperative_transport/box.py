@@ -11,6 +11,9 @@ from cooperative_transport.utils import quaternion_to_yaw
 from std_srvs.srv import Empty
 from utils import Segment, angle_normalization
 
+# debug
+from gazebo_msgs.msg import ModelStates
+
 class BoxGeometry:
     """Box geometry"""
     
@@ -181,9 +184,9 @@ class BoxStateObserver:
         min_value = float('inf')
         
         for i in range(50):
-            x_c = random.gauss(self._state[0], 0.02)
-            y_c = random.gauss(self._state[1], 0.02)
-            theta = angle_normalization(random.gauss(self._state[2], 0.002))
+            x_c = random.gauss(self._state[0], 0.001)
+            y_c = random.gauss(self._state[1], 0.001)
+            theta = angle_normalization(random.gauss(self._state[2], 0.001))
             
             estimated_state = [x_c, y_c, theta]
             
@@ -240,6 +243,10 @@ class BoxStatePublisher:
         # Node rate
         self.clock = rospy.Rate(100)
 
+        # Enable box state from gazebo
+        # rospy.Subscriber('/gazebo/model_states', ModelStates, self.gazebo_callback)
+        # self.gazebo_box = [0, 0, 0]
+
     def release_box_state(self, request):
         self.flag_lock.acquire()
         self.release_estimation = True
@@ -282,6 +289,16 @@ class BoxStatePublisher:
 
         self.robots_state_lock.release()
 
+    def gazebo_callback(self, data):
+        box = data.pose[4]
+        position = box.position
+        orientation = box.orientation
+
+        self.gazebo_box[0] = position.x
+        self.gazebo_box[1] = position.y
+        self.gazebo_box[2] = quaternion_to_yaw(orientation)
+
+        
     def point_coordinates(self, robot_index, angle_key):
         """Convert the <angle_key>-th range measure of the <robot_index>-th robot
         from the robot-fixed reference frame to a ground-fixed reference frame
@@ -332,12 +349,20 @@ class BoxStatePublisher:
 
         else:
             state = self.observer.state
-
+        
+        
         msg = BoxState()
         msg.header.stamp = rospy.Time.now()
         msg.x = state[0]
         msg.y = state[1]
         msg.theta = state[2]
+
+        # Enable box state from gazebo
+        # msg = BoxState()
+        # msg.header.stamp = rospy.Time.now()
+        # msg.x = self.gazebo_box[0]
+        # msg.y = self.gazebo_box[1]
+        # msg.theta = self.gazebo_box[2]
 
         if not rospy.is_shutdown():        
             self.state_pub.publish(msg)
