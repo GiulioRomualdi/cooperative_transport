@@ -10,6 +10,7 @@ from cooperative_transport.msg import BoxState
 from cooperative_transport.utils import quaternion_to_yaw
 from std_srvs.srv import Empty
 from utils import Segment, angle_normalization
+from cooperative_transport.filter import LowPassFilter
 
 # debug
 from gazebo_msgs.msg import ModelStates
@@ -240,6 +241,12 @@ class BoxStatePublisher:
         # Lock used to avoid concurrent access to release_estimation
         self.flag_lock = threading.Lock()
 
+        # Filters
+        filter_length = 300
+        self.x_lp = LowPassFilter(box_params['posx'], filter_length)
+        self.y_lp = LowPassFilter(box_params['posy'], filter_length)
+        self.theta_lp = LowPassFilter(box_params['yaw'], filter_length)
+
         # Node rate
         self.clock = rospy.Rate(100)
 
@@ -350,12 +357,15 @@ class BoxStatePublisher:
         else:
             state = self.observer.state
         
-        
+        x_filtered = self.x_lp.filtering(state[0])
+        y_filtered = self.y_lp.filtering(state[1])
+        theta_filtered = self.theta_lp.filtering(state[2])
+            
         msg = BoxState()
         msg.header.stamp = rospy.Time.now()
-        msg.x = state[0]
-        msg.y = state[1]
-        msg.theta = state[2]
+        msg.x = x_filtered
+        msg.y = y_filtered
+        msg.theta = theta_filtered
 
         # Enable box state from gazebo
         # msg = BoxState()
