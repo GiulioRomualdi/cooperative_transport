@@ -648,6 +648,15 @@ class Consensus(smach.State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
+        
+        # Start the box state estimation service
+        rospy.wait_for_service('release_box_state')
+        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+        try:
+            start_box_estimation()
+        except rospy.ServiceException:
+            pass
+
         # Set point
         goal = rospy.get_param('box_goal')
         goal_x = goal['x']
@@ -675,15 +684,7 @@ class Consensus(smach.State):
 
             # Wait for next clock
             self.clock.sleep()
-  
-        # Start the box state estimation service
-        rospy.wait_for_service('release_box_state')
-        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
-        try:
-            start_box_estimation()
-        except rospy.ServiceException:
-            pass
-        
+          
         return 'consensus_ok'
 
 class PushBox(smach.State):
@@ -718,8 +719,8 @@ class PushBox(smach.State):
         self.goal = rospy.get_param('box_goal')
         
         # Tuning
-        self.distance_tolerance = 0.01
-        self.drift_tolerance = 0.005
+        self.distance_tolerance = 0.03
+        self.drift_tolerance = 0.01
         
         # State Clock
         self.clock = rospy.Rate(200)
@@ -767,11 +768,10 @@ class PushBox(smach.State):
         tolerance = 1000
         if self.controller_index == 0:
             time_sync_pub = rospy.Publisher('sync_time', TimeSync, tcp_nodelay = True, queue_size = 10)
-            departure = rospy.Time.now() + rospy.Duration.from_sec(0.5)
+            departure = rospy.Time.now() + rospy.Duration.from_sec(3)
             sync_time = TimeSync(departure)
-            
+
             while not (departure - rospy.Time.now()).to_nsec() < tolerance:
-                print (departure - rospy.Time.now()).to_sec()
                 time_sync_pub.publish(sync_time)
 
             time_sync_pub.unregister()
@@ -785,7 +785,7 @@ class PushBox(smach.State):
         print(`self.controller_index` + ': sync @ ' + str((departure - rospy.Time.now()).to_nsec()))
 
         # Push the box
-        forward_v = 0.3
+        forward_v = 0.2
         while True:
             latest_boxstate = self.boxstate.data
             box_x = latest_boxstate.x
