@@ -353,15 +353,11 @@ class BoxStatePublisher:
         else:
             state = self.observer.state
         
-        x_filtered = self.x_lp.filtering(state[0])
-        y_filtered = self.y_lp.filtering(state[1])
-        theta_filtered = self.theta_lp.filtering(state[2])
-            
         msg = BoxState()
         msg.header.stamp = rospy.Time.now()
-        msg.x = x_filtered
-        msg.y = y_filtered
-        msg.theta = theta_filtered
+        msg.x = state[0]
+        msg.y = state[1]
+        msg.theta = state[2]
 
         # Enable box state from gazebo
         # msg = BoxState()
