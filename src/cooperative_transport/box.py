@@ -213,12 +213,8 @@ class BoxStatePublisher:
             rospy.Subscriber(item['odom'], Odometry, self.pose_callback, callback_args = robot_index)
             
         self.robot_radius = float(rospy.get_param('robot_radius'))
-        #in case of real scenario
-        #self.min_range = self.robot_radius - self.robot_radius
-        #
-        self.min_range = 0.184265 - self.robot_radius
-        self.max_range = 0.233445 - self.robot_radius
-
+        self.min_range = 0.169265 - self.robot_radius
+        self.max_range = 0.218445 - self.robot_radius
         self.sensors_angles = rospy.get_param('sensors_angles')
 
         # Publish to the box_state topic

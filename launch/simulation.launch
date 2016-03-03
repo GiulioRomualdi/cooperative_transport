@@ -10,6 +10,7 @@
   <!-- various irobot create parameters -->
   <!-- <param name="robot_radius" value="0.1696"/> -->
   <param name="robot_radius" value="0.17"/>
+  <param name="housing_radius" value="0.155"/>
   <param name="max_forward_v" value="0.5"/>
   <param name="max_angular_v" value="2"/>
 

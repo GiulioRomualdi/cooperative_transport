@@ -143,8 +143,8 @@ class IrSensor():
         
         # if range_at_ir_angle is less than the lower bound relative to 
         # the angle = ir_angle  then the object cannot be identified by the ir detector
-        if range_at_ir_angle < self.bounds[0][0]:
-           return irobot_min_ir
+        # if range_at_ir_angle < self.bounds[0][0]:
+        #    return irobot_min_ir
 
         # find all the admissible ranges, i.e, inside [lower_bound, upper_bound],
         # and evaluate them wrt to the center of the emitter/detector housing
