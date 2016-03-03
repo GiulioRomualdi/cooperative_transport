@@ -185,9 +185,10 @@ class BoxStateObserver:
         min_value = float('inf')
         
         for i in range(50):
-            x_c = random.gauss(self._state[0], 0.001)
-            y_c = random.gauss(self._state[1], 0.001)
-            theta = angle_normalization(random.gauss(self._state[2], 0.001))
+            x_c = random.uniform(self._state[0]- 0.01, self._state[0] + 0.01)
+            y_c = random.uniform(self._state[1]- 0.01, self._state[1] + 0.01)
+            theta = angle_normalization(random.uniform(self._state[2] - 0.02,\
+                                                       self._state[2] + 0.02))
             
             estimated_state = [x_c, y_c, theta]
             
