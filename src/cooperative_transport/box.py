@@ -350,6 +350,22 @@ class BoxStatePublisher:
             # Run Estimation process
             state = self.observer.state_estimation(points)
 
+            # Debugging
+            # path = ?
+            # with open(path + 'points.csv', 'a') as csvfile:
+            #      fieldnames = ['x', 'y']
+            #      writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            #      for point in points:
+            #          writer.writerow({'x':point[0], 'y':point[1]})
+ 
+            # with open(path + '/center.csv', 'a') as csvfile:
+            #     fieldnames = ['x', 'y']
+            #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            #     writer.writerow({'x':state[0], 'y':state[1]})
+            # with open(path + '/center_gazebo.csv', 'a') as csvfile:
+            #     fieldnames = ['x', 'y']
+            #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            #     writer.writerow({'x':self.gazebo_box[0], 'y':self.gazebo_box[1]})
         else:
             state = self.observer.state
         
