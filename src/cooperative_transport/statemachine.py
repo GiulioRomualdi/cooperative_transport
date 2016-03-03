@@ -119,20 +119,22 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
         ##########################################################################################
         #
 
-            synchronizer = Synchronizer(controller_index)
-            StateMachine.add('SYNCHRONIZER',synchronizer,\
-                             transitions={'synchronization_ok':'CONSENSUS'})
 
             consensus = Consensus(controller_index, robots_state, boxstate, set_control)
             StateMachine.add('CONSENSUS',\
                              consensus,\
-                             transitions={'consensus_ok':'PUSH_BOX'})
+                             transitions={'consensus_ok':'SYNCHRONIZER'})
+
+            synchronizer = Synchronizer(controller_index)
+            StateMachine.add('SYNCHRONIZER',synchronizer,\
+                             transitions={'synchronization_ok':'PUSH_BOX'})
+
 
             push_box = PushBox(controller_index, robots_state[controller_index], boxstate, set_control)
             StateMachine.add('PUSH_BOX',\
                              push_box,\
                              transitions={'box_at_goal':'goal_reached',\
-                                          'box_drifted':'SYNCHRONIZER'})
+                                          'box_drifted':'CONSENSUS'})
 
         #
         ##########################################################################################
@@ -323,7 +325,7 @@ class Alignment(smach.State):
 
         # Tuning
         self.kp = 2
-        self.tolerance = 0.017
+        self.tolerance = 0.02
 
         # State clock
         self.clock = rospy.Rate(200)
@@ -343,7 +345,7 @@ class Alignment(smach.State):
         while True:
             # Check error
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
-            error = reference - theta
+            error = utils.angle_normalization(reference - theta)
             if abs(error) > self.tolerance:
                 # Set control
                 angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v, True)
@@ -386,7 +388,7 @@ class GoToPoint(smach.State):
         self.controller = PointToPoint(self.max_forward_v, self.max_angular_v)
 
         # State clock
-        self.clock = rospy.Rate(100)
+        self.clock = rospy.Rate(200)
 
     def execute(self, userdata):
         """Execute the main activity of the fsm state.
@@ -453,8 +455,8 @@ class BoxFineApproach(smach.State):
 
         # Tuning
         self.kp = 2
-        self.linear_tolerance = 4000
-        self.angular_tolerance = 0.017
+        self.linear_tolerance = 3300
+        self.angular_tolerance = 0.02
 
         # State clock
         self.clock = rospy.Rate(200)
@@ -510,7 +512,7 @@ class BoxFineApproach(smach.State):
         while not done:
             # Check error
             theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
-            error = reference - theta
+            error = utils.angle_normalization(reference - theta)
             if abs(error) > self.angular_tolerance:
                 # Set control
                 angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v, True)
@@ -560,7 +562,6 @@ class Synchronizer(smach.State):
         self.task_name = 'synchronization'
 
         # Subscribe and publish to the topic 'robots_common'
-        self.pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
         rospy.Subscriber('robots_common', TaskState, self.callback)
         self.robots_state = set()
         self.lock = Lock()
@@ -571,7 +572,7 @@ class Synchronizer(smach.State):
         self.msg.task_name = self.task_name
         
         # State clock
-        self.clock = rospy.Rate(10)
+        # self.clock = rospy.Rate(10)
         
     def callback(self, data):
         """Update robots_state using data from wait topic.
@@ -597,12 +598,22 @@ class Synchronizer(smach.State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
+        pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
         # Wait until all robots are ready
         while not self.robots_ready():
-            rospy.sleep(1)
-            self.pub.publish(self.msg)
-            self.clock.sleep()
+            rospy.sleep(0.5)
+            pub.publish(self.msg)
+            #self.clock.sleep()
 
+        # Start the box state estimation service
+        rospy.wait_for_service('release_box_state')
+        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+        try:
+            start_box_estimation()
+        except rospy.ServiceException:
+            pass
+
+        pub.unregister()
         return 'synchronization_ok'
 
 class Consensus(smach.State):
@@ -634,10 +645,10 @@ class Consensus(smach.State):
         self.set_control = set_control
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
         self.this_robot = robots_state[controller_index]
-        self.neigh_robots = [robots_state[i] for i in range(len(robots_state)) if i != controller_index]
+        #self.neigh_robots = [robots_state[i] for i in range(len(robots_state)) if i != controller_index]
 
         # Tuning
-        self.tolerance = 0.002
+        self.tolerance = 0.02
         
         # State clock
         self.clock = rospy.Rate(200)
@@ -648,15 +659,6 @@ class Consensus(smach.State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
-        
-        # Start the box state estimation service
-        rospy.wait_for_service('release_box_state')
-        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
-        try:
-            start_box_estimation()
-        except rospy.ServiceException:
-            pass
-
         # Set point
         goal = rospy.get_param('box_goal')
         goal_x = goal['x']
@@ -671,11 +673,12 @@ class Consensus(smach.State):
         while not done:
             # Check error
             this_theta = utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation)
-            error = reference - this_theta
+            error = utils.angle_normalization(reference - this_theta)
             if abs(error) > self.tolerance:
                 # Set the control
-                neigh_thetas = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.neigh_robots]
-                angular_v = consensus(this_theta, neigh_thetas, reference, self.max_angular_v)
+                #neigh_thetas = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.neigh_robots]
+                #angular_v = consensus(this_theta, neigh_thetas, reference, self.max_angular_v)
+                angular_v = proportional_control(2, reference, this_theta, self.max_angular_v, True)
                 self.set_control(0, angular_v)
             else:
                 # Stop the robot
@@ -719,8 +722,8 @@ class PushBox(smach.State):
         self.goal = rospy.get_param('box_goal')
         
         # Tuning
-        self.distance_tolerance = 0.03
-        self.drift_tolerance = 0.01
+        self.distance_tolerance = 0.05
+        self.drift_tolerance = 0.03
         
         # State Clock
         self.clock = rospy.Rate(200)
@@ -761,14 +764,11 @@ class PushBox(smach.State):
         self.desired_traj = utils.Line([box_x, box_y],
                                        [self.goal['x'], self.goal['y']])
 
-        # Debug
-        print([box_x, box_y])
-
         # Synchronization required
         tolerance = 1000
         if self.controller_index == 0:
             time_sync_pub = rospy.Publisher('sync_time', TimeSync, tcp_nodelay = True, queue_size = 10)
-            departure = rospy.Time.now() + rospy.Duration.from_sec(3)
+            departure = rospy.Time.now() + rospy.Duration.from_sec(2)
             sync_time = TimeSync(departure)
 
             while not (departure - rospy.Time.now()).to_nsec() < tolerance:
@@ -785,7 +785,7 @@ class PushBox(smach.State):
         print(`self.controller_index` + ': sync @ ' + str((departure - rospy.Time.now()).to_nsec()))
 
         # Push the box
-        forward_v = 0.2
+        forward_v = 0.3
         while True:
             latest_boxstate = self.boxstate.data
             box_x = latest_boxstate.x
