@@ -277,41 +277,6 @@
           <linear>0</linear>
           <angular>0</angular>
         </velocity_decay>
-        <sensor name="camera" type="camera">
-          <update_rate>30</update_rate>
-          <camera name="head">
-            <horizontal_fov>1.39626</horizontal_fov>
-            <image>
-              <width>800</width>
-              <height>600</height>
-              <format>R8G8B8</format>
-            </image>
-            <clip>
-              <near>0.02</near>
-              <far>300</far>
-            </clip>
-            <noise>
-              <type>gaussian</type>
-              <mean>0</mean>
-              <stddev>0.007</stddev>
-            </noise>
-          </camera>
-          <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
-            <alwaysOn>true</alwaysOn>
-            <updateRate>0.0</updateRate>
-            <cameraName>iRobot/camera</cameraName>
-            <imageTopicName>image_raw</imageTopicName>
-            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>camera_link</frameName>
-            <hackBaseline>0.07</hackBaseline>
-            <distortionK1>0.0</distortionK1>
-            <distortionK2>0.0</distortionK2>
-            <distortionK3>0.0</distortionK3>
-            <distortionT1>0.0</distortionT1>
-            <distortionT2>0.0</distortionT2>
-          </plugin>
-          <pose frame="">0 0 0.1 0 -0 0</pose>
-        </sensor>
         <gravity>1</gravity>
         <velocity_decay>
           <linear>0</linear>
@@ -355,21 +320,6 @@
         </velocity_decay>
         <self_collide>0</self_collide>
         <gravity>1</gravity>
-        <sensor name="imu_sensor" type="imu">
-          <always_on>1</always_on>
-          <update_rate>1000</update_rate>
-          <visualize>1</visualize>
-          <topic>__default_topic__</topic>
-          <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-            <topicName>imu_data</topicName>
-            <bodyName>imu_sensor_link</bodyName>
-            <updateRateHZ>10.0</updateRateHZ>
-            <gaussianNoise>0.0</gaussianNoise>
-            <xyzOffset>0 0 0</xyzOffset>
-            <rpyOffset>0 0 0</rpyOffset>
-          </plugin>
-          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
-        </sensor>
         <kinematic>0</kinematic>
       </link>
       <link name="left_wheel_link">
@@ -927,41 +877,6 @@
           <linear>0</linear>
           <angular>0</angular>
         </velocity_decay>
-        <sensor name="camera" type="camera">
-          <update_rate>30</update_rate>
-          <camera name="head">
-            <horizontal_fov>1.39626</horizontal_fov>
-            <image>
-              <width>800</width>
-              <height>600</height>
-              <format>R8G8B8</format>
-            </image>
-            <clip>
-              <near>0.02</near>
-              <far>300</far>
-            </clip>
-            <noise>
-              <type>gaussian</type>
-              <mean>0</mean>
-              <stddev>0.007</stddev>
-            </noise>
-          </camera>
-          <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
-            <alwaysOn>true</alwaysOn>
-            <updateRate>0.0</updateRate>
-            <cameraName>iRobot/camera</cameraName>
-            <imageTopicName>image_raw</imageTopicName>
-            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>camera_link</frameName>
-            <hackBaseline>0.07</hackBaseline>
-            <distortionK1>0.0</distortionK1>
-            <distortionK2>0.0</distortionK2>
-            <distortionK3>0.0</distortionK3>
-            <distortionT1>0.0</distortionT1>
-            <distortionT2>0.0</distortionT2>
-          </plugin>
-          <pose frame="">0 0 0.1 0 -0 0</pose>
-        </sensor>
         <gravity>1</gravity>
         <velocity_decay>
           <linear>0</linear>
@@ -1005,21 +920,6 @@
         </velocity_decay>
         <self_collide>0</self_collide>
         <gravity>1</gravity>
-        <sensor name="imu_sensor" type="imu">
-          <always_on>1</always_on>
-          <update_rate>1000</update_rate>
-          <visualize>1</visualize>
-          <topic>__default_topic__</topic>
-          <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-            <topicName>imu_data</topicName>
-            <bodyName>imu_sensor_link</bodyName>
-            <updateRateHZ>10.0</updateRateHZ>
-            <gaussianNoise>0.0</gaussianNoise>
-            <xyzOffset>0 0 0</xyzOffset>
-            <rpyOffset>0 0 0</rpyOffset>
-          </plugin>
-          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
-        </sensor>
         <kinematic>0</kinematic>
       </link>
       <link name="left_wheel_link">
@@ -1577,41 +1477,6 @@
           <linear>0</linear>
           <angular>0</angular>
         </velocity_decay>
-        <sensor name="camera" type="camera">
-          <update_rate>30</update_rate>
-          <camera name="head">
-            <horizontal_fov>1.39626</horizontal_fov>
-            <image>
-              <width>800</width>
-              <height>600</height>
-              <format>R8G8B8</format>
-            </image>
-            <clip>
-              <near>0.02</near>
-              <far>300</far>
-            </clip>
-            <noise>
-              <type>gaussian</type>
-              <mean>0</mean>
-              <stddev>0.007</stddev>
-            </noise>
-          </camera>
-          <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
-            <alwaysOn>true</alwaysOn>
-            <updateRate>0.0</updateRate>
-            <cameraName>iRobot/camera</cameraName>
-            <imageTopicName>image_raw</imageTopicName>
-            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>camera_link</frameName>
-            <hackBaseline>0.07</hackBaseline>
-            <distortionK1>0.0</distortionK1>
-            <distortionK2>0.0</distortionK2>
-            <distortionK3>0.0</distortionK3>
-            <distortionT1>0.0</distortionT1>
-            <distortionT2>0.0</distortionT2>
-          </plugin>
-          <pose frame="">0 0 0.1 0 -0 0</pose>
-        </sensor>
         <gravity>1</gravity>
         <velocity_decay>
           <linear>0</linear>
@@ -1655,21 +1520,6 @@
         </velocity_decay>
         <self_collide>0</self_collide>
         <gravity>1</gravity>
-        <sensor name="imu_sensor" type="imu">
-          <always_on>1</always_on>
-          <update_rate>1000</update_rate>
-          <visualize>1</visualize>
-          <topic>__default_topic__</topic>
-          <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-            <topicName>imu_data</topicName>
-            <bodyName>imu_sensor_link</bodyName>
-            <updateRateHZ>10.0</updateRateHZ>
-            <gaussianNoise>0.0</gaussianNoise>
-            <xyzOffset>0 0 0</xyzOffset>
-            <rpyOffset>0 0 0</rpyOffset>
-          </plugin>
-          <pose frame="">-0.1 0 0.05 0 -0 0</pose>
-        </sensor>
         <kinematic>0</kinematic>
       </link>
       <link name="left_wheel_link">
@@ -2095,16 +1945,16 @@
         </link>
       </model>
       <model name="iRobot">
-        <pose frame="">-1 0 0 0 0 0</pose>
+        <pose frame="">-2.4 2.4 0 0 0 0.38</pose>
       </model>
       <model name="iRobot_0">
-        <pose frame="">-1 -2 0 0 0 0</pose>
+        <pose frame="">-2.4 2 0 0 0 1.54</pose>
       </model>
       <model name="iRobot_1">
-        <pose frame="">-1 2 0 0 0 0</pose>
+        <pose frame="">-2 2.4 0 0 0 2.32</pose>
       </model>
       <model name="my_box">
-        <pose frame="">-1 -1 0 0 0 0.785</pose>
+        <pose frame="">-1 1 0 0 0 0.785</pose>
       </model>
     </state>
     <gui fullscreen="0">
