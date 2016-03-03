@@ -185,8 +185,8 @@ class BoxStateObserver:
         min_value = float('inf')
         
         for i in range(50):
-            x_c = random.uniform(self._state[0]- 0.01, self._state[0] + 0.01)
-            y_c = random.uniform(self._state[1]- 0.01, self._state[1] + 0.01)
+            x_c = round(random.uniform(self._state[0]- 0.01, self._state[0] + 0.01),2)
+            y_c = round(random.uniform(self._state[1]- 0.01, self._state[1] + 0.01),2)
             theta = angle_normalization(random.uniform(self._state[2] - 0.02,\
                                                        self._state[2] + 0.02))
             
@@ -327,8 +327,8 @@ class BoxStatePublisher:
         sensor_angle = self.sensors_angles[angle_key]
 
         local_radius = self.robot_radius + self.robots_state[robot_index]['irbumper'][angle_key]
-        x_global = x_robot + local_radius * np.cos(sensor_angle + theta_robot)
-        y_global = y_robot + local_radius * np.sin(sensor_angle + theta_robot)
+        x_global = round(x_robot + local_radius * np.cos(sensor_angle + theta_robot),2)
+        y_global = round(y_robot + local_radius * np.sin(sensor_angle + theta_robot),2)
 
         point = [x_global, y_global]
         return point
