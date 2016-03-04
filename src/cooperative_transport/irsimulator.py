@@ -64,7 +64,7 @@ def main():
 
     # Create one ir sensor only since the irobot create 2 has 6 identical ir sensors
     ir_sensor_specs = rospy.get_param("ir_simulator/ir_sensor_specs")
-    ir_sensor_kwargs = dict(ir_sensor_specs, robot_radius=float(rospy.get_param("robot_radius")))
+    ir_sensor_kwargs = dict(ir_sensor_specs, robot_radius=float(rospy.get_param("housing_radius")))
     ir_sensor = IrSensor(**ir_sensor_kwargs)
 
     # Start publishing ir readings for any '/iRobot_x/laser_scan' topic found

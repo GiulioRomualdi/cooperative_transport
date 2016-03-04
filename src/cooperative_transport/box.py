@@ -181,10 +181,10 @@ class BoxStateObserver:
         min_value = float('inf')
         
         for i in range(50):
-            x_c = random.gauss(self._state[0], 0.02)
-            y_c = random.gauss(self._state[1], 0.02)
-            theta = angle_normalization(random.gauss(self._state[2], 0.002))
-            
+            x_c = round(random.uniform(self._state[0]- 0.01, self._state[0] + 0.01),3)
+            y_c = round(random.uniform(self._state[1]- 0.01, self._state[1] + 0.01),3)
+            theta = round(angle_normalization(random.uniform(self._state[2] - 0.034,\
+                                                             self._state[2] + 0.034)), 3)
             estimated_state = [x_c, y_c, theta]
             
             new_value = self.__loss_function(estimated_state, coordinates)
@@ -212,8 +212,8 @@ class BoxStatePublisher:
         #in case of real scenario
         #self.min_range = self.robot_radius - self.robot_radius
         #
-        self.min_range = 0.184265 - self.robot_radius
-        self.max_range = 0.233445 - self.robot_radius
+        self.min_range = 0.169265 - self.robot_radius
+        self.max_range = 0.218445 - self.robot_radius
 
         self.sensors_angles = rospy.get_param('sensors_angles')
 
@@ -306,8 +306,8 @@ class BoxStatePublisher:
         sensor_angle = self.sensors_angles[angle_key]
 
         local_radius = self.robot_radius + self.robots_state[robot_index]['irbumper'][angle_key]
-        x_global = x_robot + local_radius * np.cos(sensor_angle + theta_robot)
-        y_global = y_robot + local_radius * np.sin(sensor_angle + theta_robot)
+        x_global = round(x_robot + local_radius * np.cos(sensor_angle + theta_robot),3)
+        y_global = round(y_robot + local_radius * np.sin(sensor_angle + theta_robot),3)
 
         point = [x_global, y_global]
         return point

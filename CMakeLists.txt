@@ -49,6 +49,7 @@ add_message_files(
   FILES
   BoxState.msg
   TaskState.msg
+  TimeSync.msg
 )
 
 ## Generate services in the 'srv' folder

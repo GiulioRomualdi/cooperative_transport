@@ -80,20 +80,11 @@ class Controller:
         #                                     'COOPERATIVE_TRANSPORT' + str(self.controller_index))
         # sis.start()
 
-        # start the state machine
-        #state_machine.execute()
-
-        # Box estimation debugging
-        rospy.wait_for_service('release_box_state')
-        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
-        try:
-            start_box_estimation()
-        except rospy.ServiceException:
-            pass
+        state_machine.execute()
 
 def main(controller_index):
     # wait for gazebo startup
-    rospy.sleep(10)
+    rospy.sleep(3)
 
     # start the controller
     try:

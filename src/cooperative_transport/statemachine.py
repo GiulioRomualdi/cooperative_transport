@@ -9,7 +9,7 @@ from control.point_to_point import PointToPoint
 from control.consensus import consensus
 from control.proportional_control import proportional_control
 from smach import StateMachine, Iterator
-from cooperative_transport.msg import TaskState
+from cooperative_transport.msg import TaskState, TimeSync
 from threading import Lock
 from cooperative_transport.srv import BoxGetDockingPoint
 from cooperative_transport.srv import BoxGetDockingPointResponse
@@ -93,11 +93,8 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
  
             box_fine_approach = BoxFineApproach(robots_state[controller_index], controller_index, set_control)
             StateMachine.add('BOX_FINE_APPROACH',box_fine_approach,\
-                             transitions={'fine_approach_ok':'SYNCHRONIZER'})
+                             transitions={'fine_approach_ok':'docking_ok'})
 
-            synchronizer = Synchronizer(controller_index)
-            StateMachine.add('SYNCHRONIZER',synchronizer,\
-                             transitions={'synchronization_ok':'docking_ok'})
         #
         ##########################################################################################
 
@@ -112,7 +109,15 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             consensus = Consensus(controller_index, robots_state, boxstate, set_control)
             StateMachine.add('CONSENSUS',\
                              consensus,\
-                             transitions={'consensus_ok':'PUSH_BOX'})
+                             transitions={'consensus_ok':'SYNCHRONIZER'})
+
+            synchronizer = Synchronizer(controller_index)
+            StateMachine.add('SYNCHRONIZER',synchronizer,\
+                             transitions={'synchronization_ok':'ROTATE'})
+
+            rotate = Rotate(controller_index, boxstate, set_control)
+            StateMachine.add('ROTATE',rotate,\
+                             transitions={'rotate_ok':'goal_reached'})
 
             push_box = PushBox(robots_state[controller_index], boxstate, set_control)
             StateMachine.add('PUSH_BOX',\
@@ -132,6 +137,85 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     ##############################################################################################
             
     return sm
+
+class Rotate(smach.State):
+    """State of the fsm in which the robot rotates the box together with another robot
+
+    Outcomes:
+    rotate_ok : box rotated succesfully
+
+    Inputs: 
+    none
+    
+    Outputs: 
+    none
+    """
+    def __init__(self, controller_index, boxstate, set_control):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        controller_index (int): index of the robot
+        boxstate (Subscriber): Subscriber to the box state estimation
+        set_control (function): function that publish a twist
+        """
+        smach.State.__init__(self, outcomes=['rotate_ok'])
+        
+        self.controller_index = controller_index
+        self.boxstate = boxstate
+        self.set_control = set_control
+
+        # State clock
+        self.clock = rospy.Rate(200)
+
+    def execute(self, userdata):
+        """Execute the main activity of the fsm state.
+
+        Arguments:
+        userdata: inputs and outputs of the fsm state."""
+        # Start the box state estimation service
+        rospy.wait_for_service('release_box_state')
+        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+        try:
+            start_box_estimation()
+        except rospy.ServiceException:
+            pass
+
+        # Synchronization required
+        tolerance = 1000
+        if self.controller_index == 0:
+            time_sync_pub = rospy.Publisher('sync_time', TimeSync, tcp_nodelay = True, queue_size = 10)
+            departure = rospy.Time.now() + rospy.Duration.from_sec(2)
+            sync_time = TimeSync(departure)
+
+            while not (departure - rospy.Time.now()).to_nsec() < tolerance:
+                time_sync_pub.publish(sync_time)
+
+            time_sync_pub.unregister()
+        else:
+            sync_time = rospy.wait_for_message("sync_time", TimeSync)
+            departure = sync_time.departure
+
+            while not (departure - rospy.Time.now()).to_nsec() < tolerance:
+                pass
+                
+                
+        # Rotation
+        done = False
+
+        omega_box = 0.1
+        radius = 0.35355
+        reference = np.pi / 2
+        tolerance = 0.02
+
+        while not done:
+            theta = self.boxstate.data.theta
+            error = utils.angle_normalization(abs(reference - theta))
+            
+            if error > tolerance:
+                self.set_control(omega_box * radius, omega_box)
+            else:
+                self.set_control(0, 0)
+                return 'rotate_ok'
         
 class WaitForTurn(smach.State):
     """State of the fsm in which the robot waits its turn to approach the box.
@@ -255,21 +339,21 @@ class PlanTrajectory(smach.State):
         obstacle = RectangularObstacle(length, width, x_box, y_box, theta_box, robot_radius)
         self.planner.add_obstacle(obstacle)
 
-        # Get docking point from service box_get_docking_point
-        rospy.wait_for_service('box_get_docking_point')
-        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
-        try:
-            response = docking(self.controller_index)
-        except rospy.ServiceException:
-            pass
+        # Prepare for rotation
+        if self.controller_index == 0:
+            goal = [0.25, -0.25]
+            normal = [0, 1]
+        else:
+            goal = [-0.25, 0.25]
+            normal = [0, -1]
             
         # Plan trajectory
         this_robot = self.robots_state[self.controller_index].data.pose.pose.position
         # Tolerance and robot radius are taken into account
         robot_radius = rospy.get_param('robot_radius')
-        tolerance = - np.array(response.normal) * (0.06 + robot_radius)
+        tolerance = - np.array(normal) * (0.06 + robot_radius)
         start_point = [this_robot.x, this_robot.y]
-        goal_point = (np.array(response.point) + tolerance).tolist()
+        goal_point = (goal + tolerance).tolist()
         state, path = self.planner.plan(start_point, goal_point)
 
         # the first point in the path is the actual robot position
@@ -309,7 +393,7 @@ class Alignment(smach.State):
 
         # Tuning
         self.kp = 2
-        self.tolerance = 0.017
+        self.tolerance = 0.02
 
         # State clock
         self.clock = rospy.Rate(200)
@@ -439,8 +523,8 @@ class BoxFineApproach(smach.State):
 
         # Tuning
         self.kp = 2
-        self.linear_tolerance = 4000
-        self.angular_tolerance = 0.017
+        self.linear_tolerance = 3330
+        self.angular_tolerance = 0.02
 
         # State clock
         self.clock = rospy.Rate(200)
@@ -478,19 +562,18 @@ class BoxFineApproach(smach.State):
         pub.publish(msg)
         pub.publish(msg)
 
-        # Get the normal direction pointing inward from service box_get_docking_point
-        rospy.wait_for_service('box_get_docking_point')
-        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
-        try:
-            response = docking(self.controller_index)
-        except rospy.ServiceException:
-            pass
+        # Normals
+        if self.controller_index == 0:
+            normal = [0, 1]
+        else:
+            normal = [0, -1]
+
 
         ################################
         # First align to the normal
         #
         # Set point
-        reference = np.arctan2(response.normal[1], response.normal[0])
+        reference = np.arctan2(normal[1], normal[0])
         # Perform alignment
         done = False
         while not done:
@@ -542,7 +625,7 @@ class Synchronizer(smach.State):
         smach.State.__init__(self, outcomes=['synchronization_ok'])
 
         self.controller_index = controller_index 
-        self.max_number_robots = 3
+        self.max_number_robots = 2
         self.task_name = 'synchronization'
 
         # Subscribe and publish to the topic 'robots_common'
@@ -555,9 +638,6 @@ class Synchronizer(smach.State):
         self.msg = TaskState()
         self.msg.robot_id = self.controller_index
         self.msg.task_name = self.task_name
-        
-        # State clock
-        self.clock = rospy.Rate(10)
         
     def callback(self, data):
         """Update robots_state using data from wait topic.
@@ -585,9 +665,16 @@ class Synchronizer(smach.State):
         """
         # Wait until all robots are ready
         while not self.robots_ready():
-            rospy.sleep(1)
+            rospy.sleep(0.5)
             self.pub.publish(self.msg)
-            self.clock.sleep()
+
+        # Start the box state estimation service
+        rospy.wait_for_service('release_box_state')
+        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+        try:
+            start_box_estimation()
+        except rospy.ServiceException:
+            pass
 
         return 'synchronization_ok'
 
@@ -620,10 +707,10 @@ class Consensus(smach.State):
         self.set_control = set_control
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
         self.this_robot = robots_state[controller_index]
-        self.neigh_robots = [robots_state[i] for i in range(len(robots_state)) if i != controller_index]
+        #self.neigh_robots = [robots_state[i] for i in range(len(robots_state)) if i != controller_index]
 
         # Tuning
-        self.tolerance = 0.001
+        self.tolerance = 0.02
         
         # State clock
         self.clock = rospy.Rate(200)
@@ -641,18 +728,18 @@ class Consensus(smach.State):
         latest_boxstate = self.boxstate.data
         box_x = latest_boxstate.x
         box_y = latest_boxstate.y
-        reference = np.arctan2(goal_y - box_y,  goal_x - box_x)
+        reference = utils.angle_normalization(utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation) - np.pi/4)
 
         # Perform consensus
         done = False
         while not done:
             # Check error
             this_theta = utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation)
-            error = reference - this_theta
+            error = utils.angle_normalization(reference - this_theta)
             if abs(error) > self.tolerance:
                 # Set the control
-                neigh_thetas = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.neigh_robots]
-                angular_v = consensus(this_theta, neigh_thetas, reference, self.max_angular_v)
+                #neigh_thetas = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.neigh_robots]
+                angular_v = proportional_control(2, reference, this_theta, self.max_angular_v, True)
                 self.set_control(0, angular_v)
             else:
                 # Stop the robot
@@ -661,15 +748,7 @@ class Consensus(smach.State):
 
             # Wait for next clock
             self.clock.sleep()
-  
-        # Start the box state estimation service
-        rospy.wait_for_service('release_box_state')
-        start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
-        try:
-            start_box_estimation()
-        except rospy.ServiceException:
-            pass
-        
+          
         return 'consensus_ok'
 
 class PushBox(smach.State):
