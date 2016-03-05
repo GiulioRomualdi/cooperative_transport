@@ -132,8 +132,9 @@ class Wait(State):
         self.controller_index = controller_index
         self.task_name = task_name
 
-        # Subscribe to the topic 'robots_common'
+        # Publisher and subscribe to the topic 'robots_common'
         rospy.Subscriber('robots_common', TaskState, self.callback)
+        self.pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
 
         self.robots_state = set()
         self.lock = Lock()
@@ -165,9 +166,6 @@ class Wait(State):
 
         Arguments:
         userdata: inputs and outputs of the fsm state."""
-        # Publish and to the topic 'robots_common'
-        pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
-
         if self.task_name == 'wait_for_turn':
             while self.robots_state_length() != self.controller_index:
                 self.clock.sleep()
@@ -181,7 +179,7 @@ class Wait(State):
             # Wait until all robots are ready
             while self.robots_state_length() != 3:
                 self.clock.sleep()
-                pub.publish(msg)
+                self.pub.publish(msg)
 
             # Start the box state estimation service
             rospy.wait_for_service('release_box_state')
@@ -191,7 +189,6 @@ class Wait(State):
             except rospy.ServiceException:
                 pass
 
-        pub.unregister()
         self.robots_state = set()
         return 'step_ok'
         
