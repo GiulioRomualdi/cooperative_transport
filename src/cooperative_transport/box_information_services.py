@@ -1,12 +1,12 @@
 import rospy
 import numpy as np
+import threading
 from box import BoxGeometry
 from std_srvs.srv import Empty
 from cooperative_transport.srv import BoxGetDockingPointPush
 from cooperative_transport.srv import BoxGetDockingPointPushRequest
 from cooperative_transport.srv import BoxGetDockingPointPushResponse
-from cooperative_transport.srv import BoxSetGoal
-from cooperative_transport.srv import BoxSetGoalRequest
+from std_srvs.srv import Empty
 from cooperative_transport.msg import BoxState
 from subscriber import Subscriber
 from cooperative_transport.utils import angle_normalization
@@ -148,11 +148,21 @@ class BoxInformationServices():
 
         # Provide 'box_get_docking_point' service
         rospy.Service('box_get_docking_point', BoxGetDockingPointPush, self.box_get_docking_point)
-        # Provide 'box_set_goal' service
-        rospy.Service('box_set_goal', BoxSetGoal, self.box_set_goal)
+
+        # Provide 'clear_docking_point' service
+        self.update_docking_point = True
+        rospy.Service('clear_docking_point', Empty, self.clear_docking_point)
+
+        # Get the initial box goal pose
+        initial_boxgoal = rospy.get_param('box_goal')
+        self.goal_x = initial_boxgoal['x']
+        self.goal_y = initial_boxgoal['y']
 
         # Docking points and normals
         self.docking = []
+
+        # Lock used to avoid concurrent access to update_docking_point
+        self.flag_lock = threading.Lock()
 
     def box_get_docking_point(self, request):
         """Provide a robot with the docking point/normal on the perimeter of the box in its current position.
@@ -160,6 +170,25 @@ class BoxInformationServices():
         Arguments:
             request (BoxGetDockingPointPushRequest): the request
         """
+        self.flag_lock.acquire()
+        flag = self.update_docking_point
+        self.flag_lock.release()
+        
+        if flag:
+            # Get the latest box state
+            latest_boxstate = self.boxstate.data
+            box_x = latest_boxstate.x
+            box_y = latest_boxstate.y
+            box_theta = latest_boxstate.theta
+        
+            # Update the docking points/normals
+            self.docking = find_docking_points([box_x, box_y, box_theta],
+                                               [self.goal_x, self.goal_y],
+                                               self.box_length, self.box_width)
+        self.flag_lock.acquire()
+        self.update_docking_point = False
+        self.flag_lock.release()
+
         # The response
         response = BoxGetDockingPointPushResponse()
         docking = self.docking[request.robot_id]
@@ -168,37 +197,18 @@ class BoxInformationServices():
         
         return response
 
-    def box_set_goal(self, request):
-        """Set a new box goal position and update the docking points/normals accordingly.
+    def clear_docking_point(self, request):
+        self.flag_lock.acquire()
+        self.update_docking_point = True
+        self.flag_lock.release()
 
-        Arguments:
-            request (BoxSetGoalRequest): the request
-        """
-        # Get the latest box state
-        latest_boxstate = self.boxstate.data
-        box_x = latest_boxstate.x
-        box_y = latest_boxstate.y
-        box_theta = latest_boxstate.theta
-        
-        # Update the docking points/normals
-        self.docking = find_docking_points([box_x, box_y, box_theta],
-                                                        [request.x_goal, request.y_goal],
-                                                        self.box_length, self.box_width)
+
     def run(self):
         """Main activity of the node."""
         # Wait for boxstate to be ready
         while not self.boxstate.is_ready:
             rospy.sleep(1)
         
-        # Get the initial box goal pose
-        initial_boxgoal = rospy.get_param('box_goal')
-        goal_x = initial_boxgoal['x']
-        goal_y = initial_boxgoal['y']
-
-        # Set the new goal 
-        request = BoxSetGoalRequest(goal_x, goal_y, 0)
-        self.box_set_goal(request)
-
         while not rospy.is_shutdown():
             #nothing to do
             rospy.sleep(1)
