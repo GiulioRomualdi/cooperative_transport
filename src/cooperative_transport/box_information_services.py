@@ -100,20 +100,37 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
     # Create a box geometry object
     box_geometry = BoxGeometry(box_length, box_width, box_pose, box_theta)
                          
-    difference = np.array(box_goal_pose) - np.array(box_pose)
-    angle_between = angle_normalization(np.arctan2(difference[1], difference[0]) - box_theta)
+    p0_pg = np.array(box_goal_pose) - np.array(box_pose)
+    los_angle = np.arctan2(p0_pg[1], p0_pg[0])
+    references = [angle_normalization(los_angle + np.pi / 4),\
+                  angle_normalization(los_angle - np.pi / 4)]
 
-    edges =[box_geometry.edge(0, 1), box_geometry.edge(2, 3)]
+    differences = [angle_normalization(reference - box_theta) for reference in references]
+
+    for angle in [0, np.pi/2, -np.pi/2, np.pi]:
+        if np.all_close(differences[0], angle):
+            return False, 
+
+    edges =[box_geometry.edge(0, 1), box_geometry.edge(2, 3), box_geometry(1,2)]
     normals = [edge.normal() for edge in edges]
 
-    if angle_between < 0:
+    min_differences_index = 0
+    if abs(differences[0]) > abs(differences[1]):
+        min_differences_index = 1
+    
+    if differences[min_differences_index] < 0:
         # Cockwise rotation
-        points = [edge.point(1.0 / 4) for edge in edges]
+        point_position = [1.0 / 4, 1.0 / 4, 1.0 / 2]
+        points = [edges[i].point(point_position[i]) for i in range(3)]
     else:
         # Counterclockwise rotation
-        points = [edge.point(3.0 / 4) for edge in edges]
+        point_position = [3.0 / 4, 3.0 / 4, 1.0 / 2]
+        points = [edges[i].point(point_position[i]) for i in range(3)]
         
-    return [{'point' : points[i] , 'normal' : normals[i]} for i in range(2)]
+    results = [{'point' : points[i], 'normal' : normals[i],\
+                'reference_theta' : references[min_differences_index]} for i in range(3)]
+
+    return results.insert(0, True)
     
                 
 class BoxInformationServices():
