@@ -92,7 +92,8 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
         width (float): box width in meters
 
     Returns:
-        A list containing the docking points and the normal directions, one for each robot.
+        A list containing the docking points and the normal directions, one for each robot,
+        and the best angular position of the box required to push it.
     """
     box_pose = [box_current_pose[0], box_current_pose[1]]
     box_theta = box_current_pose[2]
@@ -103,22 +104,23 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
     p0_pg = np.array(box_goal_pose) - np.array(box_pose)
     los_angle = np.arctan2(p0_pg[1], p0_pg[0])
     references = [angle_normalization(los_angle + np.pi / 4),\
-                  angle_normalization(los_angle - np.pi / 4)]
+                  angle_normalization(los_angle - np.pi / 4),
+                  angle_normalization(los_angle + np.pi /4 + np.pi / 2),
+                  angle_normalization(los_angle - np.pi /4 - np.pi / 2)]
 
     differences = [angle_normalization(reference - box_theta) for reference in references]
-
+    
     for angle in [0, np.pi/2, -np.pi/2, np.pi]:
-        if np.all_close(differences[0], angle):
-            return False, 
+        if np.allclose(differences[0], angle):
+            return False, 0, []
 
-    edges =[box_geometry.edge(0, 1), box_geometry.edge(2, 3), box_geometry(1,2)]
+    edges = [box_geometry.edge(0, 1), box_geometry.edge(2, 3), box_geometry.edge(1,2)]
     normals = [edge.normal() for edge in edges]
 
-    min_differences_index = 0
-    if abs(differences[0]) > abs(differences[1]):
-        min_differences_index = 1
-    
-    if differences[min_differences_index] < 0:
+    abs_differences = np.array([abs(difference) for difference in differences])
+    argmin_differences = np.argmin(abs_differences)
+
+    if differences[argmin_differences] < 0:
         # Cockwise rotation
         point_position = [1.0 / 4, 1.0 / 4, 1.0 / 2]
         points = [edges[i].point(point_position[i]) for i in range(3)]
@@ -127,10 +129,9 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
         point_position = [3.0 / 4, 3.0 / 4, 1.0 / 2]
         points = [edges[i].point(point_position[i]) for i in range(3)]
         
-    results = [{'point' : points[i], 'normal' : normals[i],\
-                'reference_theta' : references[min_differences_index]} for i in range(3)]
+    results = [{'point' : points[i], 'normal' : normals[i]} for i in range(3)]
 
-    return results.insert(0, True)
+    return True, references[argmin_differences], results
     
                 
 class BoxInformationServices():
