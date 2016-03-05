@@ -14,7 +14,7 @@ from cooperative_transport.msg import BoxState
 from subscriber import Subscriber
 from cooperative_transport.utils import angle_normalization
 
-def find_docking_points(box_current_pose, box_goal_pose, box_length, box_width):
+def find_docking_points_to_push(box_current_pose, box_goal_pose, box_length, box_width):
     """Find the docking points on the perimeter of the box required
     by the robots in order to move the box to the goal position.
 
@@ -183,6 +183,7 @@ class BoxInformationServices():
         flag = self.update_docking_point
         self.flag_lock.release()
         
+        # Only the first time
         if flag:
             # Get the latest box state
             latest_boxstate = self.boxstate.data
@@ -191,12 +192,12 @@ class BoxInformationServices():
             box_theta = latest_boxstate.theta
         
             # Update the docking points/normals
-            self.docking = find_docking_points([box_x, box_y, box_theta],
-                                               [self.goal_x, self.goal_y],
-                                               self.box_length, self.box_width)
-        self.flag_lock.acquire()
-        self.update_docking_point = False
-        self.flag_lock.release()
+            self.docking = find_docking_points_to_push([box_x, box_y, box_theta],
+                                                       [self.goal_x, self.goal_y],
+                                                       self.box_length, self.box_width)
+            self.flag_lock.acquire()
+            self.update_docking_point = False
+            self.flag_lock.release()
 
         # The response
         response = BoxGetDockingPointPushResponse()
@@ -216,6 +217,7 @@ class BoxInformationServices():
         flag = self.update_docking_point
         self.flag_lock.release()
         
+        # Only the first time
         if flag:
             # Get the latest box state
             latest_boxstate = self.boxstate.data
@@ -227,9 +229,10 @@ class BoxInformationServices():
             self.rotation_required, self.theta, self.docking = find_docking_points_to_rotate([box_x, box_y, box_theta],
                                                                                              [self.goal_x, self.goal_y],
                                                                                              self.box_length, self.box_width)
-        self.flag_lock.acquire()
-        self.update_docking_point = False
-        self.flag_lock.release()
+    
+            self.flag_lock.acquire()
+            self.update_docking_point = False
+            self.flag_lock.release()
 
         # The response
         response = BoxGetDockingPointRotateResponse()
@@ -245,6 +248,11 @@ class BoxInformationServices():
 
 
     def clear_docking_point(self, request):
+        """Clear all docking point previusly evaluated
+
+        Arguments:
+            request (Empty): the request
+        """
         self.flag_lock.acquire()
         self.update_docking_point = True
         self.flag_lock.release()
