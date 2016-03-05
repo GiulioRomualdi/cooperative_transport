@@ -2,9 +2,9 @@ import rospy
 import numpy as np
 from box import BoxGeometry
 from std_srvs.srv import Empty
-from cooperative_transport.srv import BoxGetDockingPoint
-from cooperative_transport.srv import BoxGetDockingPointRequest
-from cooperative_transport.srv import BoxGetDockingPointResponse
+from cooperative_transport.srv import BoxGetDockingPointPush
+from cooperative_transport.srv import BoxGetDockingPointPushRequest
+from cooperative_transport.srv import BoxGetDockingPointPushResponse
 from cooperative_transport.srv import BoxSetGoal
 from cooperative_transport.srv import BoxSetGoalRequest
 from cooperative_transport.msg import BoxState
@@ -147,7 +147,7 @@ class BoxInformationServices():
         self.box_width = rospy.get_param('box')['width']
 
         # Provide 'box_get_docking_point' service
-        rospy.Service('box_get_docking_point', BoxGetDockingPoint, self.box_get_docking_point)
+        rospy.Service('box_get_docking_point', BoxGetDockingPointPush, self.box_get_docking_point)
         # Provide 'box_set_goal' service
         rospy.Service('box_set_goal', BoxSetGoal, self.box_set_goal)
 
@@ -158,10 +158,10 @@ class BoxInformationServices():
         """Provide a robot with the docking point/normal on the perimeter of the box in its current position.
 
         Arguments:
-            request (BoxGetDockingPointRequest): the request
+            request (BoxGetDockingPointPushRequest): the request
         """
         # The response
-        response = BoxGetDockingPointResponse()
+        response = BoxGetDockingPointPushResponse()
         docking = self.docking[request.robot_id]
         response.point = docking['point']
         response.normal = docking['normal']

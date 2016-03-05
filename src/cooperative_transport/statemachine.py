@@ -25,9 +25,9 @@ from cooperative_transport.msg import TaskState, TimeSync
 from irobotcreate2.msg import RoombaIR
 
 # Services
-from cooperative_transport.srv import BoxGetDockingPoint
-from cooperative_transport.srv import BoxGetDockingPointResponse
-from cooperative_transport.srv import BoxGetDockingPointRequest
+from cooperative_transport.srv import BoxGetDockingPointPush
+from cooperative_transport.srv import BoxGetDockingPointPushResponse
+from cooperative_transport.srv import BoxGetDockingPointPushRequest
 from std_srvs.srv import Empty
 
 def construct_sm(controller_index, robots_state, boxstate, set_control):
@@ -273,7 +273,7 @@ class PlanTrajectory(smach.State):
 
         # Get docking point from service box_get_docking_point
         rospy.wait_for_service('box_get_docking_point')
-        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
+        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPointPush)
         try:
             response = docking(self.controller_index)
         except rospy.ServiceException:
@@ -496,7 +496,7 @@ class BoxFineApproach(smach.State):
 
         # Get the normal direction pointing inward from service box_get_docking_point
         rospy.wait_for_service('box_get_docking_point')
-        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPoint)
+        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPointPush)
         try:
             response = docking(self.controller_index)
         except rospy.ServiceException:
