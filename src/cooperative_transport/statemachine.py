@@ -57,7 +57,8 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                          remapping={'plan_trajectory_out':'path'})
             Sequence.add('BOX_APPROACH_ROTATION',\
                          box_approach(sequence, robots_state, controller_index, set_control))
-            # Sequence.add('ALIGNMENT_ROTATION', Alignment(TODO))
+            Sequence.add('ALIGNMENT_ROTATION',\
+                         Alignment(robots_state[controller_index], set_control, controller_index, 'alignment_rotation'))
             # Sequence.add('FINE_APPROACH_ROTATION', BoxFineApproach(TODO))
             # Sequence.add('ALIGNMENT_BEFORE_ROTATION', Alignment(TODO))
             # Sequence.add('ROTATION', Rotation(TODO))
@@ -79,18 +80,18 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     return sm
         
 def box_approach(sm, robots_state, controller_index, set_control):
-    box_approach = Iterator(outcomes=['sequence_ok'],\
+    box_approach = Iterator(outcomes=['step_ok'],\
                             input_keys=[],\
                             output_keys=[],\
                             it= lambda:[item for item in sm.userdata.path],\
                             it_label='goal',\
-                            exhausted_outcome='sequence_ok')
+                            exhausted_outcome='step_ok')
 
     with box_approach:
         box_approach_container = StateMachine(outcomes=['approach_continue'],\
                                               input_keys=['goal'])
         with box_approach_container:
-            alignment = Alignment(robots_state[controller_index], set_control)
+            alignment = Alignment(robots_state[controller_index], set_control, controller_index, 'iterator')
             StateMachine.add('ALIGNMENT',\
                              alignment,\
                              transitions={'alignment_ok':'GO_TO_POINT'})
@@ -301,17 +302,22 @@ class Alignment(State):
     Outputs:
     none
     """
-    def __init__(self, robot_state, set_control):
+    def __init__(self, robot_state, set_control, controller_index, task_name):
         """Initialize the state of the fsm.
 
         Arguments:
         robot_state (Subscriber): Subscriber to robot odometry
         set_control (function): function that publish a twist
         """
-        State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
+        if task_name == 'iterator':
+            State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
+        else:
+            State.__init__(self, outcomes=['sequence_ok'])
 
         self.robot_state = robot_state
         self.set_control = set_control
+        self.controller_index = controller_index
+        self.task_name = task_name
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
 
         # Tuning
@@ -328,9 +334,25 @@ class Alignment(State):
         userdata: inputs and outputs of the fsm state."""
 
         # Set point
+        if self.task_name == 'iterator':
+            reference = np.arctan2(userdata.goal[1] - y, userdata.goal[0] - x)  
+        
+        if self.task_name == 'alignment_rotation':
+
+            rospy.wait_for_service('box_get_docking_point_rotate')
+            docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
+            try:
+                response = docking(self.controller_index)
+            except rospy.ServiceException:
+                pass
+            
+            if not response.is_rotation_required:
+                return 'sequence_ok'
+
+            reference = np.arctan2(response.normal[1], response.normal[0]) 
+
         x = self.robot_state.data.pose.pose.position.x
         y = self.robot_state.data.pose.pose.position.y
-        reference = np.arctan2(userdata.goal[1] - y, userdata.goal[0] - x)  
 
         # Perform alignment
         while True:
@@ -344,7 +366,10 @@ class Alignment(State):
             else:
                 # Stop the robot
                 self.set_control(0, 0)
-                return 'alignment_ok'
+                if self.task_name == 'iterator':
+                    return 'alignment_ok'
+                else:
+                    return 'sequence_ok'
 
             # Wait for next clock
             self.clock.sleep()
