@@ -333,6 +333,9 @@ class Alignment(State):
 
         Arguments:
         userdata: inputs and outputs of the fsm state."""
+        x = self.robot_state.data.pose.pose.position.x
+        y = self.robot_state.data.pose.pose.position.y
+
 
         # Set point
         if self.task_name == 'iterator':
@@ -352,8 +355,6 @@ class Alignment(State):
 
             reference = np.arctan2(response.normal[1], response.normal[0]) 
 
-        x = self.robot_state.data.pose.pose.position.x
-        y = self.robot_state.data.pose.pose.position.y
 
         # Perform alignment
         while True:
