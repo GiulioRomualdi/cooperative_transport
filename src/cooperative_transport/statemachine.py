@@ -59,8 +59,9 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                          box_approach(sequence, robots_state, controller_index, set_control))
             Sequence.add('ALIGNMENT_ROTATION',\
                          Alignment(robots_state[controller_index], set_control, controller_index, 'alignment_rotation'))
-            # Sequence.add('FINE_APPROACH_ROTATION', BoxFineApproach(TODO))
-            # Sequence.add('ALIGNMENT_BEFORE_ROTATION', Alignment(TODO))
+            Sequence.add('FINE_APPROACH_ROTATION',\
+                         BoxFineApproach(robots_state[controller_index], controller_index, set_control))
+            # Sequence.add('ALIGNMENT_BEFORE_ROTATION', Alignment(robots_state[controller_index], set_control, controller_index, 'alignment_rotation')))
             # Sequence.add('ROTATION', Rotation(TODO))
             # Sequence.add('ALIGNMENT_AFTER_ROTATION', Alignment(TODO))
             # Sequence.add('REVERSE', Reverse(TODO))
@@ -312,7 +313,7 @@ class Alignment(State):
         if task_name == 'iterator':
             State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
         else:
-            State.__init__(self, outcomes=['sequence_ok'])
+            State.__init__(self, outcomes=['step_ok'])
 
         self.robot_state = robot_state
         self.set_control = set_control
@@ -347,7 +348,7 @@ class Alignment(State):
                 pass
             
             if not response.is_rotation_required:
-                return 'sequence_ok'
+                return 'step_ok'
 
             reference = np.arctan2(response.normal[1], response.normal[0]) 
 
@@ -369,7 +370,7 @@ class Alignment(State):
                 if self.task_name == 'iterator':
                     return 'alignment_ok'
                 else:
-                    return 'sequence_ok'
+                    return 'step_ok'
 
             # Wait for next clock
             self.clock.sleep()
@@ -435,7 +436,7 @@ class GoToPoint(smach.State):
 
         return 'point_reached'
 
-class BoxFineApproach(smach.State):
+class BoxFineApproach(State):
     """State of the fsm in which the robot slowly and accurately approaches the box.
 
     Outcomes:
@@ -455,13 +456,12 @@ class BoxFineApproach(smach.State):
         controller_index (int): index of the robot
         set_control (function): function that publish a twist
         """
-        smach.State.__init__(self, outcomes=['fine_approach_ok'])
+        State.__init__(self, outcomes=['sequence_ok'])
 
         self.robot_state = robot_state
         self.set_control = set_control
         self.controller_index = controller_index 
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
-        self.max_angular_v = float(rospy.get_param('max_angular_v'))
 
         # Subscribe to irbumper topic
         names = rospy.get_param('topics_names')[self.controller_index]
@@ -471,8 +471,7 @@ class BoxFineApproach(smach.State):
 
         # Tuning
         self.kp = 2
-        self.linear_tolerance = 3300
-        self.angular_tolerance = 0.02
+        self.tolerance = 3300
 
         # State clock
         self.clock = rospy.Rate(200)
@@ -510,48 +509,25 @@ class BoxFineApproach(smach.State):
         pub.publish(msg)
         pub.publish(msg)
 
-        # Get the normal direction pointing inward from service box_get_docking_point_push
-        rospy.wait_for_service('box_get_docking_point_push')
-        docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
+        rospy.wait_for_service('box_get_docking_point_rotate')
+        docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
         try:
             response = docking(self.controller_index)
         except rospy.ServiceException:
             pass
+            
+        if not response.is_rotation_required:
+            return 'sequence_ok'
 
-        ################################
-        # First align to the normal
-        #
-        # Set point
-        reference = np.arctan2(response.normal[1], response.normal[0])
-        # Perform alignment
-        done = False
-        while not done:
-            # Check error
-            theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
-            error = utils.angle_normalization(reference - theta)
-            if abs(error) > self.angular_tolerance:
-                # Set control
-                angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v)
-                self.set_control(0, angular_v)
-            else:
-                # Stop the robot
-                self.set_control(0, 0)
-                done = True
-        #
-        ################################
-    
-        ##############################################################
         # Next move the robot as close as possible to the box using IR
         linear_v = 0.01
-        while self.max_ir_data() < self.linear_tolerance:
+        while self.max_ir_data() < self.tolerance:
             self.set_control(linear_v, 0)
 
         #Stop the robot
         self.set_control(0,0)
-        #
-        ##############################################################
-
-        return 'fine_approach_ok'
+     
+        return 'sequence_ok'
 
 class Synchronizer(smach.State):
     """State of the fsm in which the robot synchronize with neighbors.
