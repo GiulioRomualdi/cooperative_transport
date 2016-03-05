@@ -1,7 +1,7 @@
 from cooperative_transport.utils import saturation
 import numpy as np
 
-def proportional_control(k_p, r, y, u_max, avoid_overturning):
+def proportional_control(k_p, r, y, u_max):
     """Implement proportional control law.
 
     Arguments:
@@ -12,10 +12,6 @@ def proportional_control(k_p, r, y, u_max, avoid_overturning):
         avoid_overturning (bool): if True avoids rotation greater than pi
     """
     error = r - y
-
-    if avoid_overturning:
-        if abs(error) > np.pi:
-            error += -2 * np.pi * np.sign(error)
 
     u = k_p * error
     saturated_u = saturation(u ,u_max)

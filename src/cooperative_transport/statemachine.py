@@ -348,7 +348,7 @@ class Alignment(smach.State):
             error = utils.angle_normalization(reference - theta)
             if abs(error) > self.tolerance:
                 # Set control
-                angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v, True)
+                angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v)
                 self.set_control(0, angular_v)
             else:
                 # Stop the robot
@@ -515,7 +515,7 @@ class BoxFineApproach(smach.State):
             error = utils.angle_normalization(reference - theta)
             if abs(error) > self.angular_tolerance:
                 # Set control
-                angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v, True)
+                angular_v = proportional_control(self.kp, reference, theta, self.max_angular_v)
                 self.set_control(0, angular_v)
             else:
                 # Stop the robot
@@ -678,7 +678,7 @@ class Consensus(smach.State):
                 # Set the control
                 #neigh_thetas = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.neigh_robots]
                 #angular_v = consensus(this_theta, neigh_thetas, reference, self.max_angular_v)
-                angular_v = proportional_control(2, reference, this_theta, self.max_angular_v, True)
+                angular_v = proportional_control(2, reference, this_theta, self.max_angular_v)
                 self.set_control(0, angular_v)
             else:
                 # Stop the robot
