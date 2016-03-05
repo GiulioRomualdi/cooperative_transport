@@ -271,9 +271,9 @@ class PlanTrajectory(smach.State):
         obstacle = RectangularObstacle(length, width, x_box, y_box, theta_box, robot_radius)
         self.planner.add_obstacle(obstacle)
 
-        # Get docking point from service box_get_docking_point
-        rospy.wait_for_service('box_get_docking_point')
-        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPointPush)
+        # Get docking point from service box_get_docking_point_push
+        rospy.wait_for_service('box_get_docking_point_push')
+        docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
         try:
             response = docking(self.controller_index)
         except rospy.ServiceException:
@@ -494,9 +494,9 @@ class BoxFineApproach(smach.State):
         pub.publish(msg)
         pub.publish(msg)
 
-        # Get the normal direction pointing inward from service box_get_docking_point
-        rospy.wait_for_service('box_get_docking_point')
-        docking = rospy.ServiceProxy('box_get_docking_point', BoxGetDockingPointPush)
+        # Get the normal direction pointing inward from service box_get_docking_point_push
+        rospy.wait_for_service('box_get_docking_point_push')
+        docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
         try:
             response = docking(self.controller_index)
         except rospy.ServiceException:

@@ -6,6 +6,9 @@ from std_srvs.srv import Empty
 from cooperative_transport.srv import BoxGetDockingPointPush
 from cooperative_transport.srv import BoxGetDockingPointPushRequest
 from cooperative_transport.srv import BoxGetDockingPointPushResponse
+from cooperative_transport.srv import BoxGetDockingPointRotate
+from cooperative_transport.srv import BoxGetDockingPointRotateRequest
+from cooperative_transport.srv import BoxGetDockingPointRotateResponse
 from std_srvs.srv import Empty
 from cooperative_transport.msg import BoxState
 from subscriber import Subscriber
@@ -148,7 +151,8 @@ class BoxInformationServices():
         self.box_width = rospy.get_param('box')['width']
 
         # Provide 'box_get_docking_point' service
-        rospy.Service('box_get_docking_point', BoxGetDockingPointPush, self.box_get_docking_point)
+        rospy.Service('box_get_docking_point_push', BoxGetDockingPointPush, self.box_get_docking_point_push)
+        rospy.Service('box_get_docking_point_rotate', BoxGetDockingPointRotate, self.box_get_docking_point_rotate)
 
         # Provide 'clear_docking_point' service
         self.update_docking_point = True
@@ -159,13 +163,17 @@ class BoxInformationServices():
         self.goal_x = initial_boxgoal['x']
         self.goal_y = initial_boxgoal['y']
 
-        # Docking points and normals
+        # Latest docking points and normals
         self.docking = []
+
+        # Latest outcome of find_docking_points_to_rotate
+        self.rotation_required = False
+        self.theta = 0
 
         # Lock used to avoid concurrent access to update_docking_point
         self.flag_lock = threading.Lock()
 
-    def box_get_docking_point(self, request):
+    def box_get_docking_point_push(self, request):
         """Provide a robot with the docking point/normal on the perimeter of the box in its current position.
 
         Arguments:
@@ -197,6 +205,44 @@ class BoxInformationServices():
         response.normal = docking['normal']
         
         return response
+
+    def box_get_docking_point_rotate(self, request):
+        """Provide a robot with the docking point/normal on the perimeter of the box in its current position.
+
+        Arguments:
+            request (BoxGetDockingPointPushRequest): the request
+        """
+        self.flag_lock.acquire()
+        flag = self.update_docking_point
+        self.flag_lock.release()
+        
+        if flag:
+            # Get the latest box state
+            latest_boxstate = self.boxstate.data
+            box_x = latest_boxstate.x
+            box_y = latest_boxstate.y
+            box_theta = latest_boxstate.theta
+        
+            # Update the docking points/normals
+            self.rotation_required, self.theta, self.docking = find_docking_points_to_rotate([box_x, box_y, box_theta],
+                                                                                             [self.goal_x, self.goal_y],
+                                                                                             self.box_length, self.box_width)
+        self.flag_lock.acquire()
+        self.update_docking_point = False
+        self.flag_lock.release()
+
+        # The response
+        response = BoxGetDockingPointRotateResponse()
+        response.theta = self.theta
+        response.is_rotation_required = self.rotation_required
+
+        if self.rotation_required:
+            docking = self.docking[request.robot_id]
+            response.point = docking['point']
+            response.normal = docking['normal']
+
+        return response
+
 
     def clear_docking_point(self, request):
         self.flag_lock.acquire()
