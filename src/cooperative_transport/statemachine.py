@@ -467,6 +467,9 @@ class BoxFineApproach(State):
         self.ir_data_lock = Lock()
         self.ir_data = {}
 
+        # Publish to 'robots_common'
+        self.pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
+
         # Tuning
         self.kp = 2
         self.tolerance = 3300
@@ -498,14 +501,13 @@ class BoxFineApproach(State):
         userdata: inputs and outputs of the fsm state.
         """
         # Let the other robots know that it's their turn
-        pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
         msg = TaskState()
         msg.robot_id = self.controller_index
         msg.task_name = 'wait_for_turn'
         # Three pubs should suffice
-        pub.publish(msg)
-        pub.publish(msg)
-        pub.publish(msg)
+        self.pub.publish(msg)
+        self.pub.publish(msg)
+        self.pub.publish(msg)
 
         rospy.wait_for_service('box_get_docking_point_rotate')
         docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
