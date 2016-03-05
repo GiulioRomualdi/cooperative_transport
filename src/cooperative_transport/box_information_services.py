@@ -81,6 +81,40 @@ def find_docking_points(box_current_pose, box_goal_pose, box_length, box_width):
         
     return [{'point' : edges[i].point(points[i]) , 'normal' : edges[i].normal() } for i in range(3)]
 
+def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, box_width):
+    """Find the docking points on the perimeter of the box required
+    by the robots in order to rotate the box.
+
+    Arguments:
+        box_current_pose (float[]): current box pose
+        box_goal_pose (float[]): goal box pose
+        length (float): box length in meters
+        width (float): box width in meters
+
+    Returns:
+        A list containing the docking points and the normal directions, one for each robot.
+    """
+    box_pose = [box_current_pose[0], box_current_pose[1]]
+    box_theta = box_current_pose[2]
+                        
+    # Create a box geometry object
+    box_geometry = BoxGeometry(box_length, box_width, box_pose, box_theta)
+                         
+    difference = np.array(box_goal_pose) - np.array(box_pose)
+    angle_between = angle_normalization(np.arctan2(difference[1], difference[0]) - box_theta)
+
+    edges =[box_geometry.edge(0, 1), box_geometry.edge(2, 3)]
+    normals = [edge.normal() for edge in edges]
+
+    if angle_between < 0:
+        # Cockwise rotation
+        points = [edge.point(1.0 / 4) for edge in edges]
+    else:
+        # Counterclockwise rotation
+        points = [edge.point(3.0 / 4) for edge in edges]
+        
+    return [{'point' : points[i] , 'normal' : normals[i]} for i in range(2)]
+    
                 
 class BoxInformationServices():
     """Provide box information services."""
