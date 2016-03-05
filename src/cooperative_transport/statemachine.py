@@ -4,7 +4,7 @@ import utils
 import numpy as np
 
 # State Machine
-from smach import StateMachine, Iterator
+from smach import StateMachine, Iterator, Sequence, State
 
 # Threading
 from threading import Lock
@@ -28,6 +28,10 @@ from irobotcreate2.msg import RoombaIR
 from cooperative_transport.srv import BoxGetDockingPointPush
 from cooperative_transport.srv import BoxGetDockingPointPushResponse
 from cooperative_transport.srv import BoxGetDockingPointPushRequest
+from cooperative_transport.srv import BoxGetDockingPointRotate
+from cooperative_transport.srv import BoxGetDockingPointRotateResponse
+from cooperative_transport.srv import BoxGetDockingPointRotateRequest
+
 from std_srvs.srv import Empty
 
 def construct_sm(controller_index, robots_state, boxstate, set_control):
@@ -39,121 +43,74 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     boxstate (Subscriber): Subscriber to the box state estimation
     set_control (function): function that publish a twist
     """
-    sm = StateMachine(outcomes=['transport_ok', 'transport_failed'])
+    sm = StateMachine(outcomes=['transport_ok', 'transport_failed', 'step_ok'])
 
-    with sm:    
-    ##############################################################################################
-    # TOP LEVEL STATE MACHINE
-    ##############################################################################################
-    #
-        box_docking = StateMachine(outcomes=['docking_ok', 'docking_failed'])
+    with sm:
+        sequence = Sequence(outcomes = ['sequence_ok', 'step_ok'],
+                            connector_outcome = 'step_ok')
+        with sequence:
+            Sequence.add('WAIT_ROTATION',\
+                         Wait(controller_index, 'wait_for_turn'))
+            Sequence.add('PLAN_TRAJECTORY_ROTATION',\
+                         PlanTrajectory(controller_index, robots_state,\
+                                        boxstate, 'plan_for_rotation'),\
+                         remapping={'plan_trajectory_out':'path'})
+            Sequence.add('BOX_APPROACH_ROTATION',\
+                         box_approach(sequence, robots_state, controller_index, set_control))
+            # Sequence.add('ALIGNMENT_ROTATION', Alignment(TODO))
+            # Sequence.add('FINE_APPROACH_ROTATION', BoxFineApproach(TODO))
+            # Sequence.add('ALIGNMENT_BEFORE_ROTATION', Alignment(TODO))
+            # Sequence.add('ROTATION', Rotation(TODO))
+            # Sequence.add('ALIGNMENT_AFTER_ROTATION', Alignment(TODO))
+            # Sequence.add('REVERSE', Reverse(TODO))
+            # Sequence.add('WAIT_PUSH',\
+            #              Wait(controller_index, 'wait_for_turn'))
+            # Sequence.add('PLAN_TRAJECTORY_PUSH',\
+            #              PlanTrajectory(controller_index, robots_state,\
+            #                             boxstate, 'plan_to_push'),\
+            #              remapping={'plan_trajectory_out':'path'})
+            # Sequence.add('BOX_APPROACH_PUSH', box_approach(sm))
+            # Sequence.add('ALIGNMENT_PUSH', Alignment(TODO))
+            # Sequence.add('FINE_APPROACH_PUSH', BoxFineApproach(TODO))
 
-        with box_docking:
-        ##########################################################################################
-        # BOX DOCKING STATE MACHINE
-        ##########################################################################################
-        #
-            box_approach = Iterator(outcomes=['approach_ok'],\
-                                    input_keys=[],\
-                                    output_keys=[],\
-                                    it= lambda:[item for item in box_docking.userdata.path],\
-                                    it_label='goal',\
-                                    exhausted_outcome='approach_ok')
-
-            with box_approach:
-            ######################################################################################
-            # BOX APPROACH ITERATOR
-            ######################################################################################
-            #
-                box_approach_container = StateMachine(outcomes=['approach_continue'],\
-                                                      input_keys=['goal'])
-                with box_approach_container:
-                ###################################################################################
-                # BOX APPROACH CONTAINER
-                ###################################################################################
-                #
-                    alignment = Alignment(robots_state[controller_index], set_control)
-                    StateMachine.add('ALIGNMENT',\
-                                     alignment,\
-                                     transitions={'alignment_ok':'GO_TO_POINT'})
-                    
-                    go_to_point = GoToPoint(robots_state[controller_index], set_control)
-                    StateMachine.add('GO_TO_POINT',\
-                                     go_to_point,\
-                                     transitions={'point_reached':'approach_continue'})
-                #
-                ###################################################################################
-                
-                Iterator.set_contained_state('CONTAINER_STATE', 
-                                             box_approach_container, 
-                                             loop_outcomes=['approach_continue'])
-            #
-            ######################################################################################
-
-            wait_for_turn = WaitForTurn(controller_index)
-            StateMachine.add('WAIT_FOR_TURN',\
-                             wait_for_turn,\
-                             transitions={'my_turn':'PLAN_TRAJECTORY'})
-
-            plan_trajectory = PlanTrajectory(controller_index, robots_state, boxstate)
-            StateMachine.add('PLAN_TRAJECTORY', plan_trajectory,\
-                             transitions={'path_found':'BOX_APPROACH',\
-                                          'plan_failed':'docking_failed'},
-                             remapping={'plan_trajectory_out':'path'})
-
-            StateMachine.add('BOX_APPROACH',\
-                             box_approach,\
-                             transitions={'approach_ok':'BOX_FINE_APPROACH'})
+        StateMachine.add('SEQUENCE', sequence,\
+                         transitions={'sequence_ok':'transport_ok'})
  
-            box_fine_approach = BoxFineApproach(robots_state[controller_index], controller_index, set_control)
-            StateMachine.add('BOX_FINE_APPROACH',box_fine_approach,\
-                             transitions={'fine_approach_ok':'docking_ok'})
-        #
-        ##########################################################################################
-
-        move_box = StateMachine(outcomes=['goal_reached'])
-
-        with move_box:
-        ##########################################################################################
-        # MOVE BOX STATE MACHINE
-        ##########################################################################################
-        #
-
-
-            consensus = Consensus(controller_index, robots_state, boxstate, set_control)
-            StateMachine.add('CONSENSUS',\
-                             consensus,\
-                             transitions={'consensus_ok':'SYNCHRONIZER'})
-
-            synchronizer = Synchronizer(controller_index)
-            StateMachine.add('SYNCHRONIZER',synchronizer,\
-                             transitions={'synchronization_ok':'PUSH_BOX'})
-
-
-            push_box = PushBox(controller_index, robots_state[controller_index], boxstate, set_control)
-            StateMachine.add('PUSH_BOX',\
-                             push_box,\
-                             transitions={'box_at_goal':'goal_reached',\
-                                          'box_drifted':'CONSENSUS'})
-
-        #
-        ##########################################################################################
-        StateMachine.add('BOX_DOCKING', box_docking,\
-                         transitions={'docking_failed':'transport_failed',\
-                                      'docking_ok':'MOVE_BOX'})
-
-        StateMachine.add('MOVE_BOX', move_box,\
-                         transitions={'goal_reached':'transport_ok'})
-    #
-    ##############################################################################################
-            
     return sm
         
-class WaitForTurn(smach.State):
-    """State of the fsm in which the robot waits its turn to approach the box.
+def box_approach(sm, robots_state, controller_index, set_control):
+    box_approach = Iterator(outcomes=['sequence_ok'],\
+                            input_keys=[],\
+                            output_keys=[],\
+                            it= lambda:[item for item in sm.userdata.path],\
+                            it_label='goal',\
+                            exhausted_outcome='sequence_ok')
+
+    with box_approach:
+        box_approach_container = StateMachine(outcomes=['approach_continue'],\
+                                              input_keys=['goal'])
+        with box_approach_container:
+            alignment = Alignment(robots_state[controller_index], set_control)
+            StateMachine.add('ALIGNMENT',\
+                             alignment,\
+                             transitions={'alignment_ok':'GO_TO_POINT'})
+            
+            go_to_point = GoToPoint(robots_state[controller_index], set_control)
+            StateMachine.add('GO_TO_POINT',\
+                             go_to_point,\
+                             transitions={'point_reached':'approach_continue'})
+                
+        Iterator.set_contained_state('CONTAINER_STATE', 
+                                     box_approach_container, 
+                                     loop_outcomes=['approach_continue'])
+
+    return box_approach
+
+class Wait(State):
+    """State of the fsm in which the robot waits the other robots
 
     Outcomes:
-    my_turn : time for the robot to approach the box
+    none
 
     Inputs: 
     none
@@ -161,43 +118,43 @@ class WaitForTurn(smach.State):
     Outputs: 
     none
     """
-    def __init__(self, controller_index):
+    def __init__(self, controller_index, task_name):
         """Initialize the state of the fsm.
 
         Arguments:
         controller_index (int): index of the robot
+        task_name (string) 
         """
-        smach.State.__init__(self, outcomes=['my_turn'])
+        State.__init__(self, outcomes=['step_ok'])
         
         self.controller_index = controller_index
+        self.task_name = task_name
 
-        # Subscribe and publish to the topic 'robots_common'
-        rospy.Publisher('robots_common', TaskState, queue_size=50)
+        # Subscribe to the topic 'robots_common'
         rospy.Subscriber('robots_common', TaskState, self.callback)
-        self.turn_state = set()
 
-        # Lock used to protect the variable turn_state
+        self.robots_state = set()
         self.lock = Lock()
 
         # State clock
-        self.clock = rospy.Rate(1)
+        self.clock = rospy.Rate(2)    
 
     def callback(self, data):
-        """Update the turn_state variable.
+        """Update the robots_state variable.
 
         Arguments:
         data (TaskState): last task state received by the node.
         """
-        if data.task_name == 'wait_for_turn':
+        if data.task_name == self.task_name:
             self.lock.acquire()
             # Add robot_id to the turn_state list for every new robot
-            self.turn_state.add(data.robot_id)
+            self.robots_state.add(data.robot_id)
             self.lock.release()
         
-    def turn_number(self):
-        """Return the number of robots in the turn_state list."""
+    def robots_state_length(self):
+        """Return the number of robots in the robots_state set."""
         self.lock.acquire()
-        number = len(self.turn_state)
+        number = len(self.robots_state)
         self.lock.release()
         return number
         
@@ -206,18 +163,41 @@ class WaitForTurn(smach.State):
 
         Arguments:
         userdata: inputs and outputs of the fsm state."""
-        # Wait for turn
-        while self.turn_number() != self.controller_index:
-            self.clock.sleep()
+        # Publish and to the topic 'robots_common'
+        pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
 
-        return 'my_turn'
+        if self.task_name == 'wait_for_turn':
+            while self.robots_state_length() != self.controller_index:
+                self.clock.sleep()
 
-class PlanTrajectory(smach.State):
+        elif self.task_name == 'synchronization':
+            # Synchronization message
+            msg = TaskState()
+            msg.robot_id = self.controller_index
+            msg.task_name = self.task_name
+
+            # Wait until all robots are ready
+            while self.robots_state_length() != 3:
+                self.clock.sleep()
+                pub.publish(msg)
+
+            # Start the box state estimation service
+            rospy.wait_for_service('release_box_state')
+            start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+            try:
+                start_box_estimation()
+            except rospy.ServiceException:
+                pass
+
+        pub.unregister()
+        self.robots_state = set()
+        return 'step_ok'
+        
+class PlanTrajectory(State):
     """State of the fsm in which the robot find its path to the box.
 
     Outcomes:
-    path_found: a path was found
-    plan_failed: the planning failed
+    none
     
     Inputs:
     none
@@ -225,7 +205,7 @@ class PlanTrajectory(smach.State):
     Outputs:
     path: the path found by the planning algorithm
     """
-    def __init__(self, controller_index, robots_state, boxstate):
+    def __init__(self, controller_index, robots_state, boxstate, task_name):
         """Initialize the state of the fsm.
 
         Arguments:
@@ -233,13 +213,12 @@ class PlanTrajectory(smach.State):
         robots_state (Subscriber[]): list of Subscribers to robots odometry
         boxstate (Subscriber): Subscriber to box state
         """
-        smach.State.__init__(self, 
-                             outcomes=['path_found','plan_failed'], 
-                             output_keys=['plan_trajectory_out'])
+        State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['step_ok'])
         
         self.controller_index = controller_index
         self.robots_state = robots_state
         self.boxstate = boxstate
+        self.task_name = task_name
         
     def execute(self, userdata):
         """Execute the main activity of the fsm state.
@@ -271,13 +250,27 @@ class PlanTrajectory(smach.State):
         obstacle = RectangularObstacle(length, width, x_box, y_box, theta_box, robot_radius)
         self.planner.add_obstacle(obstacle)
 
-        # Get docking point from service box_get_docking_point_push
-        rospy.wait_for_service('box_get_docking_point_push')
-        docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
-        try:
-            response = docking(self.controller_index)
-        except rospy.ServiceException:
-            pass
+        if self.task_name == 'plan_for_rotation':
+            # Get docking point from service box_get_docking_point_push
+            rospy.wait_for_service('box_get_docking_point_rotate')
+            docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
+            try:
+                response = docking(self.controller_index)
+            except rospy.ServiceException:
+                pass
+            
+            if not response.is_rotation_required:
+                userdata.plan_trajectory_out = []
+                return 'step_ok'
+
+        elif self.task_name == 'plan_to_push':
+            # Get docking point from service box_get_docking_point_push
+            rospy.wait_for_service('box_get_docking_point_push')
+            docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
+            try:
+                response = docking(self.controller_index)
+            except rospy.ServiceException:
+                pass
             
         # Plan trajectory
         this_robot = self.robots_state[self.controller_index].data.pose.pose.position
@@ -291,13 +284,11 @@ class PlanTrajectory(smach.State):
         # the first point in the path is the actual robot position
         path.pop(0)
 
-        if state:
-            userdata.plan_trajectory_out = path
-            return 'path_found'
-        else:
-            return 'plan_failed'
-        
-class Alignment(smach.State):
+        userdata.plan_trajectory_out = path
+
+        return 'step_ok'
+
+class Alignment(State):
     """State of the fsm in which the robot rotates in order to align
     itself with the line of sight between its center and the next goal.
     
@@ -317,7 +308,7 @@ class Alignment(smach.State):
         robot_state (Subscriber): Subscriber to robot odometry
         set_control (function): function that publish a twist
         """
-        smach.State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
+        State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
 
         self.robot_state = robot_state
         self.set_control = set_control
