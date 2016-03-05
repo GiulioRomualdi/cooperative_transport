@@ -9,7 +9,6 @@ def proportional_control(k_p, r, y, u_max):
         r (float): reference signal
         y (float): system output signal
         u_max (float): maximum control effort
-        avoid_overturning (bool): if True avoids rotation greater than pi
     """
     error = r - y
 
