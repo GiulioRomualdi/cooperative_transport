@@ -67,8 +67,9 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                    'alignment_rotation'))
 
             Sequence.add('FINE_APPROACH_ROTATION',\
-                         BoxFineApproach(robots_state[controller_index], \
-                                         controller_index, set_control))
+                         FineLinearMovement(robots_state[controller_index], \
+                                            controller_index, set_control, \
+                                            'fine_approach'))
 
             Sequence.add('SYNCHRONIZATION_BEFORE_ROTATION',
                          Wait(controller_index, 'synchronization'))
@@ -81,6 +82,11 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             Sequence.add('ROTATE',\
                          Rotate(controller_index, robots_state[controller_index],\
                                 boxstate, set_control))
+
+            Sequence.add('PARTIAL_REVERSE_ROTATION',\
+                         FineLinearMovement(robots_state[controller_index], \
+                                            controller_index, set_control, \
+                                            'partial_reverse'))
 
             Sequence.add('ALIGNMENT_AFTER_ROTATION',\
                          Alignment(robots_state[controller_index],\
@@ -467,7 +473,7 @@ class GoToPoint(smach.State):
 
         return 'point_reached'
 
-class BoxFineApproach(State):
+class FineLinearMovement(State):
     """State of the fsm in which the robot slowly and accurately approaches the box.
 
     Outcomes:
@@ -479,7 +485,7 @@ class BoxFineApproach(State):
     Outputs:
     none
     """
-    def __init__(self, robot_state, controller_index, set_control):
+    def __init__(self, robot_state, controller_index, set_control, task_name):
         """Initialize the state of the fsm.
 
         Arguments:
@@ -491,7 +497,8 @@ class BoxFineApproach(State):
 
         self.robot_state = robot_state
         self.set_control = set_control
-        self.controller_index = controller_index 
+        self.controller_index = controller_index
+        self.task_name = task_name
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
 
         # Subscribe to irbumper topic
@@ -505,7 +512,10 @@ class BoxFineApproach(State):
 
         # Tuning
         self.kp = 2
-        self.tolerance = 3300
+
+        if self.task_name == 'fine_approach' or\
+           self.task_name == 'partial_reverse':
+            self.tolerance = 3300
 
         # State clock
         self.clock = rospy.Rate(200)
@@ -515,6 +525,8 @@ class BoxFineApproach(State):
         self.ir_data_lock.acquire()
         max_value = max(self.ir_data.values())
         self.ir_data_lock.release()
+        if self.controller_index == 0:
+            print ('sono il robot ' + str(self.controller_index) + ' max:' + str(max_value))
         return max_value
 
     def irsensors_callback(self, data):
@@ -533,27 +545,36 @@ class BoxFineApproach(State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
-        # Let the other robots know that it's their turn
-        msg = TaskState()
-        msg.robot_id = self.controller_index
-        msg.task_name = 'wait_for_turn'
-        # Three pubs should suffice
-        self.pub.publish(msg)
-        self.pub.publish(msg)
-        self.pub.publish(msg)
-
-        rospy.wait_for_service('box_get_docking_point_rotate')
-        docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
-        try:
-            response = docking(self.controller_index)
-        except rospy.ServiceException:
-            pass
+        if self.task_name == 'fine_approach':
+            # Let the other robots know that it's their turn
+            msg = TaskState()
+            msg.robot_id = self.controller_index
+            msg.task_name = 'wait_for_turn'
+            # Three pubs should suffice
+            self.pub.publish(msg)
+            self.pub.publish(msg)
+            self.pub.publish(msg)
             
-        if not response.is_rotation_required:
-            return 'step_ok'
+            rospy.wait_for_service('box_get_docking_point_rotate')
+            docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
+            try:
+                response = docking(self.controller_index)
+            except rospy.ServiceException:
+                pass
+            
+            if not response.is_rotation_required:
+                return 'step_ok'
 
-        # Next move the robot as close as possible to the box using IR
-        linear_v = 0.01
+            # Next move the robot as close as possible to the box using IR
+
+            linear_v = 0.01
+
+        if self.task_name == 'partial_reverse':
+            if self.controller_index != 0:
+                linear_v = -0.1
+            else:
+                return 'step_ok'
+
         while self.max_ir_data() < self.tolerance:
             self.set_control(linear_v, 0)
 
