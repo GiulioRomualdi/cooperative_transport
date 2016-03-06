@@ -77,11 +77,15 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                          Alignment(robots_state[controller_index],\
                                    set_control, controller_index, \
                                    'alignment_before_rotation', boxstate))
+
             Sequence.add('ROTATE',\
                          Rotate(controller_index, robots_state[controller_index],\
                                 boxstate, set_control))
-            # Sequence.add('ALIGNMENT_BEFORE_ROTATION', Alignment(robots_state[controller_index], set_control, controller_index, 'alignment_rotation')))
-            # Sequence.add('ROTATION', Rotation(TODO))
+
+            Sequence.add('ALIGNMENT_AFTER_ROTATION',\
+                         Alignment(robots_state[controller_index],\
+                                   set_control, controller_index, \
+                                   'alignment_rotation'))
             # Sequence.add('ALIGNMENT_AFTER_ROTATION', Alignment(TODO))
             # Sequence.add('REVERSE', Reverse(TODO))
             # Sequence.add('WAIT_PUSH',\
@@ -801,6 +805,23 @@ class Rotate(State):
                 self.set_control(linear_v, direction * angular_v)
             else:
                 self.set_control(0, 0)
+
+                # Clear docking point
+                rospy.wait_for_service('clear_docking_point')
+                clear_docking_point = rospy.ServiceProxy('clear_docking_point', Empty)
+                try:
+                    clear_docking_point()
+                except rospy.ServiceException:
+                    pass
+
+                # Hold box state
+                rospy.wait_for_service('hold_box_state')
+                hold_box_state = rospy.ServiceProxy('hold_box_state', Empty)
+                try:
+                    hold_box_state()
+                except rospy.ServiceException:
+                    pass
+                
                 return 'step_ok'
 
             # Wait for next clock
