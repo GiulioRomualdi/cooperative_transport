@@ -4,3 +4,4 @@ bool is_rotation_required
 float32[] point
 float32[] normal
 float32 theta
+int32 direction
