@@ -117,7 +117,7 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
         if np.allclose(differences[0], angle):
             return False, 0, 0, []
 
-    edges = [box_geometry.edge(0, 1), box_geometry.edge(2, 3), box_geometry.edge(1,2)]
+    edges = [box_geometry.edge(1,2), box_geometry.edge(0, 1), box_geometry.edge(2, 3)]
     normals = [edge.normal() for edge in edges]
 
     abs_differences = np.array([abs(difference) for difference in differences])
@@ -126,12 +126,12 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
     direction = 0
     if differences[argmin_differences] < 0:
         # Clockwise rotation
-        point_position = [1.0 / 4, 1.0 / 4, 1.0 / 2]
+        point_position = [1.0 / 2, 1.0 / 4, 1.0 / 4]
         points = [edges[i].point(point_position[i]) for i in range(3)]
         direction = - 1
     else:
         # Counterclockwise rotation
-        point_position = [3.0 / 4, 3.0 / 4, 1.0 / 2]
+        point_position = [1.0 / 2, 3.0 / 4, 3.0 / 4]
         points = [edges[i].point(point_position[i]) for i in range(3)]
         direction = + 1
         
