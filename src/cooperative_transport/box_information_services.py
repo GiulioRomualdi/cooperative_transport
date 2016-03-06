@@ -123,19 +123,21 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
     abs_differences = np.array([abs(difference) for difference in differences])
     argmin_differences = np.argmin(abs_differences)
 
+    direction = 0
     if differences[argmin_differences] < 0:
         # Cockwise rotation
         point_position = [1.0 / 4, 1.0 / 4, 1.0 / 2]
         points = [edges[i].point(point_position[i]) for i in range(3)]
+        direction = - 1
     else:
         # Counterclockwise rotation
         point_position = [3.0 / 4, 3.0 / 4, 1.0 / 2]
         points = [edges[i].point(point_position[i]) for i in range(3)]
+        direction = + 1
         
     results = [{'point' : points[i], 'normal' : normals[i]} for i in range(3)]
 
-    return True, references[argmin_differences], results
-    
+    return True, references[argmin_differences], direction, results
                 
 class BoxInformationServices():
     """Provide box information services."""
@@ -169,6 +171,7 @@ class BoxInformationServices():
         # Latest outcome of find_docking_points_to_rotate
         self.rotation_required = False
         self.theta = 0
+        self.direction = 0
 
         # Lock used to avoid concurrent access to update_docking_point
         self.flag_lock = threading.Lock()
@@ -226,9 +229,9 @@ class BoxInformationServices():
             box_theta = latest_boxstate.theta
         
             # Update the docking points/normals
-            self.rotation_required, self.theta, self.docking = find_docking_points_to_rotate([box_x, box_y, box_theta],
-                                                                                             [self.goal_x, self.goal_y],
-                                                                                             self.box_length, self.box_width)
+            self.rotation_required, self.theta, self.direction, self.docking = find_docking_points_to_rotate([box_x, box_y, box_theta],
+                                                                                                              [self.goal_x, self.goal_y],
+                                                                                                              self.box_length, self.box_width)
     
             self.flag_lock.acquire()
             self.update_docking_point = False
@@ -238,6 +241,7 @@ class BoxInformationServices():
         response = BoxGetDockingPointRotateResponse()
         response.theta = self.theta
         response.is_rotation_required = self.rotation_required
+        response.direction = self.direction
 
         if self.rotation_required:
             docking = self.docking[request.robot_id]
