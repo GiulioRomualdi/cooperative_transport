@@ -100,12 +100,12 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                             controller_index, set_control, \
                                             'reverse'))
 
-        docking_push = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_no_needed'],
+        docking_push = Sequence(outcomes = ['sequence_ok', 'step_ok'],
                                 connector_outcome = 'step_ok')
         with docking_push:
 
             Sequence.add('WAIT_PUSH',\
-                         Wait(controller_index, 'wait_for_turn_push'),)
+                         Wait(controller_index, 'wait_for_turn_push'))
 
             Sequence.add('PLAN_TRAJECTORY_PUSH',\
                          PlanTrajectory(controller_index, robots_state,\
@@ -135,8 +135,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                       'rotation_no_needed':'DOCKING_PUSH'})
 
         StateMachine.add('DOCKING_PUSH', docking_push,\
-                         transitions={'sequence_ok':'transport_ok',\
-                                      'rotation_no_needed':'transport_ok'})
+                         transitions={'sequence_ok':'transport_ok'})
  
     return sm
         
@@ -238,7 +237,23 @@ class Wait(State):
                 pass
             
             if not response.is_rotation_required:
+                # Clear docking point
+                rospy.wait_for_service('clear_docking_point')
+                clear_docking_point = rospy.ServiceProxy('clear_docking_point', Empty)
+                try:
+                    clear_docking_point()
+                except rospy.ServiceException:
+                    pass
+                
                 return 'rotation_no_needed'
+
+            # Clear docking point
+            rospy.wait_for_service('clear_docking_point')
+            clear_docking_point = rospy.ServiceProxy('clear_docking_point', Empty)
+            try:
+                clear_docking_point()
+            except rospy.ServiceException:
+                pass
 
         if self.task_name == 'wait_for_turn_rotation' or\
            self.task_name == 'wait_for_turn_push':
@@ -544,7 +559,10 @@ class FineLinearMovement(State):
         controller_index (int): index of the robot
         set_control (function): function that publish a twist
         """
-        State.__init__(self, outcomes=['step_ok'])
+        if task_name == 'reverse':
+            State.__init__(self, outcomes=['step_ok','sequence_ok'])
+        else:
+            State.__init__(self, outcomes=['step_ok'])
 
         self.robot_state = robot_state
         self.set_control = set_control
@@ -632,9 +650,9 @@ class FineLinearMovement(State):
                 pass
 
 
-            # Next move the robot as close as possible to the box using IR
+        # Next move the robot as close as possible to the box using IR
 
-            linear_v = 0.01
+        linear_v = 0.01
 
         if self.task_name == 'partial_reverse':
             if self.controller_index != 0:
@@ -651,7 +669,7 @@ class FineLinearMovement(State):
         if self.task_name == 'reverse':
             x_robot = self.robot_state.data.pose.pose.position.x
             y_robot = self.robot_state.data.pose.pose.position.y
-            self.tolerance = 0.5
+            self.tolerance = 1
 
             while True:
                 self.set_control(linear_v, 0)
