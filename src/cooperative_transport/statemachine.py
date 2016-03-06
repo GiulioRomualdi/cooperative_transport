@@ -92,7 +92,13 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                          Alignment(robots_state[controller_index],\
                                    set_control, controller_index, \
                                    'alignment_rotation'))
-            # Sequence.add('ALIGNMENT_AFTER_ROTATION', Alignment(TODO))
+
+            Sequence.add('REVERSE_ROTATION',\
+                         FineLinearMovement(robots_state[controller_index], \
+                                            controller_index, set_control, \
+                                            'reverse'))
+
+
             # Sequence.add('REVERSE', Reverse(TODO))
             # Sequence.add('WAIT_PUSH',\
             #              Wait(controller_index, 'wait_for_turn'))
@@ -517,6 +523,9 @@ class FineLinearMovement(State):
            self.task_name == 'partial_reverse':
             self.tolerance = 3300
 
+        if self.task_name == 'reverse':
+            self.tolerance = 0
+
         # State clock
         self.clock = rospy.Rate(200)
 
@@ -525,8 +534,6 @@ class FineLinearMovement(State):
         self.ir_data_lock.acquire()
         max_value = max(self.ir_data.values())
         self.ir_data_lock.release()
-        if self.controller_index == 0:
-            print ('sono il robot ' + str(self.controller_index) + ' max:' + str(max_value))
         return max_value
 
     def irsensors_callback(self, data):
@@ -575,8 +582,24 @@ class FineLinearMovement(State):
             else:
                 return 'step_ok'
 
+        if self.task_name == 'reverse':
+            linear_v = -0.1
+
         while self.max_ir_data() < self.tolerance:
             self.set_control(linear_v, 0)
+
+        if self.task_name == 'reverse':
+            x_robot = self.robot_state.data.pose.pose.position.x
+            y_robot = self.robot_state.data.pose.pose.position.y
+            self.tolerance = 0.5
+
+            while True:
+                self.set_control(linear_v, 0)
+                last_robot_state = self.robot_state.data
+                x = last_robot_state.pose.pose.position.x
+                y = last_robot_state.pose.pose.position.y
+                if np.sqrt((x_robot - x) ** 2 + (y_robot - y) ** 2) > self.tolerance:
+                    break
 
         #Stop the robot
         self.set_control(0,0)
