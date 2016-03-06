@@ -115,7 +115,7 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
     
     for angle in [0, np.pi/2, -np.pi/2, np.pi]:
         if np.allclose(differences[0], angle):
-            return False, 0, []
+            return False, 0, 0, []
 
     edges = [box_geometry.edge(0, 1), box_geometry.edge(2, 3), box_geometry.edge(1,2)]
     normals = [edge.normal() for edge in edges]
@@ -125,7 +125,7 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
 
     direction = 0
     if differences[argmin_differences] < 0:
-        # Cockwise rotation
+        # Clockwise rotation
         point_position = [1.0 / 4, 1.0 / 4, 1.0 / 2]
         points = [edges[i].point(point_position[i]) for i in range(3)]
         direction = - 1

@@ -546,7 +546,7 @@ class BoxFineApproach(State):
             pass
             
         if not response.is_rotation_required:
-            return 'sequence_ok'
+            return 'step_ok'
 
         # Next move the robot as close as possible to the box using IR
         linear_v = 0.01
