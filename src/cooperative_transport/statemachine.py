@@ -46,11 +46,13 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     sm = StateMachine(outcomes=['transport_ok', 'transport_failed', 'step_ok'])
 
     with sm:
-        sequence = Sequence(outcomes = ['sequence_ok', 'step_ok'],
+        rotate = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_no_needed'],
                             connector_outcome = 'step_ok')
-        with sequence:
+        with rotate:
             Sequence.add('WAIT_ROTATION',\
-                         Wait(controller_index, 'wait_for_turn'))
+                         Wait(controller_index, 'wait_for_turn_rotation'),\
+                         transitions={'rotation_no_needed':'sequence_ok',\
+                                      'step_ok':'PLAN_TRAJECTORY_ROTATION'})
 
             Sequence.add('PLAN_TRAJECTORY_ROTATION',\
                          PlanTrajectory(controller_index, robots_state,\
@@ -58,7 +60,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                          remapping={'plan_trajectory_out':'path'})
 
             Sequence.add('BOX_APPROACH_ROTATION',\
-                         box_approach(sequence, robots_state,\
+                         box_approach(rotate, robots_state,\
                                       controller_index, set_control))
 
             Sequence.add('ALIGNMENT_ROTATION',\
@@ -69,7 +71,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             Sequence.add('FINE_APPROACH_ROTATION',\
                          FineLinearMovement(robots_state[controller_index], \
                                             controller_index, set_control, \
-                                            'fine_approach'))
+                                            'fine_approach_rotation'))
 
             Sequence.add('SYNCHRONIZATION_BEFORE_ROTATION',
                          Wait(controller_index, 'synchronization'))
@@ -98,20 +100,43 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                             controller_index, set_control, \
                                             'reverse'))
 
+        docking_push = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_no_needed'],
+                                connector_outcome = 'step_ok')
+        with docking_push:
 
-            # Sequence.add('REVERSE', Reverse(TODO))
-            # Sequence.add('WAIT_PUSH',\
-            #              Wait(controller_index, 'wait_for_turn'))
-            # Sequence.add('PLAN_TRAJECTORY_PUSH',\
-            #              PlanTrajectory(controller_index, robots_state,\
-            #                             boxstate, 'plan_to_push'),\
-            #              remapping={'plan_trajectory_out':'path'})
-            # Sequence.add('BOX_APPROACH_PUSH', box_approach(sm))
-            # Sequence.add('ALIGNMENT_PUSH', Alignment(TODO))
-            # Sequence.add('FINE_APPROACH_PUSH', BoxFineApproach(TODO))
+            Sequence.add('WAIT_PUSH',\
+                         Wait(controller_index, 'wait_for_turn_push'),)
 
-        StateMachine.add('SEQUENCE', sequence,\
-                         transitions={'sequence_ok':'transport_ok'})
+            Sequence.add('PLAN_TRAJECTORY_PUSH',\
+                         PlanTrajectory(controller_index, robots_state,\
+                                        boxstate, 'plan_to_push'),\
+                         remapping={'plan_trajectory_out':'path'})
+
+            Sequence.add('BOX_APPROACH_PUSH',\
+                         box_approach(docking_push, robots_state,\
+                                      controller_index, set_control))
+
+            Sequence.add('ALIGNMENT_PUSH',\
+                         Alignment(robots_state[controller_index],\
+                                   set_control, controller_index, \
+                                   'alignment_push'))
+
+            Sequence.add('FINE_APPROACH_PUSH',\
+                         FineLinearMovement(robots_state[controller_index], \
+                                            controller_index, set_control, \
+                                            'fine_approach_push'))
+
+            Sequence.add('SYNCHRONIZATION_PUSH',
+                         Wait(controller_index, 'synchronization'))
+
+
+        StateMachine.add('ROTATE', rotate,\
+                         transitions={'sequence_ok':'DOCKING_PUSH',\
+                                      'rotation_no_needed':'DOCKING_PUSH'})
+
+        StateMachine.add('DOCKING_PUSH', docking_push,\
+                         transitions={'sequence_ok':'transport_ok',\
+                                      'rotation_no_needed':'transport_ok'})
  
     return sm
         
@@ -162,7 +187,10 @@ class Wait(State):
         controller_index (int): index of the robot
         task_name (string) 
         """
-        State.__init__(self, outcomes=['step_ok'])
+        if task_name == 'wait_for_turn_rotation':
+            State.__init__(self, outcomes=['step_ok','rotation_no_needed'])
+        else:
+            State.__init__(self, outcomes=['step_ok'])
         
         self.controller_index = controller_index
         self.task_name = task_name
@@ -201,7 +229,20 @@ class Wait(State):
 
         Arguments:
         userdata: inputs and outputs of the fsm state."""
-        if self.task_name == 'wait_for_turn':
+        if self.task_name == 'wait_for_turn_rotation':
+            rospy.wait_for_service('box_get_docking_point_rotate')
+            docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
+            try:
+                response = docking(self.controller_index)
+            except rospy.ServiceException:
+                pass
+            
+            if not response.is_rotation_required:
+                return 'rotation_no_needed'
+
+        if self.task_name == 'wait_for_turn_rotation' or\
+           self.task_name == 'wait_for_turn_push':
+            
             while self.robots_state_length() != self.controller_index:
                 self.clock.sleep()
 
@@ -285,7 +326,7 @@ class PlanTrajectory(State):
         self.planner.add_obstacle(obstacle)
 
         if self.task_name == 'plan_for_rotation':
-            # Get docking point from service box_get_docking_point_push
+            # Get docking point from service box_get_docking_point_rotate
             rospy.wait_for_service('box_get_docking_point_rotate')
             docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
             try:
@@ -293,11 +334,8 @@ class PlanTrajectory(State):
             except rospy.ServiceException:
                 pass
             
-            if not response.is_rotation_required:
-                userdata.plan_trajectory_out = []
-                return 'step_ok'
 
-        elif self.task_name == 'plan_to_push':
+        if self.task_name == 'plan_to_push':
             # Get docking point from service box_get_docking_point_push
             rospy.wait_for_service('box_get_docking_point_push')
             docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
@@ -383,9 +421,6 @@ class Alignment(State):
             except rospy.ServiceException:
                 pass
             
-            if not response.is_rotation_required:
-                return 'step_ok'
-
             reference = np.arctan2(response.normal[1], response.normal[0]) 
 
         if self.task_name == 'alignment_before_rotation':
@@ -397,6 +432,16 @@ class Alignment(State):
             rotated = response.direction * np.array([- difference[1], difference[0]])
 
             reference = np.arctan2(rotated[1], rotated[0])
+
+        if self.task_name == 'alignment_push':
+            rospy.wait_for_service('box_get_docking_point_push')
+            docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
+            try:
+                response = docking(self.controller_index)
+            except rospy.ServiceException:
+                pass
+            reference = np.arctan2(response.normal[1], response.normal[0]) 
+
 
         # Perform alignment
         while True:
@@ -519,7 +564,8 @@ class FineLinearMovement(State):
         # Tuning
         self.kp = 2
 
-        if self.task_name == 'fine_approach' or\
+        if self.task_name == 'fine_approach_rotation' or\
+           self.task_name == 'fine_approach_push' or\
            self.task_name == 'partial_reverse':
             self.tolerance = 3300
 
@@ -552,11 +598,11 @@ class FineLinearMovement(State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
-        if self.task_name == 'fine_approach':
+        if self.task_name == 'fine_approach_rotation':
             # Let the other robots know that it's their turn
             msg = TaskState()
             msg.robot_id = self.controller_index
-            msg.task_name = 'wait_for_turn'
+            msg.task_name = 'wait_for_turn_rotation'
             # Three pubs should suffice
             self.pub.publish(msg)
             self.pub.publish(msg)
@@ -568,9 +614,23 @@ class FineLinearMovement(State):
                 response = docking(self.controller_index)
             except rospy.ServiceException:
                 pass
-            
-            if not response.is_rotation_required:
-                return 'step_ok'
+
+        if self.task_name == 'fine_approach_push':
+            # Let the other robots know that it's their turn
+            msg = TaskState()
+            msg.robot_id = self.controller_index
+            msg.task_name = 'wait_for_turn_push'
+            # Three pubs should suffice
+            self.pub.publish(msg)
+            self.pub.publish(msg)
+            self.pub.publish(msg)
+            rospy.wait_for_service('box_get_docking_point_push')
+            docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
+            try:
+                response = docking(self.controller_index)
+            except rospy.ServiceException:
+                pass
+
 
             # Next move the robot as close as possible to the box using IR
 
@@ -603,7 +663,10 @@ class FineLinearMovement(State):
 
         #Stop the robot
         self.set_control(0,0)
-     
+        
+        if self.task_name == 'reverse':
+            return 'sequence_ok'
+
         return 'step_ok'
 
 # class Synchronizer(smach.State):
