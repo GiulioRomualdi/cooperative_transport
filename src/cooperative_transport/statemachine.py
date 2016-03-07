@@ -17,7 +17,6 @@ from planner import Planner, RectangularObstacle, CircularObstacle
 
 # Control
 from control.point_to_point import PointToPoint
-from control.consensus import consensus
 from control.proportional_control import proportional_control
 
 # Msgs
@@ -46,12 +45,12 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     sm = StateMachine(outcomes=['transport_ok', 'transport_failed', 'step_ok'])
 
     with sm:
-        rotate = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_no_needed'],
+        rotate = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_not_needed'],
                             connector_outcome = 'step_ok')
         with rotate:
             Sequence.add('WAIT_ROTATION',\
                          Wait(controller_index, 'wait_for_turn_rotation'),\
-                         transitions={'rotation_no_needed':'sequence_ok',\
+                         transitions={'rotation_not_needed':'sequence_ok',\
                                       'step_ok':'PLAN_TRAJECTORY_ROTATION'})
 
             Sequence.add('PLAN_TRAJECTORY_ROTATION',\
@@ -69,12 +68,12 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                    'alignment_rotation'))
 
             Sequence.add('FINE_APPROACH_ROTATION',\
-                         FineLinearMovement(robots_state[controller_index], \
+                         LinearMovement(robots_state[controller_index], \
                                             controller_index, set_control, \
                                             'fine_approach_rotation'))
 
             Sequence.add('SYNCHRONIZATION_BEFORE_ROTATION',
-                         Wait(controller_index, 'synchronization'))
+                         Wait(controller_index, 'synchronization_before_rotation'))
 
             Sequence.add('ALIGNMENT_BEFORE_ROTATION',\
                          Alignment(robots_state[controller_index],\
@@ -86,7 +85,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                 boxstate, set_control))
 
             Sequence.add('PARTIAL_REVERSE_ROTATION',\
-                         FineLinearMovement(robots_state[controller_index], \
+                         LinearMovement(robots_state[controller_index], \
                                             controller_index, set_control, \
                                             'partial_reverse'))
 
@@ -96,13 +95,13 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                    'alignment_rotation'))
 
             Sequence.add('REVERSE_ROTATION',\
-                         FineLinearMovement(robots_state[controller_index], \
+                         LinearMovement(robots_state[controller_index], \
                                             controller_index, set_control, \
                                             'reverse'))
 
-        docking_push = Sequence(outcomes = ['sequence_ok', 'step_ok'],
+        push = Sequence(outcomes = ['sequence_ok', 'step_ok'],
                                 connector_outcome = 'step_ok')
-        with docking_push:
+        with push:
 
             Sequence.add('WAIT_PUSH',\
                          Wait(controller_index, 'wait_for_turn_push'))
@@ -113,7 +112,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                          remapping={'plan_trajectory_out':'path'})
 
             Sequence.add('BOX_APPROACH_PUSH',\
-                         box_approach(docking_push, robots_state,\
+                         box_approach(push, robots_state,\
                                       controller_index, set_control))
 
             Sequence.add('ALIGNMENT_PUSH',\
@@ -122,24 +121,27 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                    'alignment_push'))
 
             Sequence.add('FINE_APPROACH_PUSH',\
-                         FineLinearMovement(robots_state[controller_index], \
+                         LinearMovement(robots_state[controller_index], \
                                             controller_index, set_control, \
                                             'fine_approach_push'))
 
             Sequence.add('SYNCHRONIZATION_PUSH',
-                         Wait(controller_index, 'synchronization'))
-
+                         Wait(controller_index, 'synchronization_before_pushing'))
+            
+            Sequence.add('PUSH_BOX_SM',
+                         push_box_sm(robots_state, controller_index, set_control, boxstate))
 
         StateMachine.add('ROTATE', rotate,\
-                         transitions={'sequence_ok':'DOCKING_PUSH',\
-                                      'rotation_no_needed':'DOCKING_PUSH'})
+                         transitions={'sequence_ok':'PUSH',\
+                                      'rotation_not_needed':'PUSH'})
 
-        StateMachine.add('DOCKING_PUSH', docking_push,\
+        StateMachine.add('PUSH', push,\
                          transitions={'sequence_ok':'transport_ok'})
  
     return sm
         
 def box_approach(sm, robots_state, controller_index, set_control):
+    """ """
     box_approach = Iterator(outcomes=['step_ok'],\
                             input_keys=[],\
                             output_keys=[],\
@@ -151,12 +153,13 @@ def box_approach(sm, robots_state, controller_index, set_control):
         box_approach_container = StateMachine(outcomes=['approach_continue'],\
                                               input_keys=['goal'])
         with box_approach_container:
-            alignment = Alignment(robots_state[controller_index], set_control, controller_index, 'iterator')
+            robot_state = robots_state[controller_index]
+            alignment = Alignment(robot_state, set_control, controller_index, 'iterator')
             StateMachine.add('ALIGNMENT',\
                              alignment,\
                              transitions={'alignment_ok':'GO_TO_POINT'})
             
-            go_to_point = GoToPoint(robots_state[controller_index], set_control)
+            go_to_point = GoToPoint(robot_state, set_control)
             StateMachine.add('GO_TO_POINT',\
                              go_to_point,\
                              transitions={'point_reached':'approach_continue'})
@@ -166,6 +169,27 @@ def box_approach(sm, robots_state, controller_index, set_control):
                                      loop_outcomes=['approach_continue'])
 
     return box_approach
+
+def push_box_sm(robots_state, controller_index, set_control, boxstate):
+    """ """
+    push_box_sm = StateMachine(outcomes=['sequence_ok'])
+
+    with push_box_sm:
+        alignment = Alignment(robots_state[controller_index], set_control,\
+                              controller_index, 'alignment_before_push', boxstate)
+        StateMachine.add('ALIGNMENT_BEFORE_PUSH', alignment,\
+                         transitions={'alignment_ok':'PUSH_BOX'})
+        
+        push_box = PushBox(controller_index, boxstate, set_control)
+        StateMachine.add('PUSH_BOX', push_box,\
+                         transitions={'box_drifted':'SYNCHRONIZE',\
+                                      'box_at_goal':'sequence_ok'})
+
+        synchronize = Wait(controller_index, 'synchronize_during_push')
+        StateMachine.add('SYNCHRONIZE', synchronize,\
+                         transitions={'synchronize_ok':'ALIGNMENT_BEFORE_PUSH'})
+
+    return push_box_sm
 
 class Wait(State):
     """State of the fsm in which the robot waits the other robots
@@ -187,17 +211,19 @@ class Wait(State):
         task_name (string) 
         """
         if task_name == 'wait_for_turn_rotation':
-            State.__init__(self, outcomes=['step_ok','rotation_no_needed'])
+            State.__init__(self, outcomes=['step_ok','rotation_not_needed'])
+        elif task_name == 'synchronize_during_push':
+            State.__init__(self, outcomes=['synchronize_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
         
         self.controller_index = controller_index
         self.task_name = task_name
 
-        # Publisher and subscribe to the topic 'robots_common'
+        # Subscribe to the topic 'robots_common'
         rospy.Subscriber('robots_common', TaskState, self.callback)
-        self.pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
 
+        # Init robots_state
         self.robots_state = set()
         self.lock = Lock()
 
@@ -228,6 +254,9 @@ class Wait(State):
 
         Arguments:
         userdata: inputs and outputs of the fsm state."""
+        # Reset
+        self.robots_state = set()
+        
         if self.task_name == 'wait_for_turn_rotation':
             rospy.wait_for_service('box_get_docking_point_rotate')
             docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
@@ -235,8 +264,15 @@ class Wait(State):
                 response = docking(self.controller_index)
             except rospy.ServiceException:
                 pass
-            
+          
             if not response.is_rotation_required:
+                return 'rotation_not_needed'
+
+ 
+        if self.task_name == 'wait_for_turn_rotation' or\
+           self.task_name == 'wait_for_turn_push':
+            
+            if  self.task_name == 'wait_for_turn_push':
                 # Clear docking point
                 rospy.wait_for_service('clear_docking_point')
                 clear_docking_point = rospy.ServiceProxy('clear_docking_point', Empty)
@@ -244,24 +280,17 @@ class Wait(State):
                     clear_docking_point()
                 except rospy.ServiceException:
                     pass
-                
-                return 'rotation_no_needed'
 
-            # Clear docking point
-            rospy.wait_for_service('clear_docking_point')
-            clear_docking_point = rospy.ServiceProxy('clear_docking_point', Empty)
-            try:
-                clear_docking_point()
-            except rospy.ServiceException:
-                pass
-
-        if self.task_name == 'wait_for_turn_rotation' or\
-           self.task_name == 'wait_for_turn_push':
-            
             while self.robots_state_length() != self.controller_index:
                 self.clock.sleep()
+            
 
-        elif self.task_name == 'synchronization':
+        elif self.task_name == 'synchronization_before_rotation' or\
+             self.task_name == 'synchronization_before_pushing' or\
+             self.task_name == 'synchronize_during_push':
+            # Publish to 'ropots_common'
+            pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
+
             # Synchronization message
             msg = TaskState()
             msg.robot_id = self.controller_index
@@ -270,17 +299,20 @@ class Wait(State):
             # Wait until all robots are ready
             while self.robots_state_length() != 3:
                 self.clock.sleep()
-                self.pub.publish(msg)
+                pub.publish(msg)
 
-            # Start the box state estimation service
-            rospy.wait_for_service('release_box_state')
-            start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
-            try:
-                start_box_estimation()
-            except rospy.ServiceException:
-                pass
+            if self.task_name != 'synchronize_during_push':
+                # Start the box state estimation service
+                rospy.wait_for_service('release_box_state')
+                start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+                try:
+                    start_box_estimation()
+                except rospy.ServiceException:
+                    pass
 
-        self.robots_state = set()
+        if self.task_name == 'synchronize_during_push':
+            return 'synchronize_ok'
+                    
         return 'step_ok'
         
 class PlanTrajectory(State):
@@ -397,6 +429,8 @@ class Alignment(State):
         """
         if task_name == 'iterator':
             State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
+        elif task_name == 'alignment_before_push':
+            State.__init__(self, outcomes=['alignment_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
 
@@ -457,6 +491,15 @@ class Alignment(State):
                 pass
             reference = np.arctan2(response.normal[1], response.normal[0]) 
 
+        if self.task_name == 'alignment_before_push':
+            goal = rospy.get_param('box_goal')
+            goal_x = goal['x']
+            goal_y = goal['y']
+            latest_boxstate = self.boxstate.data
+            box_x = latest_boxstate.x
+            box_y = latest_boxstate.y
+
+            reference = np.arctan2(goal_y - box_y,  goal_x - box_x)
 
         # Perform alignment
         while True:
@@ -470,15 +513,16 @@ class Alignment(State):
             else:
                 # Stop the robot
                 self.set_control(0, 0)
-                if self.task_name == 'iterator':
+                if self.task_name == 'iterator' or\
+                   self.task_name == 'alignment_before_push':
                     return 'alignment_ok'
                 else:
                     return 'step_ok'
 
             # Wait for next clock
             self.clock.sleep()
-        
-class GoToPoint(smach.State):
+
+class GoToPoint(State):
     """State of the fsm in which the robot moves to a precise location.
 
     Outcomes:
@@ -497,7 +541,7 @@ class GoToPoint(smach.State):
         robot_state (Subscriber): Subscriber to robot odometry
         set_control (function): function that publish a twist
         """
-        smach.State.__init__(self, outcomes=['point_reached'], input_keys=['goal'])
+        State.__init__(self, outcomes=['point_reached'], input_keys=['goal'])
         
         self.robot_state = robot_state
         self.set_control = set_control
@@ -539,7 +583,7 @@ class GoToPoint(smach.State):
 
         return 'point_reached'
 
-class FineLinearMovement(State):
+class LinearMovement(State):
     """State of the fsm in which the robot slowly and accurately approaches the box.
 
     Outcomes:
@@ -582,14 +626,6 @@ class FineLinearMovement(State):
         # Tuning
         self.kp = 2
 
-        if self.task_name == 'fine_approach_rotation' or\
-           self.task_name == 'fine_approach_push' or\
-           self.task_name == 'partial_reverse':
-            self.tolerance = 3300
-
-        if self.task_name == 'reverse':
-            self.tolerance = 0
-
         # State clock
         self.clock = rospy.Rate(200)
 
@@ -616,67 +652,68 @@ class FineLinearMovement(State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
+        msg = TaskState()
         if self.task_name == 'fine_approach_rotation':
-            # Let the other robots know that it's their turn
-            msg = TaskState()
-            msg.robot_id = self.controller_index
-            msg.task_name = 'wait_for_turn_rotation'
-            # Three pubs should suffice
-            self.pub.publish(msg)
-            self.pub.publish(msg)
-            self.pub.publish(msg)
-            
-            rospy.wait_for_service('box_get_docking_point_rotate')
-            docking = rospy.ServiceProxy('box_get_docking_point_rotate', BoxGetDockingPointRotate)
-            try:
-                response = docking(self.controller_index)
-            except rospy.ServiceException:
-                pass
+            msg.task_name = 'wait_for_turn_rotation';
 
         if self.task_name == 'fine_approach_push':
-            # Let the other robots know that it's their turn
-            msg = TaskState()
-            msg.robot_id = self.controller_index
             msg.task_name = 'wait_for_turn_push'
+
+        if self.task_name == 'fine_approach_rotation' or\
+           self.task_name == 'fine_approach_push':
+            # We are approaching to the box
+            # the IR readings increase up to 3300
+            ir_tolerance = 3300
+            
+            # Let the other robots know that it's their turn
             # Three pubs should suffice
+            msg.robot_id = self.controller_index
             self.pub.publish(msg)
             self.pub.publish(msg)
             self.pub.publish(msg)
-            rospy.wait_for_service('box_get_docking_point_push')
-            docking = rospy.ServiceProxy('box_get_docking_point_push', BoxGetDockingPointPush)
-            try:
-                response = docking(self.controller_index)
-            except rospy.ServiceException:
-                pass
 
-
-        # Next move the robot as close as possible to the box using IR
-
+        #########################################################################
+        # Set the linear velocity and the ir tolerance depending on the task name
+        #
         linear_v = 0.01
 
         if self.task_name == 'partial_reverse':
-            if self.controller_index != 0:
-                linear_v = -0.1
-            else:
+            linear_v = -0.1
+            ir_tolerance = 3300
+            
+            if self.controller_index == 0:
                 return 'step_ok'
 
         if self.task_name == 'reverse':
             linear_v = -0.1
+            ir_tolerance = 0
+        #
+        ##########################################################################
 
-        while self.max_ir_data() < self.tolerance:
-            self.set_control(linear_v, 0)
+        # Perform fine approach (in forward or reverse direction)
+        if self.task_name == 'reverse' or\
+           self.task_name == 'partial_reverse':
+            # Move the robot away from the box
+            while self.max_ir_data() > ir_tolerance:
+                self.set_control(linear_v, 0)
+                
+        elif self.task_name == 'fine_approach_rotation' or\
+             self.task_name == 'fine_approach_push':
+            # Next move the robot as close as possible to the box using IR            
+            while self.max_ir_data() < ir_tolerance:
+                self.set_control(linear_v, 0)
 
+        # In case of task 'reverse' the robot goes quite far from the box
         if self.task_name == 'reverse':
-            x_robot = self.robot_state.data.pose.pose.position.x
-            y_robot = self.robot_state.data.pose.pose.position.y
-            self.tolerance = 1
+            x_0 = self.robot_state.data.pose.pose.position.x
+            y_0 = self.robot_state.data.pose.pose.position.y
 
             while True:
                 self.set_control(linear_v, 0)
-                last_robot_state = self.robot_state.data
-                x = last_robot_state.pose.pose.position.x
-                y = last_robot_state.pose.pose.position.y
-                if np.sqrt((x_robot - x) ** 2 + (y_robot - y) ** 2) > self.tolerance:
+                robot_state = self.robot_state.data
+                x_current = robot_state.pose.pose.position.x
+                y_current = robot_state.pose.pose.position.y
+                if np.sqrt((x_0 - x_current) ** 2 + (y_0 - y_current) ** 2) > 0.5:
                     break
 
         #Stop the robot
@@ -687,158 +724,6 @@ class FineLinearMovement(State):
 
         return 'step_ok'
 
-# class Synchronizer(smach.State):
-#     """State of the fsm in which the robot synchronize with neighbors.
-
-#     Outcomes:
-#     synchronization_ok: robot completed synchronization
-    
-#     Inputs:
-#     none
-
-#     Outputs:
-#     none
-#     """
-#     def __init__(self, controller_index):
-#         """Initialize the state of the fsm.
-
-#         Arguments:
-#         controller_index (int): index of the robot
-#         """
-#         smach.State.__init__(self, outcomes=['synchronization_ok'])
-
-#         self.controller_index = controller_index 
-#         self.max_number_robots = 3
-#         self.task_name = 'synchronization'
-
-#         # Subscribe and publish to the topic 'robots_common'
-#         rospy.Subscriber('robots_common', TaskState, self.callback)
-#         self.robots_state = set()
-#         self.lock = Lock()
-
-#         # Synchronization message
-#         self.msg = TaskState()
-#         self.msg.robot_id = self.controller_index
-#         self.msg.task_name = self.task_name
-        
-#         # State clock
-#         # self.clock = rospy.Rate(10)
-        
-#     def callback(self, data):
-#         """Update robots_state using data from wait topic.
-        
-#         Arguments:
-#         data (TaskState): data from wait topic 
-#         """
-#         if data.task_name == self.task_name:
-#             self.lock.acquire()
-#             self.robots_state.add(data.robot_id)
-#             self.lock.release()
-
-#     def robots_ready(self):
-#         """Return True if all the robots are ready."""
-#         self.lock.acquire()
-#         number = len(self.robots_state)
-#         self.lock.release()
-#         return number == self.max_number_robots        
-    
-#     def execute(self, userdata):
-#         """Execute the main activity of the fsm state.
-
-#         Arguments:
-#         userdata: inputs and outputs of the fsm state.
-#         """
-#         pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
-#         # Wait until all robots are ready
-#         while not self.robots_ready():
-#             rospy.sleep(0.5)
-#             pub.publish(self.msg)
-#             #self.clock.sleep()
-
-#         # Start the box state estimation service
-#         rospy.wait_for_service('release_box_state')
-#         start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
-#         try:
-#             start_box_estimation()
-#         except rospy.ServiceException:
-#             pass
-
-#         pub.unregister()
-#         return 'synchronization_ok'
-
-# class Consensus(smach.State):
-#     """State of the fsm in which the robot rotates in order to align
-#     itself with the line of sight between its center and the goal and
-#     start the box estimation service.
-    
-#     Outcomes:
-#     consensus_ok: the robot completed consensus 
-
-#     Inputs:
-#     none
-
-#     Outputs:
-#     none
-#     """
-#     def __init__(self, controller_index, robots_state, boxstate, set_control):
-#         """Initialize the state of the fsm.
-
-#         Arguments:
-#         controller_index (int): index of the robot
-#         robots_state (Subscriber[]): list of Subscribers to robots odometry
-#         boxstate (Subscriber): Subscriber to the box state estimation
-#         set_control (function): function that publish a twist
-#         """
-#         smach.State.__init__(self, outcomes=['consensus_ok'])
-
-#         self.boxstate  = boxstate
-#         self.set_control = set_control
-#         self.max_angular_v = float(rospy.get_param('max_angular_v'))
-#         self.this_robot = robots_state[controller_index]
-#         #self.neigh_robots = [robots_state[i] for i in range(len(robots_state)) if i != controller_index]
-
-#         # Tuning
-#         self.tolerance = 0.02
-        
-#         # State clock
-#         self.clock = rospy.Rate(200)
-        
-#     def execute(self, userdata):
-#         """Execute the main activity of the fsm state.
-
-#         Arguments:
-#         userdata: inputs and outputs of the fsm state.
-#         """
-#         # Set point
-#         goal = rospy.get_param('box_goal')
-#         goal_x = goal['x']
-#         goal_y = goal['y']
-#         latest_boxstate = self.boxstate.data
-#         box_x = latest_boxstate.x
-#         box_y = latest_boxstate.y
-#         reference = np.arctan2(goal_y - box_y,  goal_x - box_x)
-
-#         # Perform consensus
-#         done = False
-#         while not done:
-#             # Check error
-#             this_theta = utils.quaternion_to_yaw(self.this_robot.data.pose.pose.orientation)
-#             error = utils.angle_normalization(reference - this_theta)
-#             if abs(error) > self.tolerance:
-#                 # Set the control
-#                 #neigh_thetas = [utils.quaternion_to_yaw(robot_state.data.pose.pose.orientation) for robot_state in self.neigh_robots]
-#                 #angular_v = consensus(this_theta, neigh_thetas, reference, self.max_angular_v)
-#                 angular_v = proportional_control(2, reference, this_theta, self.max_angular_v, True)
-#                 self.set_control(0, angular_v)
-#             else:
-#                 # Stop the robot
-#                 self.set_control(0, 0)
-#                 done = True
-
-#             # Wait for next clock
-#             self.clock.sleep()
-          
-#         return 'consensus_ok'
 class Rotate(State):
     """State of the fsm in which the robot rotates the box.
 
@@ -952,9 +837,7 @@ class Rotate(State):
             # Wait for next clock
             self.clock.sleep()
 
-            
-
-class PushBox(smach.State):
+class PushBox(State):
     """State of the fsm in which the robot pushes the box.
     
     Outcomes:
@@ -966,18 +849,16 @@ class PushBox(smach.State):
     Outputs:
     none
     """
-    def __init__(self, controller_index, robot_state, boxstate, set_control):
+    def __init__(self, controller_index, boxstate, set_control):
         """Initialize the state of the fsm.
 
         Arguments:
         controller_index (int): index of the robot
-        robot_state (Subscriber): Subscriber to robot odometry
         boxstate (Subscriber): Subscriber to the box state estimation
         set_control (function): function that publish a twist
         """
-        smach.State.__init__(self, outcomes=['box_at_goal','box_drifted'])
+        State.__init__(self, outcomes=['box_at_goal','box_drifted'])
         self.controller_index = controller_index
-        self.robot_state = robot_state
         self.boxstate  = boxstate
         self.set_control = set_control
         self.max_forward_v = float(rospy.get_param('max_forward_v'))

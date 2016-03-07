@@ -113,12 +113,13 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
 
     differences = [angle_normalization(reference - box_theta) for reference in references]
     
-    for angle in [0, np.pi/2, -np.pi/2, np.pi]:
-        if np.allclose(differences[0], angle):
-            return False, 0, 0, []
-
     edges = [box_geometry.edge(1,2), box_geometry.edge(0, 1), box_geometry.edge(2, 3)]
     normals = [edge.normal() for edge in edges]
+
+    for angle in [0, np.pi/2, -np.pi/2, np.pi]:
+        if np.allclose(differences[0], angle):
+            results = [{'point' : 0, 'normal' : normals[i]} for i in range(3)]
+            return False, 0, 0, results
 
     abs_differences = np.array([abs(difference) for difference in differences])
     argmin_differences = np.argmin(abs_differences)
