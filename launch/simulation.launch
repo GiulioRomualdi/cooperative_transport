@@ -15,11 +15,18 @@
   <param name="max_angular_v" value="2"/>
 
   <!-- box goal -->	 
-  <rosparam param="box_goal">{x : 4.0, y : 4.0, theta : 3.14}</rosparam>
+  <rosparam param="box_goal">{x : 2.38, y : -4.39, theta : 0}</rosparam>
 
   <!-- RRT* planner bounds -->
   <param name="planner_lower_bound" value="-5"/>
   <param name="planner_upper_bound" value="5"/>
+
+  <!-- Estimation Rate -->
+  <param name="estimation_rate" value="10"/>
+
+  <!-- Box angular and forward velocity -->
+  <param name="box_forward_v" value="0.2"/>
+  <param name="box_angular_v" value="0.1"/>
 
   <!-- launch gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">

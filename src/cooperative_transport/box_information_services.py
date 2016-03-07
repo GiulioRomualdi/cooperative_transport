@@ -35,13 +35,13 @@ def find_docking_points_to_push(box_current_pose, box_goal_pose, box_length, box
     box_geometry = BoxGeometry(box_length, box_width, box_pose, box_theta)
                          
     # Test if (box_goal_pose - box_pose) is parallel to an edge of the box
-    difference = np.array(box_goal_pose) - np.array(box_pose)
-    angle_between = angle_normalization(np.arctan2(difference[1], difference[0]) - box_theta)
-    tolerance = 0.1
-    for angle in [0, + np.pi / 2, - np.pi / 2, np.pi]:
-        if abs(angle_between - angle) < tolerance:
-            singularity = True
-            break
+    # difference = np.array(box_goal_pose) - np.array(box_pose)
+    # angle_between = angle_normalization(np.arctan2(difference[1], difference[0]) - box_theta)
+    # tolerance = 0.1
+    # for angle in [0, + np.pi / 2, - np.pi / 2, np.pi]:
+    #     if abs(angle_between - angle) < tolerance:
+    #         singularity = True
+    #         break
 
     # Calculate the distances between the goal and the vertices
     distances = [np.linalg.norm(np.array(box_goal_pose) - np.array(v)) for v in box_geometry.vertices()]

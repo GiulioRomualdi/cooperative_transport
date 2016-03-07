@@ -183,15 +183,22 @@ class BoxStateObserver:
         """
         random.seed()
         min_value = float('inf')
-        
-        for i in range(50):
-            x_c = round(random.uniform(self._state[0]- 0.01, self._state[0] + 0.01),2)
-            y_c = round(random.uniform(self._state[1]- 0.01, self._state[1] + 0.01),2)
-            theta = angle_normalization(random.uniform(self._state[2] - 0.02,\
-                                                       self._state[2] + 0.02))
+
+        # Params
+        estimation_rate = rospy.get_param('estimation_rate')
+        box_forward_v = float(rospy.get_param('box_forward_v'))
+        box_angular_v = float(rospy.get_param('box_angular_v'))
+        delta_linear = 1.0 / estimation_rate * box_forward_v
+        delta_theta = 1.0 / estimation_rate * box_angular_v
+        # Estimation
+        for i in range(300):
+            x_c = round(random.uniform(self._state[0]- delta_linear, self._state[0] + delta_linear), 2)
+            y_c = round(random.uniform(self._state[1]- delta_linear, self._state[1] + delta_linear), 2)
+            theta = round(angle_normalization(random.uniform(self._state[2] - delta_theta,\
+                                                             self._state[2] + delta_theta)), 2)
             
             estimated_state = [x_c, y_c, theta]
-            
+
             new_value = self.__loss_function(estimated_state, coordinates)
             min_value = min(min_value, new_value)
             
@@ -238,18 +245,13 @@ class BoxStatePublisher:
         # Lock used to avoid concurrent access to release_estimation
         self.flag_lock = threading.Lock()
 
-        # Filters
-        filter_length = 300
-        self.x_lp = LowPassFilter(box_params['posx'], filter_length)
-        self.y_lp = LowPassFilter(box_params['posy'], filter_length)
-        self.theta_lp = LowPassFilter(box_params['yaw'], filter_length)
-
         # Node rate
-        self.clock = rospy.Rate(100)
+        self.rate = rospy.get_param('estimation_rate')
+        self.clock = rospy.Rate(self.rate)
 
         # Enable box state from gazebo
-        # rospy.Subscriber('/gazebo/model_states', ModelStates, self.gazebo_callback)
-        # self.gazebo_box = [0, 0, 0]
+        rospy.Subscriber('/gazebo/model_states', ModelStates, self.gazebo_callback)
+        self.gazebo_box = [box_params['posx'], box_params['posy'], box_params['yaw']]
 
     def release_box_state(self, request):
         self.flag_lock.acquire()
@@ -327,8 +329,8 @@ class BoxStatePublisher:
         sensor_angle = self.sensors_angles[angle_key]
 
         local_radius = self.robot_radius + self.robots_state[robot_index]['irbumper'][angle_key]
-        x_global = round(x_robot + local_radius * np.cos(sensor_angle + theta_robot),2)
-        y_global = round(y_robot + local_radius * np.sin(sensor_angle + theta_robot),2)
+        x_global = round(x_robot + local_radius * np.cos(sensor_angle + theta_robot), 2)
+        y_global = round(y_robot + local_radius * np.sin(sensor_angle + theta_robot), 2)
 
         point = [x_global, y_global]
         return point
@@ -369,7 +371,7 @@ class BoxStatePublisher:
             #     writer.writerow({'x':self.gazebo_box[0], 'y':self.gazebo_box[1]})
         else:
             state = self.observer.state
-        
+
         msg = BoxState()
         msg.header.stamp = rospy.Time.now()
         msg.x = state[0]

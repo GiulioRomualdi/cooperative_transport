@@ -182,13 +182,8 @@ def push_box_sm(robots_state, controller_index, set_control, boxstate):
         
         push_box = PushBox(controller_index, boxstate, set_control)
         StateMachine.add('PUSH_BOX', push_box,\
-                         transitions={'box_drifted':'SYNCHRONIZE',\
+                         transitions={'box_drifted':'ALIGNMENT_BEFORE_PUSH',\
                                       'box_at_goal':'sequence_ok'})
-
-        synchronize = Wait(controller_index, 'synchronize_during_push')
-        StateMachine.add('SYNCHRONIZE', synchronize,\
-                         transitions={'synchronize_ok':'ALIGNMENT_BEFORE_PUSH'})
-
     return push_box_sm
 
 class Wait(State):
@@ -212,8 +207,6 @@ class Wait(State):
         """
         if task_name == 'wait_for_turn_rotation':
             State.__init__(self, outcomes=['step_ok','rotation_not_needed'])
-        elif task_name == 'synchronize_during_push':
-            State.__init__(self, outcomes=['synchronize_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
         
@@ -286,8 +279,7 @@ class Wait(State):
             
 
         elif self.task_name == 'synchronization_before_rotation' or\
-             self.task_name == 'synchronization_before_pushing' or\
-             self.task_name == 'synchronize_during_push':
+             self.task_name == 'synchronization_before_pushing':
             # Publish to 'ropots_common'
             pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
 
@@ -301,18 +293,14 @@ class Wait(State):
                 self.clock.sleep()
                 pub.publish(msg)
 
-            if self.task_name != 'synchronize_during_push':
-                # Start the box state estimation service
-                rospy.wait_for_service('release_box_state')
-                start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
-                try:
-                    start_box_estimation()
-                except rospy.ServiceException:
-                    pass
+            # Start the box state estimation service
+            rospy.wait_for_service('release_box_state')
+            start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+            try:
+                start_box_estimation()
+            except rospy.ServiceException:
+                pass
 
-        if self.task_name == 'synchronize_during_push':
-            return 'synchronize_ok'
-                    
         return 'step_ok'
         
 class PlanTrajectory(State):
@@ -395,7 +383,7 @@ class PlanTrajectory(State):
         this_robot = self.robots_state[self.controller_index].data.pose.pose.position
         # Tolerance and robot radius are taken into account
         robot_radius = rospy.get_param('robot_radius')
-        tolerance = - np.array(response.normal) * (0.06 + robot_radius)
+        tolerance = - np.array(response.normal) * (0.07 + robot_radius)
         start_point = [this_robot.x, this_robot.y]
         goal_point = (np.array(response.point) + tolerance).tolist()
         state, path = self.planner.plan(start_point, goal_point)
@@ -713,7 +701,7 @@ class LinearMovement(State):
                 robot_state = self.robot_state.data
                 x_current = robot_state.pose.pose.position.x
                 y_current = robot_state.pose.pose.position.y
-                if np.sqrt((x_0 - x_current) ** 2 + (y_0 - y_current) ** 2) > 0.5:
+                if np.sqrt((x_0 - x_current) ** 2 + (y_0 - y_current) ** 2) > 0.6:
                     break
 
         #Stop the robot
@@ -783,7 +771,7 @@ class Rotate(State):
                                           y_robot - self.boxstate.data.y ]))
 
         # Linear and angular velocities
-        omega_box = 0.1
+        omega_box = float(rospy.get_param('box_angular_v'))
         linear_v = omega_box * radius
         angular_v = omega_box
 
@@ -871,7 +859,7 @@ class PushBox(State):
         self.drift_tolerance = 0.03
         
         # State Clock
-        self.clock = rospy.Rate(200)
+        self.clock = rospy.Rate(100)
           
     def distance_error(self, current_box_pose):
         """Evaluate the feedback distance error.
@@ -894,6 +882,8 @@ class PushBox(State):
         box_x = current_box_pose[0]
         box_y = current_box_pose[1]
         distance = self.desired_traj.distance([box_x, box_y])
+        if self.controller_index == 0:
+            print distance
         return distance
   
     def execute(self, userdata):
@@ -902,13 +892,6 @@ class PushBox(State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
-        # The desired trajectory of the box center is a line
-        latest_boxstate = self.boxstate.data
-        box_x = latest_boxstate.x
-        box_y = latest_boxstate.y
-        self.desired_traj = utils.Line([box_x, box_y],
-                                       [self.goal['x'], self.goal['y']])
-
         # Synchronization required
         tolerance = 1000
         if self.controller_index == 0:
@@ -929,12 +912,20 @@ class PushBox(State):
 
         print(`self.controller_index` + ': sync @ ' + str((departure - rospy.Time.now()).to_nsec()))
 
+        # The desired trajectory of the box center is a line
+        latest_boxstate = self.boxstate.data
+        box_x = round(latest_boxstate.x, 2)
+        box_y = round(latest_boxstate.y, 2)
+        self.desired_traj = utils.Line([box_x, box_y],
+                                       [self.goal['x'], self.goal['y']])
+        print(self.desired_traj.coefficients())
+
         # Push the box
-        forward_v = 0.3
+        forward_v = float(rospy.get_param('box_forward_v'))
         while True:
             latest_boxstate = self.boxstate.data
-            box_x = latest_boxstate.x
-            box_y = latest_boxstate.y
+            box_x = round(latest_boxstate.x, 2)
+            box_y = round(latest_boxstate.y, 2)
 
             if self.drift_distance([box_x, box_y]) > self.drift_tolerance:
                 # Stop the robot
