@@ -115,9 +115,6 @@ class BoxStateObserver:
         length (float): box length in meters
         width (float): box width in meters
         state (float[]): box state [x_c, y_c, theta]
-
-    ToDo:
-    document main method 'state_estimation'
     """
 
     def __init__(self, length, width, x_0, y_0, theta_0):
@@ -129,6 +126,7 @@ class BoxStateObserver:
             x_0 (float): initial x coordinate of the box
             y_0 (float): initial y coordinate of the box
             theta_0 (float): initial yaw angle
+
         """
         self.length = length
         self.width = width
