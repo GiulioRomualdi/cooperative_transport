@@ -189,6 +189,8 @@ class Planner:
         solved = self.optimizingPlanner.solve(1.0)
     
         if solved:
+            if self.optimizingPlanner.bestCost().value() == float('inf'):
+                return False, []
             path = self.pdef.getSolutionPath()
             states = path.getStates()
             vector = [[state[0], state[1]] for state in states]
@@ -196,4 +198,24 @@ class Planner:
 
             return True, vector
 
-        return False,
+        return False, []
+
+if __name__ == '__main__':
+    lower_bound = -5
+    upper_bound = 5
+    planner = Planner(lower_bound, upper_bound)
+
+    # Add obstacle for the box
+    length = 0.5
+    width = 0.5
+    x_box = 2
+    y_box = 2
+    obstacle = RectangularObstacle(length, width, x_box, y_box, 0, 0.5)
+    planner.add_obstacle(obstacle)
+
+    
+    start_point = [3, 3]
+    goal_point = [2, 2]
+    state, path = planner.plan(start_point, goal_point)
+
+    

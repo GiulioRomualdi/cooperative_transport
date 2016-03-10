@@ -386,7 +386,10 @@ class PlanTrajectory(State):
         tolerance = - np.array(response.normal) * (0.07 + robot_radius)
         start_point = [this_robot.x, this_robot.y]
         goal_point = (np.array(response.point) + tolerance).tolist()
-        state, path = self.planner.plan(start_point, goal_point)
+
+        state = False
+        while not state:
+            state, path = self.planner.plan(start_point, goal_point)
 
         # the first point in the path is the actual robot position
         path.pop(0)
