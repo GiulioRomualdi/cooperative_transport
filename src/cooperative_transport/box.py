@@ -186,10 +186,8 @@ class BoxStateObserver:
 
         # Params
         estimation_rate = rospy.get_param('estimation_rate')
-        box_forward_v = float(rospy.get_param('box_forward_v'))
-        box_angular_v = float(rospy.get_param('box_angular_v'))
-        delta_linear = 1.0 / estimation_rate * box_forward_v
-        delta_theta = 1.0 / estimation_rate * box_angular_v
+        delta_linear = 0.02
+        delta_theta = 0.01
         # Estimation
         for i in range(300):
             x_c = round(random.uniform(self._state[0]- delta_linear, self._state[0] + delta_linear), 2)
