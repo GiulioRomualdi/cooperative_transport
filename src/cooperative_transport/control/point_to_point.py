@@ -9,7 +9,7 @@ class PointToPoint:
         yg (float): goal y-coordinate
         max_forward_velocity (float): forward velocity saturation value
         max_angular_velocity (float): angular velocity saturation value
-        robot_radius (float): robot radius in meters (optional)
+        robot_radius (float): robot radius in meters (requested in obstacle avoidance mode)
 
     """
     def __init__(self, max_forward_velocity, max_angular_velocity, robot_radius = []):
@@ -19,7 +19,7 @@ class PointToPoint:
             max_forward_velocity (float): forward velocity saturation value
             max_angular_velocity (float): angular velocity saturation value
             robot_state_0 (float[]): robot initial state
-            robot_radius (float): robot radius in meters (optional)
+            robot_radius (float): robot radius in meters (requested in obstacle avoidance mode)
         """
         self.xg = 0
         self.yg = 0
@@ -73,11 +73,16 @@ class PointToPoint:
 
             phi_ro = np.arctan2((yr - y_ob), (xr - x_ob))
             phi_ro_dot = (-(v_ob * np.sin(theta_ob - phi_ro)) +\
-                          (vr * np.sin(theta- phi_ro))) / rho_ro
+                          (vr * np.sin(theta - phi_ro))) / rho_ro
 
-            if rho_ro < 2 * self_robot_radius + 0.1:            
-                forward_velocity = 1.0 / rho_ro
-                angular_velocity = -k * utils.angle_normalization(theta - phi_ro) + phi_ro_dot
+            if rho_ro < 2 * self.robot_radius + 0.2:
+                delta = utils.angle_normalization(theta - phi_ro)+ phi_ro_dot
+
+                forward_velocity = 0
+                if abs(delta) < np.pi / 18:
+                    forward_velocity = 0.1
+
+                angular_velocity = -k * delta + phi_ro_dot
                 
                 saturated_forward_velocity = utils.saturation(forward_velocity, self.max_forward_velocity)
                 saturated_angular_velocity = utils.saturation(angular_velocity, self.max_angular_velocity)
@@ -86,6 +91,10 @@ class PointToPoint:
 
         if rho_rg > 0.01:
             forward_velocity = rho_rg
+            if obstacle_avoidance:
+                forward_velocity = 0.2
+                if rho_rg < 0.2:
+                    forward_velocity = rho_rg
             angular_velocity = -k * utils.angle_normalization(theta - phi_rg) + phi_rg_dot
 
             saturated_forward_velocity = utils.saturation(forward_velocity, self.max_forward_velocity)
