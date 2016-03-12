@@ -1,0 +1,3 @@
+Header header
+int32 robot_id
+string point_condition
