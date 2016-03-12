@@ -1,3 +1,4 @@
+from __future__ import division
 import rospy
 import smach
 import utils
@@ -20,7 +21,7 @@ from control.point_to_point import PointToPoint
 from control.proportional_control import proportional_control
 
 # Msgs
-from cooperative_transport.msg import TaskState, TimeSync
+from cooperative_transport.msg import TaskState, TimeSync, BoxResearch
 from irobotcreate2.msg import RoombaIR
 
 # Services
@@ -45,6 +46,15 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     sm = StateMachine(outcomes=['transport_ok', 'transport_failed', 'step_ok'])
 
     with sm:
+        find_box = StateMachine(outcomes=['box_found','box_not_found'])
+        with find_box:
+            exhaustive_research = ExhaustiveResearch(controller_index, robots_state, set_control)
+            StateMachine.add('EXHAUSTIVE_RESEARCH',\
+                             exhaustive_research,\
+                             transitions={'box_not_found':'box_not_found',
+                                          'box_found':'box_found'})
+
+            
         rotate = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_not_needed'],
                             connector_outcome = 'step_ok')
         with rotate:
@@ -131,6 +141,11 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             Sequence.add('PUSH_BOX_SM',
                          push_box_sm(robots_state, controller_index, set_control, boxstate))
 
+        # StateMachine.add('FIND_BOX', find_box,\
+        #                  transitions={'box_not_found':'transport_failed',\
+        #                               'box_found':'ROTATE'})
+
+
         StateMachine.add('ROTATE', rotate,\
                          transitions={'sequence_ok':'PUSH',\
                                       'rotation_not_needed':'PUSH'})
@@ -185,6 +200,213 @@ def push_box_sm(robots_state, controller_index, set_control, boxstate):
                          transitions={'box_drifted':'ALIGNMENT_BEFORE_PUSH',\
                                       'box_at_goal':'sequence_ok'})
     return push_box_sm
+
+class ExhaustiveResearch(State):
+    """State of the fsm in which the robot research exhaustively the box.
+
+    Outcomes:
+    box_not_found: box not found during exhaustive reserach
+    box_found: box found
+
+    Inputs: 
+    none
+    
+    Outputs: 
+    none
+    """
+
+    def __init__(self, controller_index, robots_state, set_control):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        controller_index (int): index of the robot
+        robots_state (Subscriber[]): list of Subscribers to robots odometry
+        set_control (function): function that publish a twist        
+        """
+        State.__init__(self, outcomes=['box_not_found','box_found'])
+        self.controller_index = controller_index
+        self.my_self = robots_state[self.controller_index]
+        self.other_robots = [robots_state[i] for i in range(3) if i != self.controller_index]
+
+        self.set_control = set_control
+
+        # Initialize the point to point controller
+        self.max_forward_v = float(rospy.get_param('max_forward_v'))
+        self.max_angular_v = float(rospy.get_param('max_angular_v'))
+        robot_radius = rospy.get_param('robot_radius')
+        self.controller = PointToPoint(self.max_forward_v, self.max_angular_v, robot_radius)
+
+        # State clock
+        self.clock = rospy.Rate(200)
+
+        # Publish and subscribe to the topic 'robots_common'
+        rospy.Subscriber('research_state', BoxResearch, self.research_state_callback)
+        self.pub = rospy.Publisher('research_state', BoxResearch, queue_size=50)
+        self.flag_exhaustive_research = True
+        self.flag_lock = Lock()
+
+        # Subscribe to irbumper topic
+        names = rospy.get_param('topics_names')[self.controller_index]
+        rospy.Subscriber(names['irbumper'], RoombaIR, self.irsensors_callback)
+        self.ir_data_lock = Lock()
+        self.ir_data = {}
+
+    def research_state_callback(self, data):
+        """Update flag.
+        
+        Arguments:
+        data (BoxResearch): box research state
+        """
+        if data.point_condition == 'probable_point_detected':
+            self.flag_lock.acquire()
+            self.flag_exhaustive_research = False
+            self.flag_lock.release()
+
+        if data.point_condition == 'no_point_detected':
+            self.flag_lock.acquire()
+            self.flag_exhaustive_research = True
+            self.flag_lock.release()
+
+        # TODO: Vai nell'prossimo stato 
+        # if data.point_condition == '':
+        # 
+        #     pass
+
+    def irsensors_callback(self, data):
+        """Update ir_data using data from IR sensors.
+        
+        Arguments:
+        data (RoombaIR): data from one IR sensor 
+        """
+        self.ir_data_lock.acquire()
+        self.ir_data[data.header.frame_id] = data.signal
+        self.ir_data_lock.release()
+
+    def max_ir_data(self):
+        """Return the maximum ir bumper sensor reading."""
+        self.ir_data_lock.acquire()
+        max_value = max(self.ir_data.values())
+        self.ir_data_lock.release()
+        return max_value
+
+    def path(self):
+        """Return path."""
+
+        goals = []
+
+        # Get room parameters
+        room_lower_bound = float(rospy.get_param('planner_lower_bound'))
+        room_upper_bound = float(rospy.get_param('planner_upper_bound'))
+        room_size = room_upper_bound - room_lower_bound
+        
+        # Get box parameters
+        box_params = rospy.get_param('box')
+        box_length = box_params['length']
+        box_width = box_params['width']
+
+        # Cell parameters
+        cell_size = min(box_length, box_width)
+        cell_number = room_size / cell_size
+
+        # Generate path depending on controller_index
+        if self.controller_index == 0:
+            p0 = np.array([room_lower_bound + cell_size / 2, room_lower_bound + cell_size / 2])
+
+        elif self.controller_index == 1:
+            p0 = np.array([room_upper_bound - cell_size / 2, room_upper_bound - cell_size / 2])
+        else:
+            p0 = np.array([room_lower_bound + cell_size / 2, room_upper_bound - cell_size / 2])
+
+        goals.append(p0.tolist())
+                
+        for i in range(int(cell_number) - 1):
+            p0 = np.array(goals[-1])
+            direction = 1
+            if not i % 2 == 0:
+                direction = -1
+            if self.controller_index == 1 or self.controller_index == 2:
+                direction = -1
+                if not i % 2 == 0:
+                    direction = 1
+            
+            p = []
+
+            if self.controller_index == 0 or self.controller_index == 1:
+                p = p0 + direction * np.array([room_size - 1 + cell_size, 0])
+            else:
+                p = p0 + direction * np.array([0, room_size -1 + cell_size])
+
+            goals.append(p.tolist())
+
+            if self.controller_index == 0:
+                goals.append((p + np.array([0, cell_size])).tolist())
+            if self.controller_index == 1:
+                goals.append((p + np.array([0, -cell_size])).tolist())
+            if self.controller_index == 2:
+                goals.append((p + np.array([cell_size, 0])).tolist())
+
+        return goals
+
+    def execute(self, userdata):
+        """Execute the main activity of the fsm state.
+
+        Arguments:
+        userdata: inputs and outputs of the fsm state."""
+
+        done = True
+        goals = self.path()
+
+        while True:
+            # Check if other robots have found the box
+            self.flag_lock.acquire()
+            flag = self.flag_exhaustive_research
+            self.flag_lock.release()
+                        
+            while not flag:
+                self.set_control(0,0)
+                self.flag_lock.acquire()
+                flag = self.flag_exhaustive_research
+                self.flag_lock.release()
+                rospy.sleep(0.5)
+
+            # Robot current state
+            my_state = self.my_self.data.pose.pose
+            my_x = my_state.position.x
+            my_y = my_state.position.y
+            my_theta = utils.quaternion_to_yaw(my_state.orientation)
+            my_forward_velocity = self.my_self.data.twist.twist.linear.x
+
+            # Other robots state
+            others_state = [[other.data.pose.pose.position.x, other.data.pose.pose.position.y,\
+                             utils.quaternion_to_yaw(other.data.pose.pose.orientation)]\
+                            for other in self.other_robots]
+            others_velocity = [other.data.twist.twist.linear.x for other in self.other_robots]
+
+            # Update goal
+            if done:
+               # Return if there is no other goal
+                if not bool(goals):
+                    return 'box_not_found'
+                self.controller.goal_point(goals.pop(0))
+                
+            # Set control
+            done, v, w = self.controller.control_law([my_x, my_y, my_theta], my_forward_velocity,\
+                                                     obstacle_avoidance = True, robots_state = others_state,\
+                                                     robots_velocity = others_velocity)
+            self.set_control(v,w)
+
+            # Check if robot is near the box
+            if self.max_ir_data() > 0:
+                self.set_control(0,0)
+                msg = BoxResearch()
+                msg.robot_id = self.controller_index
+                msg.point_condition = 'probable_point_detected'
+                self.pub.publish(msg)
+                self.pub.publish(msg)
+                self.pub.publish(msg)
+                return 'box_found'
+            
+            self.clock.sleep()
 
 class Wait(State):
     """State of the fsm in which the robot waits the other robots
