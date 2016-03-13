@@ -463,6 +463,7 @@ class BoxRecognition(State):
         self.controller_index = controller_index
         self.robot_state = robot_state
         self.set_control = set_control
+        self.max_angular_v = float(rospy.get_param('max_angular_v'))
 
         # Publish and subscribe to the topic 'research_state'
         self.pub = rospy.Publisher('research_state', BoxResearch, queue_size=50)
@@ -539,94 +540,128 @@ class BoxRecognition(State):
         while not self.is_ir_ready:
             self.clock.sleep()
 
-        # robot initial position
-        robot_state0 = self.robot_state.data.pose.pose.position
-        p0 = np.array([robot_state0.x, robot_state0.y])
+        done = False
+        while not done:
+            # robot initial position
+            robot_state0 = self.robot_state.data.pose.pose.position
+            p0 = np.array([robot_state0.x, robot_state0.y])
 
-        # move as close as possible
-        rospy.loginfo('Moving as close as possible to the box')
-        forward_v = 0.01
-        self.set_control(forward_v, 0)
-        bumper = False
-        while True:
-            
-            # robot hit the box
-            # if bumper:
-            #    bumper = True
-            #    break
-
-            # robot needs to be as close as possible to the box
-            current_value = self.max_ir()
-            if current_value > 2900:
-                self.set_control(0, 0)
-                break
-
-            # no more than 10cm
-            robot_state = self.robot_state.data.pose.pose.position
-            p = np.array([robot_state.x, robot_state.y])
-            if np.linalg.norm(p - p0) > 0.1:
-                self.set_control(0,0)
-                break
-
-            self.clock.sleep()
-
-        #if bumper:
-        #    move back for 0.5cm
-
-        # Try to understand if we are in a good or bad case
-        angular_v = 0.3
-        direction = self.turning_direction()
-
-        # If direction == 0
-        if direction == 0:
-            rospy.loginfo('Cannot find direction. Search for direction')
-            self.set_control(0, angular_v)
+            # move as close as possible
+            rospy.loginfo('Moving as close as possible to the box')
+            forward_v = 0.01
+            self.set_control(forward_v, 0)
+            bumper = False
             while True:
-                direction = self.turning_direction()
-                if direction != 0:
+                # robot hit the box
+                # if bumper:
+                #    bumper = True
+                #    break
+
+                # robot needs to be as close as possible to the box
+                current_value = self.max_ir()
+                if current_value > 2900:
                     self.set_control(0, 0)
                     break
 
-        # Turn until max ir reading is zero
-        self.set_control(0, direction * angular_v)
-        while True:
-            if self.max_ir() == 0:
-                self.set_control(0, 0)
-                break
-            self.clock.sleep()
+                # no more than 10cm
+                robot_state = self.robot_state.data.pose.pose.position
+                p = np.array([robot_state.x, robot_state.y])
+                if np.linalg.norm(p - p0) > 0.1:
+                    self.set_control(0,0)
+                    break
 
-        # Rotation of 180 in order to expose all the sensors
-        rospy.loginfo('Exposing all the sensor')
-        counter = [0, 0]
-        delta = np.pi
-        reference = utils.angle_normalization(utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation) - direction * delta)
-        self.set_control(0, -direction * angular_v)
-        while True:
-            # Check error
-            theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
-            error = utils.angle_normalization(reference - theta)
-            if abs(error) < 0.017:
-                self.set_control(0, 0)
-                break
+                self.clock.sleep()
+
+            #if bumper:
+            #    move back for 0.5cm
+
+            # Try to understand if we are in a good or bad case
+            theta0 = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+            angular_v = 0.3
+            direction = self.turning_direction()
+
+            # If direction == 0
+            if direction == 0:
+                rospy.loginfo('Cannot find direction. Search for direction')
+                self.set_control(0, angular_v)
+                while True:
+                    direction = self.turning_direction()
+                    if direction != 0:
+                        self.set_control(0, 0)
+                        break
+
+            # Turn until max ir reading is zero
+            self.set_control(0, direction * angular_v)
+            while True:
+                if self.max_ir() == 0:
+                    self.set_control(0, 0)
+                    break
+                self.clock.sleep()
+
+            # Rotation of 180 in order to expose all the sensors
+            rospy.loginfo('Exposing all the sensor')
+            counter = [0, 0]
+            delta = np.pi
+            reference = utils.angle_normalization(utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation) - direction * delta)
+            self.set_control(0, -direction * angular_v)
+            while True:
+                # Check error
+                theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+                error = utils.angle_normalization(reference - theta)
+                if abs(error) < 0.017:
+                    self.set_control(0, 0)
+                    break
                 
-            if self.number_readings() == 1:
-                counter[0] += 1
-            elif self.number_readings() >= 2:
-                counter[1] += 1
+                if self.number_readings() == 1:
+                    counter[0] += 1
+                elif self.number_readings() >= 2:
+                    counter[1] += 1
         
-            self.clock.sleep()
+                self.clock.sleep()
 
-        if counter[1] < counter[0]:
-            # bad case
-            pass
+            if counter[1] < counter[0]:
+                # bad case, the robot tries to approach the box again
+                rospy.loginfo('Cannot recognize the box properly. Try to reapproach')
 
-        # Alignment to the heading direction requires ir sensors
-        # The fsm state Alignment will not be used
-        rospy.loginfo('Heading direction alignment')
-        self.set_control(0, direction * angular_v)
-        while not self.is_forward_aligned():
-            self.clock.sleep()
-        self.set_control(0, 0)
+                # Alignment before moving
+                while True:
+                    reference = utils.angle_normalization(theta0 + direction * np.pi / 2)
+                    theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+                    error = utils.angle_normalization(reference - theta)
+                    if abs(error) > 0.017 or self.max_ir() > 0:
+                        # Set control
+                        angular_v = proportional_control(1, reference, theta, self.max_angular_v, True)
+                        self.set_control(0, angular_v)
+                    else:
+                        # Stop the robot
+                        self.set_control(0, 0)
+                        break
+
+                # Reapproach the box
+                box_parameters = rospy.get_param('box')
+                length = box_parameters['length']
+                width = box_parameters['width']
+
+                radius = min(length, width) / 2
+                v = 0.5
+                omega = v / radius
+                self.set_control(v, -direction * omega)
+                while True:
+                    if self.max_ir() > 0:
+                        self.set_control(0, 0)
+                        break
+
+                # Try to perform box recognition as in the normal case
+                continue
+
+            # Alignment to the heading direction requires ir sensors
+            # The fsm state Alignment will not be used
+            rospy.loginfo('Heading direction alignment')
+            self.set_control(0, direction * angular_v)
+            while not self.is_forward_aligned():
+                self.clock.sleep()
+            self.set_control(0, 0)
+            done = True
 
         return 'box_recognized'
 
