@@ -642,8 +642,8 @@ class BoxRecognition(State):
                 length = box_parameters['length']
                 width = box_parameters['width']
 
-                radius = min(length, width) / 2
-                v = 0.5
+                radius = min(length, width) / 3
+                v = 0.15
                 omega = v / radius
                 self.set_control(v, -direction * omega)
                 while True:
