@@ -46,15 +46,31 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     sm = StateMachine(outcomes=['transport_ok', 'transport_failed', 'step_ok'])
 
     with sm:
+        # MAYBE A SEQUENCE?
         find_box = StateMachine(outcomes=['box_found','box_not_found'])
         with find_box:
-            exhaustive_research = ExhaustiveResearch(controller_index, robots_state, set_control)
+            exhaustive_research = ExhaustiveResearch(controller_index,
+                                                     robots_state, set_control)
             StateMachine.add('EXHAUSTIVE_RESEARCH',\
                              exhaustive_research,\
                              transitions={'box_not_found':'box_not_found',
-                                          'box_found':'box_found'})
+                                          'box_found':'BOX_RECOGNITION'})
 
-            
+            box_recognition = BoxRecognition(controller_index, 
+                                             robots_state[controller_index], set_control)
+            StateMachine.add('BOX_RECOGNITION',\
+                             box_recognition,\
+                             transitions={'box_recognized':'FINE_AFTER_RECOGNITION',
+                                          'box_not_recognized':'EXHAUSTIVE_RESEARCH'})
+
+            fine_approach = LinearMovement(robots_state[controller_index], \
+                                           controller_index, set_control, \
+                                           'fine_after_recognition')
+
+            StateMachine.add('FINE_AFTER_RECOGNITION',\
+                             fine_approach,
+                             transitions={'approach_ok':'box_found'})
+
         rotate = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_not_needed'],
                             connector_outcome = 'step_ok')
         with rotate:
@@ -141,9 +157,9 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             Sequence.add('PUSH_BOX_SM',
                          push_box_sm(robots_state, controller_index, set_control, boxstate))
 
-        # StateMachine.add('FIND_BOX', find_box,\
-        #                  transitions={'box_not_found':'transport_failed',\
-        #                               'box_found':'ROTATE'})
+        StateMachine.add('FIND_BOX', find_box,\
+                         transitions={'box_not_found':'transport_failed',\
+                                      'box_found':'transport_ok'})
 
 
         StateMachine.add('ROTATE', rotate,\
@@ -237,9 +253,9 @@ class ExhaustiveResearch(State):
         self.controller = PointToPoint(self.max_forward_v, self.max_angular_v, robot_radius)
 
         # State clock
-        self.clock = rospy.Rate(200)
+        self.clock = rospy.Rate(500)
 
-        # Publish and subscribe to the topic 'robots_common'
+        # Publish and subscribe to the topic 'research_state'
         rospy.Subscriber('research_state', BoxResearch, self.research_state_callback)
         self.pub = rospy.Publisher('research_state', BoxResearch, queue_size=50)
         self.flag_exhaustive_research = True
@@ -281,6 +297,15 @@ class ExhaustiveResearch(State):
         self.ir_data_lock.acquire()
         self.ir_data[data.header.frame_id] = data.signal
         self.ir_data_lock.release()
+
+    def is_ir_ready(self):
+        self.ir_data_lock.acquire()
+        if bool (self.ir_data.values()):
+            self.ir_data_lock.release()
+            return True
+
+        self.ir_data_lock.release()
+        return False
 
     def max_ir_data(self):
         """Return the maximum ir bumper sensor reading."""
@@ -353,10 +378,25 @@ class ExhaustiveResearch(State):
         Arguments:
         userdata: inputs and outputs of the fsm state."""
 
+        # Wait for ir sensors to be ready
+        while not self.is_ir_ready():
+            self.clock.sleep()
+
         done = True
         goals = self.path()
 
         while True:
+            # Check if robot is near the box
+            if self.max_ir_data() > 0:
+                self.set_control(0,0)
+                msg = BoxResearch()
+                msg.robot_id = self.controller_index
+                msg.point_condition = 'probable_point_detected'
+                for i in range(10):
+                    self.pub.publish(msg)
+                    rospy.sleep(0.5)
+                return 'box_found'
+
             # Check if other robots have found the box
             self.flag_lock.acquire()
             flag = self.flag_exhaustive_research
@@ -394,19 +434,201 @@ class ExhaustiveResearch(State):
                                                      obstacle_avoidance = True, robots_state = others_state,\
                                                      robots_velocity = others_velocity)
             self.set_control(v,w)
-
-            # Check if robot is near the box
-            if self.max_ir_data() > 0:
-                self.set_control(0,0)
-                msg = BoxResearch()
-                msg.robot_id = self.controller_index
-                msg.point_condition = 'probable_point_detected'
-                self.pub.publish(msg)
-                self.pub.publish(msg)
-                self.pub.publish(msg)
-                return 'box_found'
             
             self.clock.sleep()
+
+class BoxRecognition(State):
+    """State of the fsm in which the robot tries to recognize one side of the box.
+
+    Outcomes:
+    box_not_found: box not found during exhaustive reserach
+    box_found: box found
+
+    Inputs: 
+    none
+    
+    Outputs: 
+    none
+    """
+
+    def __init__(self, controller_index, robot_state, set_control):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        controller_index (int): index of the robot
+        robot_state (Subscriber[]): Subscriber to robot odometry
+        set_control (function): function that publish a twist        
+        """
+        State.__init__(self, outcomes=['box_recognized','box_not_recognized'])
+        self.controller_index = controller_index
+        self.robot_state = robot_state
+        self.set_control = set_control
+
+        # Publish and subscribe to the topic 'research_state'
+        self.pub = rospy.Publisher('research_state', BoxResearch, queue_size=50)
+
+        # Subscribe to irbumper topic
+        names = rospy.get_param('topics_names')[self.controller_index]
+        rospy.Subscriber(names['irbumper'], RoombaIR, self.ir_callback)
+        self.lock = Lock()
+        self.ir_data = {}
+        self.is_ir_ready = False
+
+        # State clock
+        self.clock = rospy.Rate(500)
+
+    def ir_callback(self, data):
+        """Update ir_data using data from IR sensors.
+        
+        Arguments:
+        data (RoombaIR): data from one IR sensor 
+        """
+        self.lock.acquire()
+        self.ir_data[data.header.frame_id] = data.signal
+        if len(self.ir_data) == 6:
+            self.is_ir_ready = True
+        self.lock.release()
+
+    def max_ir(self):
+        self.lock.acquire()
+        value = max(self.ir_data.values())
+        self.lock.release()
+        return value
+
+    def turning_direction(self):
+        self.lock.acquire()
+        direction = 0
+        keys = ['base_irbumper_center_', 'base_irbumper_front_', 'base_irbumper_']
+        for key in keys:
+            if self.ir_data[key + 'right'] != 0:
+                direction = 1
+                break
+            elif self.ir_data[key + 'left'] != 0:
+                direction = -1
+                break
+        self.lock.release()
+        return direction
+
+    def is_forward_aligned(self):
+        self.lock.acquire()
+        center_right = self.ir_data['base_irbumper_center_right']
+        center_left = self.ir_data['base_irbumper_center_left']
+
+        if center_right != 0 and center_left != 0:
+            if abs(center_right - center_left) < 500:
+                self.lock.release()
+                return True
+                    
+        self.lock.release()
+        return False
+
+    
+    def number_readings(self):
+        self.lock.acquire()
+        list = [value for value in self.ir_data.values() if value > 0]
+        length = len(list)
+        self.lock.release()
+        return length
+
+    def execute(self, userdata):
+        """Execute the main activity of the fsm state.
+
+        Arguments:
+        userdata: inputs and outputs of the fsm state."""
+
+        while not self.is_ir_ready:
+            self.clock.sleep()
+
+        # robot initial position
+        robot_state0 = self.robot_state.data.pose.pose.position
+        p0 = np.array([robot_state0.x, robot_state0.y])
+
+        # move as close as possible
+        rospy.loginfo('Moving as close as possible to the box')
+        forward_v = 0.01
+        self.set_control(forward_v, 0)
+        bumper = False
+        while True:
+            
+            # robot hit the box
+            # if bumper:
+            #    bumper = True
+            #    break
+
+            # robot needs to be as close as possible to the box
+            current_value = self.max_ir()
+            if current_value > 2900:
+                self.set_control(0, 0)
+                break
+
+            # no more than 10cm
+            robot_state = self.robot_state.data.pose.pose.position
+            p = np.array([robot_state.x, robot_state.y])
+            if np.linalg.norm(p - p0) > 0.1:
+                self.set_control(0,0)
+                break
+
+            self.clock.sleep()
+
+        #if bumper:
+        #    move back for 0.5cm
+
+        # Try to understand if we are in a good or bad case
+        angular_v = 0.3
+        direction = self.turning_direction()
+
+        # If direction == 0
+        if direction == 0:
+            rospy.loginfo('Cannot find direction. Search for direction')
+            self.set_control(0, angular_v)
+            while True:
+                direction = self.turning_direction()
+                if direction != 0:
+                    self.set_control(0, 0)
+                    break
+
+        # Turn until max ir reading is zero
+        self.set_control(0, direction * angular_v)
+        while True:
+            if self.max_ir() == 0:
+                self.set_control(0, 0)
+                break
+            self.clock.sleep()
+
+        # Rotation of 180 in order to expose all the sensors
+        rospy.loginfo('Exposing all the sensor')
+        counter = [0, 0]
+        delta = np.pi
+        reference = utils.angle_normalization(utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation) - direction * delta)
+        self.set_control(0, -direction * angular_v)
+        while True:
+            # Check error
+            theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+            error = utils.angle_normalization(reference - theta)
+            if abs(error) < 0.017:
+                self.set_control(0, 0)
+                break
+                
+            if self.number_readings() == 1:
+                counter[0] += 1
+            elif self.number_readings() >= 2:
+                counter[1] += 1
+        
+            self.clock.sleep()
+
+        if counter[1] < counter[0]:
+            # bad case
+            pass
+
+        # Alignment to the heading direction requires ir sensors
+        # The fsm state Alignment will not be used
+        rospy.loginfo('Heading direction alignment')
+        self.set_control(0, direction * angular_v)
+        while not self.is_forward_aligned():
+            self.clock.sleep()
+        self.set_control(0, 0)
+
+        return 'box_recognized'
 
 class Wait(State):
     """State of the fsm in which the robot waits the other robots
@@ -800,7 +1022,7 @@ class LinearMovement(State):
     """State of the fsm in which the robot slowly and accurately approaches the box.
 
     Outcomes:
-    fine_approach_ok: the robot approached the box
+    approach_ok / step_ok / sequence_ok: the robot approached the box
     
     Inputs:
     none
@@ -818,6 +1040,8 @@ class LinearMovement(State):
         """
         if task_name == 'reverse':
             State.__init__(self, outcomes=['step_ok','sequence_ok'])
+        elif task_name == 'fine_after_recognition':
+            State.__init__(self, outcomes=['approach_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
 
@@ -873,10 +1097,14 @@ class LinearMovement(State):
             msg.task_name = 'wait_for_turn_push'
 
         if self.task_name == 'fine_approach_rotation' or\
-           self.task_name == 'fine_approach_push':
+           self.task_name == 'fine_approach_push' or\
+           self.task_name == 'fine_after_recognition':
             # We are approaching to the box
             # the IR readings increase up to 3300
             ir_tolerance = 3300
+
+        if self.task_name == 'fine_approach_rotation' or\
+           self.task_name == 'fine_approach_push':
             
             # Let the other robots know that it's their turn
             # Three pubs should suffice
@@ -911,7 +1139,8 @@ class LinearMovement(State):
                 self.set_control(linear_v, 0)
                 
         elif self.task_name == 'fine_approach_rotation' or\
-             self.task_name == 'fine_approach_push':
+             self.task_name == 'fine_approach_push' or\
+             self.task_name == 'fine_after_recognition':
             # Next move the robot as close as possible to the box using IR            
             while self.max_ir_data() < ir_tolerance:
                 self.set_control(linear_v, 0)
@@ -934,6 +1163,8 @@ class LinearMovement(State):
         
         if self.task_name == 'reverse':
             return 'sequence_ok'
+        elif self.task_name == 'fine_after_recognition':
+            return 'approach_ok'
 
         return 'step_ok'
 
