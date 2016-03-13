@@ -157,9 +157,9 @@ class IrSensor():
         if not admissible_ranges:
             return irobot_min_ir
 
-        # take the minimum
-        distance = min(admissible_ranges)
-
+        # take the minimum and round it
+        distance = round(min(admissible_ranges),3)
+        
         # scale the value so that it adhere with the irobot create 2 open specification (0-4095)
         max_range = self.bounds[0][1]
         min_range = self.bounds[0][0]
