@@ -387,7 +387,7 @@ class ExhaustiveResearch(State):
 
         while True:
             # Check if robot is near the box
-            if self.max_ir_data() > 0:
+            if self.max_ir_data() > 200:
                 self.set_control(0,0)
                 msg = BoxResearch()
                 msg.robot_id = self.controller_index
@@ -522,7 +522,6 @@ class BoxRecognition(State):
                     
         self.lock.release()
         return False
-
     
     def number_readings(self):
         self.lock.acquire()
@@ -540,8 +539,8 @@ class BoxRecognition(State):
         while not self.is_ir_ready:
             self.clock.sleep()
 
-        done = False
-        while not done:
+        good_case = False
+        while not good_case:
             # robot initial position
             robot_state0 = self.robot_state.data.pose.pose.position
             p0 = np.array([robot_state0.x, robot_state0.y])
@@ -550,7 +549,7 @@ class BoxRecognition(State):
             rospy.loginfo('Moving as close as possible to the box')
             forward_v = 0.01
             self.set_control(forward_v, 0)
-            bumper = False
+            #bumper = False
             while True:
                 # robot hit the box
                 # if bumper:
@@ -580,16 +579,6 @@ class BoxRecognition(State):
             angular_v = 0.3
             direction = self.turning_direction()
 
-            # If direction == 0
-            if direction == 0:
-                rospy.loginfo('Cannot find direction. Search for direction')
-                self.set_control(0, angular_v)
-                while True:
-                    direction = self.turning_direction()
-                    if direction != 0:
-                        self.set_control(0, 0)
-                        break
-
             # Turn until max ir reading is zero
             self.set_control(0, direction * angular_v)
             while True:
@@ -600,9 +589,7 @@ class BoxRecognition(State):
 
             # Rotation of 180 in order to expose all the sensors
             rospy.loginfo('Exposing all the sensor')
-            counter = [0, 0]
-            delta = np.pi
-            reference = utils.angle_normalization(utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation) - direction * delta)
+            reference = utils.angle_normalization(utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation) - direction * np.pi)
             self.set_control(0, -direction * angular_v)
             while True:
                 # Check error
@@ -611,15 +598,16 @@ class BoxRecognition(State):
                 if abs(error) < 0.017:
                     self.set_control(0, 0)
                     break
-                
-                if self.number_readings() == 1:
-                    counter[0] += 1
-                elif self.number_readings() >= 2:
-                    counter[1] += 1
-        
+
+                if self.is_forward_aligned():
+                    self.set_control(0, 0)
+                    good_case = True
+                    rospy.loginfo('Aligned to heading direction')
+                    break
+
                 self.clock.sleep()
 
-            if counter[1] < counter[0]:
+            if not good_case:
                 # bad case, the robot tries to approach the box again
                 rospy.loginfo('Cannot recognize the box properly. Try to reapproach')
 
@@ -653,15 +641,6 @@ class BoxRecognition(State):
 
                 # Try to perform box recognition as in the normal case
                 continue
-
-            # Alignment to the heading direction requires ir sensors
-            # The fsm state Alignment will not be used
-            rospy.loginfo('Heading direction alignment')
-            self.set_control(0, direction * angular_v)
-            while not self.is_forward_aligned():
-                self.clock.sleep()
-            self.set_control(0, 0)
-            done = True
 
         return 'box_recognized'
 
