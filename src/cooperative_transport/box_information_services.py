@@ -147,18 +147,15 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
     return True, references[argmin_differences], direction, results
 
 def find_docking_points_in_uncertainty_area(uncertainty_area_pose, length, width):
-    """Find the docking points on the perimeter of the box required
-    by the robots in order to rotate the box.
+    """Find the docking points on the perimeter of the uncertainty area.
 
     Arguments:
-        box_current_pose (float[]): current box pose
-        box_goal_pose (float[]): goal box pose
+        uncertainty_area_pose (float[]): uncertainty area pose
         length (float): box length in meters
         width (float): box width in meters
 
     Returns:
-        A list containing the docking points and the normal directions, one for each robot,
-        and the best angular position of the box required to push it.
+        A list containing the docking points and the normal directions, one for each robot.
     """    
     max_length = max(length, width)
     min_length = min(length, width)
@@ -308,17 +305,28 @@ class BoxInformationServices():
         self.update_docking_point_lock.release()
 
     def set_pose_uncertainty_area(self, request):
+        """Set pose of the uncertainty area
+
+        Arguments:
+            request (SetPoseUncertaintyArea): the request
+        """        
         self.uncertainty_area_pose = request.pose
         self.service_ready_lock.acquire()
         self.service_ready = True
         self.service_ready_lock.release()
 
     def get_docking_point_uncertainty_area(self,request):
-        
+        """Provide a robot with the docking point/normal on the perimeter of the uncertainty_area.
+
+        Arguments:
+            request (GetDockingPointUncertaintyArea): the request
+
+        """
         self.service_ready_lock.acquire()
         service_ready = self.service_ready
         self.service_ready_lock.release()
-        
+
+        # Is service ready?
         if not service_ready:
             response = GetDockingPointUncertaintyArea()
             response.is_ready = False
@@ -348,12 +356,6 @@ class BoxInformationServices():
         response.normal = docking['normal']
 
         return response
-
-        # crea i servizi aggiungili sopra fai catkin_make e prega
-        rospy.Service('uncertainty_area_set_pose', SetPoseUncertaintyArea, self.set_pose_uncertainty_area)
-        rospy.Service('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea, self.get_docking_point_uncertainty_area)
-        self.service_ready = False
-
 
     def run(self):
         """Main activity of the node."""
