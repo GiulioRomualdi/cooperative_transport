@@ -1,3 +1,3 @@
 Header header
 int32 robot_id
-string point_condition
+bool box_detected
