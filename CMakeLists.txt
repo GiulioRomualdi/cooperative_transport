@@ -50,7 +50,7 @@ add_message_files(
   BoxState.msg
   TaskState.msg
   TimeSync.msg
-  BoxResearch.msg
+  BoxDetected.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -58,6 +58,8 @@ add_service_files(
    FILES
    BoxGetDockingPointPush.srv
    BoxGetDockingPointRotate.srv
+   SetPoseUncertaintyArea.srv
+   GetDockingPointUncertaintyArea.srv
 )
 
 ## Generate actions in the 'action' folder

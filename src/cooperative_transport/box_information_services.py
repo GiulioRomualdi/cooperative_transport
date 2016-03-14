@@ -9,6 +9,12 @@ from cooperative_transport.srv import BoxGetDockingPointPushResponse
 from cooperative_transport.srv import BoxGetDockingPointRotate
 from cooperative_transport.srv import BoxGetDockingPointRotateRequest
 from cooperative_transport.srv import BoxGetDockingPointRotateResponse
+from cooperative_transport.srv import SetPoseUncertaintyArea
+from cooperative_transport.srv import SetPoseUncertaintyAreaRequest
+from cooperative_transport.srv import SetPoseUncertaintyAreaResponse
+from cooperative_transport.srv import GetDockingPointUncertaintyArea
+from cooperative_transport.srv import GetDockingPointUncertaintyAreaRequest
+from cooperative_transport.srv import GetDockingPointUncertaintyAreaResponse
 from std_srvs.srv import Empty
 from cooperative_transport.msg import BoxState
 from subscriber import Subscriber
@@ -139,6 +145,38 @@ def find_docking_points_to_rotate(box_current_pose, box_goal_pose, box_length, b
     results = [{'point' : points[i], 'normal' : normals[i]} for i in range(3)]
 
     return True, references[argmin_differences], direction, results
+
+def find_docking_points_in_uncertainty_area(uncertainty_area_pose, length, width):
+    """Find the docking points on the perimeter of the box required
+    by the robots in order to rotate the box.
+
+    Arguments:
+        box_current_pose (float[]): current box pose
+        box_goal_pose (float[]): goal box pose
+        length (float): box length in meters
+        width (float): box width in meters
+
+    Returns:
+        A list containing the docking points and the normal directions, one for each robot,
+        and the best angular position of the box required to push it.
+    """    
+    max_length = max(length, width)
+    min_length = min(length, width)
+
+    uncertainty_geometry = BoxGeometry(2 * max_length,\
+                                       max_length,\
+                                       [uncertainty_area_pose[0],\
+                                        uncertainty_area_pose[1]],\
+                                       uncertainty_area_pose[2])
+
+    edges = [uncertainty_geometry.edge(1,2), uncertainty_geometry.edge(3,0)]
+    points = [edges[0].point(1.0/3 * min_length / max_length), edges[1].points(2.0/3 * min_length / max_length)]
+    normals = [edge.normal() for edge in edges]
+            
+    results = [{'point' : points[i], 'normal' : normals[i]} for i in range(2)]
+
+    return results
+
                 
 class BoxInformationServices():
     """Provide box information services."""
@@ -156,6 +194,11 @@ class BoxInformationServices():
         # Provide 'box_get_docking_point' service
         rospy.Service('box_get_docking_point_push', BoxGetDockingPointPush, self.box_get_docking_point_push)
         rospy.Service('box_get_docking_point_rotate', BoxGetDockingPointRotate, self.box_get_docking_point_rotate)
+
+        # Provide 'uncertainty_area' service
+        rospy.Service('uncertainty_area_set_pose', SetPoseUncertaintyArea, self.set_pose_uncertainty_area)
+        rospy.Service('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea, self.get_docking_point_uncertainty_area)
+        self.service_ready = False
 
         # Provide 'clear_docking_point' service
         self.update_docking_point = True
@@ -175,7 +218,10 @@ class BoxInformationServices():
         self.direction = 0
 
         # Lock used to avoid concurrent access to update_docking_point
-        self.flag_lock = threading.Lock()
+        self.update_docking_point_lock = threading.Lock()
+
+        # Lock used to avoid concurrent access to service_ready
+        self.service_ready_lock = threading.Lock()
 
     def box_get_docking_point_push(self, request):
         """Provide a robot with the docking point/normal on the perimeter of the box in its current position.
@@ -183,9 +229,9 @@ class BoxInformationServices():
         Arguments:
             request (BoxGetDockingPointPushRequest): the request
         """
-        self.flag_lock.acquire()
+        self.update_docking_point_lock.acquire()
         flag = self.update_docking_point
-        self.flag_lock.release()
+        self.update_docking_point_lock.release()
         
         # Only the first time
         if flag:
@@ -199,9 +245,9 @@ class BoxInformationServices():
             self.docking = find_docking_points_to_push([box_x, box_y, box_theta],
                                                        [self.goal_x, self.goal_y],
                                                        self.box_length, self.box_width)
-            self.flag_lock.acquire()
+            self.update_docking_point_lock.acquire()
             self.update_docking_point = False
-            self.flag_lock.release()
+            self.update_docking_point_lock.release()
 
         # The response
         response = BoxGetDockingPointPushResponse()
@@ -217,9 +263,9 @@ class BoxInformationServices():
         Arguments:
             request (BoxGetDockingPointPushRequest): the request
         """
-        self.flag_lock.acquire()
+        self.update_docking_point_lock.acquire()
         flag = self.update_docking_point
-        self.flag_lock.release()
+        self.update_docking_point_lock.release()
         
         # Only the first time
         if flag:
@@ -234,9 +280,9 @@ class BoxInformationServices():
                                                                                                               [self.goal_x, self.goal_y],
                                                                                                               self.box_length, self.box_width)
     
-            self.flag_lock.acquire()
+            self.update_docking_point_lock.acquire()
             self.update_docking_point = False
-            self.flag_lock.release()
+            self.update_docking_point_lock.release()
 
         # The response
         response = BoxGetDockingPointRotateResponse()
@@ -251,16 +297,62 @@ class BoxInformationServices():
 
         return response
 
-
     def clear_docking_point(self, request):
         """Clear all docking point previusly evaluated
 
         Arguments:
             request (Empty): the request
         """
-        self.flag_lock.acquire()
+        self.update_docking_point_lock.acquire()
         self.update_docking_point = True
-        self.flag_lock.release()
+        self.update_docking_point_lock.release()
+
+    def set_pose_uncertainty_area(self, request):
+        self.uncertainty_area_pose = request.pose
+        self.service_ready_lock.acquire()
+        self.service_ready = True
+        self.service_ready_lock.release()
+
+    def get_docking_point_uncertainty_area(self,request):
+        
+        self.service_ready_lock.acquire()
+        service_ready = self.service_ready
+        self.service_ready_lock.release()
+        
+        if not service_ready:
+            response = GetDockingPointUncertaintyArea()
+            response.is_ready = False
+            response.point = []
+            response.normal = []
+            return response
+        
+        self.update_docking_point_lock.acquire()
+        flag = self.update_docking_point
+        self.update_docking_point_lock.release()
+        
+        # Only the first time
+        if flag:
+    
+            # Update the docking points/normals
+            self.docking = find_docking_points_in_uncertainty_area(self.uncertainty_area_pose, self.box_length, self.box_width)
+
+            self.update_docking_point_lock.acquire()
+            self.update_docking_point = False
+            self.update_docking_point_lock.release()
+
+        # The response
+        response = GetDockingPointUncertaintyArea()
+        docking = self.docking[request.robot_id]
+        response.is_ready = True
+        response.point = docking['point']
+        response.normal = docking['normal']
+
+        return response
+
+        # crea i servizi aggiungili sopra fai catkin_make e prega
+        rospy.Service('uncertainty_area_set_pose', SetPoseUncertaintyArea, self.set_pose_uncertainty_area)
+        rospy.Service('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea, self.get_docking_point_uncertainty_area)
+        self.service_ready = False
 
 
     def run(self):
