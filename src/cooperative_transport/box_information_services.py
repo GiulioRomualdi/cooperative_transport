@@ -330,6 +330,7 @@ class BoxInformationServices():
         if not service_ready:
             response = GetDockingPointUncertaintyArea()
             response.is_ready = False
+            response.pose = []
             response.point = []
             response.normal = []
             return response
@@ -352,6 +353,7 @@ class BoxInformationServices():
         response = GetDockingPointUncertaintyArea()
         docking = self.docking[request.robot_id]
         response.is_ready = True
+        response.pose = self.uncertainty_area_pose
         response.point = docking['point']
         response.normal = docking['normal']
 
