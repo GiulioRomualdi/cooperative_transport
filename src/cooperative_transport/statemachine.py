@@ -283,6 +283,7 @@ class ExhaustiveResearch(State):
         State.__init__(self, outcomes=['box_not_found','box_found','other_robot_found_box'])
         self.controller_index = controller_index
         self.this_robot = robots_state[self.controller_index]
+        self.robots_state = robots_state
         self.other_robots = [robots_state[i] for i in range(3) if i != self.controller_index]
 
         self.set_control = set_control
@@ -301,6 +302,7 @@ class ExhaustiveResearch(State):
         self.pub = rospy.Publisher('research_state', BoxDetected, queue_size=50)
 
         self.box_detected = False
+        self.discoverer_id = 0
         self.flag_lock = Lock()
 
         # Subscribe to irbumper topic
@@ -318,6 +320,7 @@ class ExhaustiveResearch(State):
         if data.box_detected:
             self.flag_lock.acquire()
             self.box_detected = True
+            self.discoverer_id = data.robot_id
             self.flag_lock.release()
 
     def irsensors_callback(self, data):
@@ -368,7 +371,6 @@ class ExhaustiveResearch(State):
         # Generate path depending on controller_index
         if self.controller_index == 0:
             p0 = np.array([room_lower_bound + cell_size / 2, room_lower_bound + cell_size / 2])
-
         elif self.controller_index == 1:
             p0 = np.array([room_upper_bound - cell_size / 2, room_upper_bound - cell_size / 2])
         else:
@@ -415,11 +417,12 @@ class ExhaustiveResearch(State):
             self.clock.sleep()
 
         done = True
+        escape = False
         goals = self.path()
 
         while True:
             # Check if robot is near the box
-            if self.max_ir_data() > 200:
+            if not escape and self.max_ir_data() > 200:
                 self.set_control(0,0)
                 msg = BoxDetected()
                 msg.robot_id = self.controller_index
@@ -428,15 +431,6 @@ class ExhaustiveResearch(State):
                     self.pub.publish(msg)
                     rospy.sleep(0.5)
                 return 'box_found'
-
-            # Check if other robots have found the box
-            self.flag_lock.acquire()
-            flag = self.box_detected
-            self.flag_lock.release()
-
-            if flag:
-                self.set_control(0,0)
-                return 'other_robot_found_box'
 
             # Robot current state
             this_state = self.this_robot.data.pose.pose
@@ -451,17 +445,55 @@ class ExhaustiveResearch(State):
                             for other in self.other_robots]
             others_velocity = [other.data.twist.twist.linear.x for other in self.other_robots]
 
+            # Check if other robots have found the box
+            self.flag_lock.acquire()
+            box_found = self.box_detected
+            self.flag_lock.release()
+
+            if not escape and box_found:
+                # Some other robot found the box
+                self.set_control(0,0)
+                box_parameters = rospy.get_param('box')
+                box_length = box_parameters['length']
+                box_width = box_parameters['width']
+                min_length = min(box_length, box_width)
+                robot_diameter = 2 * float(rospy.get_param('robot_radius'))
+
+                # If the robot is too close to the discoverer robot
+                # the robot should move away from the discoverer
+                tolerance = robot_diameter + 2 * (1 / 3 * min_length) + 0.07
+                discoverer_pose = self.robots_state[self.discoverer_id].data.pose.pose.position
+                difference = np.array([this_x - discoverer_pose.x, this_y - discoverer_pose.y])
+                distance = np.linalg.norm(difference)
+                direction = difference / distance
+
+                if distance < tolerance:
+                    rospy.loginfo('Escaping from the discoverer')
+                    escape_goal = np.array([discoverer_pose.x, discoverer_pose.y]) +\
+                                  tolerance * direction
+                    goals = [escape_goal.tolist()]
+                    done = True
+                    escape = True
+                else:
+                    return 'other_robot_found_box'
+
+
             # Update goal
             if done:
                # Return if there is no other goal
                 if not bool(goals):
-                    return 'box_not_found'
+                    if escape:
+                        return 'other_robot_found_box'
+                    else:
+                        return 'box_not_found'
                 self.controller.goal_point(goals.pop(0))
                 
             # Set control
             done, v, w = self.controller.control_law([this_x, this_y, this_theta], this_forward_velocity,\
                                                      obstacle_avoidance = True, robots_state = others_state,\
                                                      robots_velocity = others_velocity)
+            if escape:
+                print 'control within escape!!'
             self.set_control(v,w)
             
             self.clock.sleep()
@@ -785,7 +817,7 @@ class LinearMovementCollisionAvoidance(State):
         direction = np.array([robot_pose.position.x, robot_pose.position.y]) - \
                     np.array(response.detection_point)
         direction = direction / np.linalg.norm(direction)
-        goal = np.array(response.detection_point) + base * direction
+        goal = (np.array(response.detection_point) + base * direction).tolist()
         #
         #######################################################################################
 
