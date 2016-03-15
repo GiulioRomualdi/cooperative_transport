@@ -778,7 +778,7 @@ class LinearMovementCollisionAvoidance(State):
         tolerance = 0.07
         base = np.sqrt(2) * max_length + 2 * robot_radius + 2 * tolerance
 
-        if delta < 2 * np.arcsin(base / robot_radius):
+        if delta < 2 * robot_radius / base:
             if self.controller_index < neigh_robot_index:
                 base += 2 * robot_radius + tolerance
 
