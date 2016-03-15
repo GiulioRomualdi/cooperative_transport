@@ -18,7 +18,7 @@ from planner import Planner, RectangularObstacle, CircularObstacle
 
 # 
 from box import BoxGeometry
-from utils import Segment
+from utils import Segment, Line
 
 # Control
 from control.point_to_point import PointToPoint
@@ -65,7 +65,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                              exhaustive_research,\
                              transitions={'box_not_found':'box_not_found',
                                           'box_found':'BOX_RECOGNITION',
-                                          'other_robot_found_box':'ALIGNMENT_OUTWARD_UNCERTAINTY_AREA'})
+                                          'other_robot_found_box':'MOVE_AWAY_CHOICE'})
 
             box_recognition = BoxRecognition(controller_index, 
                                              robots_state[controller_index], set_control)
@@ -79,23 +79,34 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             StateMachine.add('FINE_AFTER_RECOGNITION',\
                              fine_approach,
                              transitions={'approach_ok':'box_found'})
-
+            
+            move_away_choice = MoveAwayChoice(robots_state[controller_index], controller_index)
+            StateMachine.add('MOVE_AWAY_CHOICE',\
+                             move_away_choice,
+                             transitions={'move_away':'ALIGNMENT_OUTWARD_UNCERTAINTY_AREA',
+                                          'not_move_away':'PLAN_TO_UNCERTAIN'})
+            
             alignment = Alignment(robots_state[controller_index],\
                                   set_control, controller_index, \
                                   'alignment_outward_uncertainty_area')
             StateMachine.add('ALIGNMENT_OUTWARD_UNCERTAINTY_AREA',\
                              alignment,
-                             transitions={'alignment_ok':'box_found'})
+                             transitions={'alignment_ok':'MOVE_AWAY_UNC_AREA'})
 
+            move_away = LinearMovementCollisionAvoidance(controller_index,\
+                                                         robots_state, set_control)
+            StateMachine.add('MOVE_AWAY_UNC_AREA',\
+                             move_away,
+                             transitions={'moved_away':'PLAN_TO_UNCERTAIN'})
+            
             plan_trajectory = PlanTrajectory(controller_index, robots_state,\
                                               'plan_to_uncertain')
             StateMachine.add('PLAN_TO_UNCERTAIN',\
                               plan_trajectory,\
                               remapping={'plan_trajectory_out':'path'},
-                              transitions={'path_found':'UNCERTAIN_AREA_APPORACH'})
-            
+                              transitions={'path_found':'UNCERTAIN_AREA_APPROACH'})            
 
-            StateMachine.add('UNCERTAIN_AREA_APPORACH',\
+            StateMachine.add('UNCERTAIN_AREA_APPROACH',\
                              box_approach(find_box, robots_state,\
                                           controller_index, set_control),\
                              transitions={'step_ok':'box_found'})
@@ -679,7 +690,8 @@ class BoxRecognition(State):
             request = SetPoseUncertaintyAreaRequest()
             request.pose = uncertainty_pose
             request.detection_point = detection_point
-            uncertainty_area_set_pose(uncertainty_pose)
+            request.discoverer_id = self.controller_index
+            uncertainty_area_set_pose(request)
         except rospy.ServiceException:
             pass
           
@@ -706,9 +718,10 @@ class LinearMovementCollisionAvoidance(State):
         robots_state (Subscriber[]): list of Subscribers to robots odometry
         set_control (function): function that publish a twist        
         """
-        State.__init__(self, outcomes=['goal_reached'])
+        State.__init__(self, outcomes=['moved_away'])
         self.controller_index = controller_index
         self.this_robot = robots_state[self.controller_index]
+        self.robots_state = robots_state
         self.other_robots = [robots_state[i] for i in range(3) if i != self.controller_index]
 
         self.set_control = set_control
@@ -728,29 +741,54 @@ class LinearMovementCollisionAvoidance(State):
         Arguments:
         userdata: inputs and outputs of the fsm state.
         """
-        this_state = self.this_robot.data.pose.pose
-        this_x = this_state.position.x
-        this_y = this_state.position.y
-        current_pose = np.array(this_x, this_y)
-        
-        flag = False
-        
+        # Get uncertainty area information
         rospy.wait_for_service('uncertainty_area_get_docking_point')
         docking = rospy.ServiceProxy('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea)
+        try:
+            response = docking(self.controller_index)
+        except rospy.ServiceException:
+            pass
         
-        while not flag:
-            try:
-                response = docking(self.controller_index)
-            except rospy.ServiceException:
-                pass
-                
-                flag = response.is_ready
-        uncertainty_area_pose = np.array(response.pose[0], response.pose[1])
-        
-        difference = current_pose - uncertainty_area_pose
-        
-        goal = uncertainty_area_pose + differece /  np.linarg()
-        
+        # This and neigh robot poses
+        robot_pose = self.this_robot.data.pose.pose
+        indexes = [0, 1, 2]
+        indexes.remove(self.controller_index)
+        indexes.remove(response.discoverer_id)
+        neigh_robot_index = indexes[0]
+        neigh_robot_pose = self.robots_state[neigh_robot_index]
+
+        #######################################################################################
+        # Evaluate goal
+        #######################################################################################
+        #
+
+        # This and neigh robot thetas
+        theta = utils.quaternion_to_yaw(robot_pose.orientation)
+        neigh_robot_theta = utils.quaternion_to_yaw(neigh_robot_pose.data.pose.pose.orientation)
+        delta = abs(utils.angle_normalization(theta - neigh_robot_theta))
+
+        # Eval max box length
+        box_parameters = rospy.get_param('box')
+        length = box_parameters['length']
+        width = box_parameters['width']
+        max_length = max(length, width)
+
+        # Robot radius
+        robot_radius = float(rospy.get_param('robot_radius'))
+        tolerance = 0.07
+        base = np.sqrt(2) * max_length + 2 * robot_radius + 2 * tolerance
+
+        if delta < 2 * np.arcsin(base / robot_radius):
+            if self.controller_index < neigh_robot_index:
+                base += 2 * robot_radius + tolerance
+
+        direction = np.array([robot_pose.position.x, robot_pose.position.y]) - \
+                    np.array(response.detection_point)
+        direction = direction / np.linalg.norm(direction)
+        goal = np.array(response.detection_point) + base * direction
+        #
+        #######################################################################################
+
         done = False
         while not done:
             # Robot current state
@@ -766,12 +804,7 @@ class LinearMovementCollisionAvoidance(State):
                             for other in self.other_robots]
             others_velocity = [other.data.twist.twist.linear.x for other in self.other_robots]
 
-            # Update goal
-            if done:
-               # Return if there is no other goal
-                if not bool(goals):
-                    return 'box_not_found'
-                self.controller.goal_point(goals.pop(0))
+            self.controller.goal_point(goal)
                 
             # Set control
             done, v, w = self.controller.control_law([this_x, this_y, this_theta], this_forward_velocity,\
@@ -781,6 +814,46 @@ class LinearMovementCollisionAvoidance(State):
             
             self.clock.sleep()
 
+        return 'moved_away'
+
+class MoveAwayChoice(State):
+    def __init__(self, robot_state, controller_index):
+        State.__init__(self, outcomes=['move_away','not_move_away'])
+        self.robot_state = robot_state
+        self.controller_index = controller_index
+
+    def execute(self, userdata):
+        box_parameters = rospy.get_param('box')
+        length = box_parameters['length']
+        width = box_parameters['width']        
+        robot_pose = self.robot_state.data.pose.pose.position
+
+        flag = False
+        
+        rospy.wait_for_service('uncertainty_area_get_docking_point')
+        docking = rospy.ServiceProxy('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea)
+
+        while not flag:
+            try:
+                response = docking(self.controller_index)
+            except rospy.ServiceException:
+                pass
+                
+            flag = response.is_ready
+                
+        uncertain_x = response.pose[0]
+        uncertain_y = response.pose[1]
+        uncertain_theta = response.pose[2]
+        max_length = max(length, width)    
+        uncertainty_area = BoxGeometry(2 * max_length, max_length,\
+                                       [uncertain_x, uncertain_y],\
+                                       uncertain_theta)
+
+        line = Line(uncertainty_area.vertex(0), uncertainty_area.vertex(1))
+        if line.evaluate([uncertain_x, uncertain_y]) * line.evaluate([robot_pose.x, robot_pose.y]) < 0:
+            return 'not_move_away'
+        else:
+            return 'move_away'
 
 class Wait(State):
     """State of the fsm in which the robot waits the other robots
@@ -1134,8 +1207,8 @@ class Alignment(State):
                 flag = response.is_ready
                 
             # Evaluate_reference
-            uncertain_x = response.pose[0]
-            uncertain_y = response.pose[1]
+            uncertain_x = response.detection_point[0]
+            uncertain_y = response.detection_point[1]
             reference = np.arctan2(robot_y - uncertain_y, robot_x - uncertain_x)
 
         # Perform alignment

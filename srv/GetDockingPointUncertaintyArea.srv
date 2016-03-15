@@ -1,6 +1,7 @@
 int32 robot_id
 ---
 bool is_ready
+int32 discoverer_id
 float32[] pose
 float32[] point
 float32[] normal

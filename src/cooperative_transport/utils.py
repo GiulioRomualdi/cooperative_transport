@@ -56,6 +56,13 @@ class Line:
         
         return distance
 
+    def evaluate(self, p):
+        x = p[0]
+        y = p[1]
+        value = self.a * x + self.b *y + self.c
+        
+        return value
+
     def coefficients(self):
         return [self.a, self.b, self.c]
 
