@@ -1,3 +1,4 @@
+
 import rospy
 import numpy as np
 import threading
@@ -166,8 +167,9 @@ def find_docking_points_in_uncertainty_area(uncertainty_area_pose, length, width
                                         uncertainty_area_pose[1]],\
                                        uncertainty_area_pose[2])
 
+    print (uncertainty_geometry.vertices())
     edges = [uncertainty_geometry.edge(1,2), uncertainty_geometry.edge(3,0)]
-    points = [edges[0].point(1.0/3 * min_length / max_length), edges[1].points(2.0/3 * min_length / max_length)]
+    points = [edges[0].point((1.0/2 * min_length) / max_length), edges[1].point((max_length - min_length) / max_length + (1.0/2 * min_length) / max_length)]
     normals = [edge.normal() for edge in edges]
             
     results = [{'point' : points[i], 'normal' : normals[i]} for i in range(2)]
@@ -185,8 +187,8 @@ class BoxInformationServices():
         # Subcrive to box state topic
         self.boxstate = Subscriber('box_state', BoxState)
         # Obtain box length and width
-        self.box_length = rospy.get_param('box')['length']
-        self.box_width = rospy.get_param('box')['width']
+        self.box_length = float(rospy.get_param('box')['length'])
+        self.box_width = float(rospy.get_param('box')['width'])
 
         # Provide 'box_get_docking_point' service
         rospy.Service('box_get_docking_point_push', BoxGetDockingPointPush, self.box_get_docking_point_push)
@@ -196,6 +198,7 @@ class BoxInformationServices():
         rospy.Service('uncertainty_area_set_pose', SetPoseUncertaintyArea, self.set_pose_uncertainty_area)
         rospy.Service('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea, self.get_docking_point_uncertainty_area)
         self.service_ready = False
+        self.first_robotid_rcvd = -1
 
         # Provide 'clear_docking_point' service
         self.update_docking_point = True
@@ -328,7 +331,7 @@ class BoxInformationServices():
 
         # Is service ready?
         if not service_ready:
-            response = GetDockingPointUncertaintyArea()
+            response = GetDockingPointUncertaintyAreaResponse()
             response.is_ready = False
             response.pose = []
             response.point = []
@@ -341,7 +344,8 @@ class BoxInformationServices():
         
         # Only the first time
         if flag:
-    
+
+            self.first_robotid_rcvd = request.robot_id
             # Update the docking points/normals
             self.docking = find_docking_points_in_uncertainty_area(self.uncertainty_area_pose, self.box_length, self.box_width)
 
@@ -350,8 +354,12 @@ class BoxInformationServices():
             self.update_docking_point_lock.release()
 
         # The response
-        response = GetDockingPointUncertaintyArea()
-        docking = self.docking[request.robot_id]
+        response = GetDockingPointUncertaintyAreaResponse()
+        if self.first_robotid_rcvd == request.robot_id:
+            docking = self.docking[0]
+        else:
+            docking = self.docking[1]
+
         response.is_ready = True
         response.pose = self.uncertainty_area_pose
         response.point = docking['point']
