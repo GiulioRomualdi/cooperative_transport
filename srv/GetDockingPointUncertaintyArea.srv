@@ -4,3 +4,4 @@ bool is_ready
 float32[] pose
 float32[] point
 float32[] normal
+float32[] detection_point

@@ -198,6 +198,7 @@ class BoxInformationServices():
         rospy.Service('uncertainty_area_set_pose', SetPoseUncertaintyArea, self.set_pose_uncertainty_area)
         rospy.Service('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea, self.get_docking_point_uncertainty_area)
         self.service_ready = False
+        self.detection_point = []
         self.first_robotid_rcvd = -1
 
         # Provide 'clear_docking_point' service
@@ -314,6 +315,7 @@ class BoxInformationServices():
             request (SetPoseUncertaintyArea): the request
         """        
         self.uncertainty_area_pose = request.pose
+        self.detection_point = request.detection_point
         self.service_ready_lock.acquire()
         self.service_ready = True
         self.service_ready_lock.release()
@@ -336,6 +338,7 @@ class BoxInformationServices():
             response.pose = []
             response.point = []
             response.normal = []
+            response.detection_point = []
             return response
         
         self.update_docking_point_lock.acquire()
@@ -364,7 +367,7 @@ class BoxInformationServices():
         response.pose = self.uncertainty_area_pose
         response.point = docking['point']
         response.normal = docking['normal']
-
+        response.detection_point = self.detection_point
         return response
 
     def run(self):
