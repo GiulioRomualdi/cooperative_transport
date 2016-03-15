@@ -16,12 +16,16 @@ from subscriber import Subscriber
 # Planner 
 from planner import Planner, RectangularObstacle, CircularObstacle
 
+# 
+from box import BoxGeometry
+from utils import Segment
+
 # Control
 from control.point_to_point import PointToPoint
 from control.proportional_control import proportional_control
 
 # Msgs
-from cooperative_transport.msg import TaskState, TimeSync, BoxResearch
+from cooperative_transport.msg import TaskState, TimeSync, BoxDetected
 from irobotcreate2.msg import RoombaIR
 
 # Services
@@ -31,6 +35,12 @@ from cooperative_transport.srv import BoxGetDockingPointPushRequest
 from cooperative_transport.srv import BoxGetDockingPointRotate
 from cooperative_transport.srv import BoxGetDockingPointRotateResponse
 from cooperative_transport.srv import BoxGetDockingPointRotateRequest
+from cooperative_transport.srv import SetPoseUncertaintyArea
+from cooperative_transport.srv import SetPoseUncertaintyAreaRequest
+from cooperative_transport.srv import SetPoseUncertaintyAreaResponse
+from cooperative_transport.srv import GetDockingPointUncertaintyArea
+from cooperative_transport.srv import GetDockingPointUncertaintyAreaRequest
+from cooperative_transport.srv import GetDockingPointUncertaintyAreaResponse
 
 from std_srvs.srv import Empty
 
@@ -54,22 +64,34 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             StateMachine.add('EXHAUSTIVE_RESEARCH',\
                              exhaustive_research,\
                              transitions={'box_not_found':'box_not_found',
-                                          'box_found':'BOX_RECOGNITION'})
+                                          'box_found':'BOX_RECOGNITION',
+                                          'other_robot_found_box':'PLAN_TO_UNCERTAIN'})
 
             box_recognition = BoxRecognition(controller_index, 
                                              robots_state[controller_index], set_control)
             StateMachine.add('BOX_RECOGNITION',\
                              box_recognition,\
-                             transitions={'box_recognized':'FINE_AFTER_RECOGNITION',
-                                          'box_not_recognized':'EXHAUSTIVE_RESEARCH'})
-
+                             transitions={'box_recognized':'FINE_AFTER_RECOGNITION'})
+        
             fine_approach = LinearMovement(robots_state[controller_index], \
                                            controller_index, set_control, \
                                            'fine_after_recognition')
-
             StateMachine.add('FINE_AFTER_RECOGNITION',\
                              fine_approach,
                              transitions={'approach_ok':'box_found'})
+
+            plan_trajectory = PlanTrajectory(controller_index, robots_state,\
+                                              'plan_to_uncertain')
+            StateMachine.add('PLAN_TO_UNCERTAIN',\
+                              plan_trajectory,\
+                              remapping={'plan_trajectory_out':'path'},
+                              transitions={'path_found':'UNCERTAIN_AREA_APPORACH'})
+
+            StateMachine.add('UNCERTAIN_AREA_APPORACH',\
+                             box_approach(find_box, robots_state,\
+                                          controller_index, set_control),\
+                             transitions={'step_ok':'box_found'})
+
 
         rotate = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_not_needed'],
                             connector_outcome = 'step_ok')
@@ -81,7 +103,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
             Sequence.add('PLAN_TRAJECTORY_ROTATION',\
                          PlanTrajectory(controller_index, robots_state,\
-                                        boxstate, 'plan_for_rotation'),\
+                                        'plan_for_rotation', boxstate),\
                          remapping={'plan_trajectory_out':'path'})
 
             Sequence.add('BOX_APPROACH_ROTATION',\
@@ -134,7 +156,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
             Sequence.add('PLAN_TRAJECTORY_PUSH',\
                          PlanTrajectory(controller_index, robots_state,\
-                                        boxstate, 'plan_to_push'),\
+                                        'plan_to_push', boxstate),\
                          remapping={'plan_trajectory_out':'path'})
 
             Sequence.add('BOX_APPROACH_PUSH',\
@@ -239,7 +261,7 @@ class ExhaustiveResearch(State):
         robots_state (Subscriber[]): list of Subscribers to robots odometry
         set_control (function): function that publish a twist        
         """
-        State.__init__(self, outcomes=['box_not_found','box_found'])
+        State.__init__(self, outcomes=['box_not_found','box_found','other_robot_found_box'])
         self.controller_index = controller_index
         self.my_self = robots_state[self.controller_index]
         self.other_robots = [robots_state[i] for i in range(3) if i != self.controller_index]
@@ -249,16 +271,17 @@ class ExhaustiveResearch(State):
         # Initialize the point to point controller
         self.max_forward_v = float(rospy.get_param('max_forward_v'))
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
-        robot_radius = rospy.get_param('robot_radius')
+        robot_radius = float(rospy.get_param('robot_radius'))
         self.controller = PointToPoint(self.max_forward_v, self.max_angular_v, robot_radius)
 
         # State clock
         self.clock = rospy.Rate(500)
 
         # Publish and subscribe to the topic 'research_state'
-        rospy.Subscriber('research_state', BoxResearch, self.research_state_callback)
-        self.pub = rospy.Publisher('research_state', BoxResearch, queue_size=50)
-        self.flag_exhaustive_research = True
+        rospy.Subscriber('research_state', BoxDetected, self.research_state_callback)
+        self.pub = rospy.Publisher('research_state', BoxDetected, queue_size=50)
+
+        self.box_detected = False
         self.flag_lock = Lock()
 
         # Subscribe to irbumper topic
@@ -271,22 +294,12 @@ class ExhaustiveResearch(State):
         """Update flag.
         
         Arguments:
-        data (BoxResearch): box research state
+        data (BoxDetected): box research state
         """
-        if data.point_condition == 'probable_point_detected':
+        if data.box_detected:
             self.flag_lock.acquire()
-            self.flag_exhaustive_research = False
+            self.box_detected = True
             self.flag_lock.release()
-
-        if data.point_condition == 'no_point_detected':
-            self.flag_lock.acquire()
-            self.flag_exhaustive_research = True
-            self.flag_lock.release()
-
-        # TODO: Vai nell'prossimo stato 
-        # if data.point_condition == '':
-        # 
-        #     pass
 
     def irsensors_callback(self, data):
         """Update ir_data using data from IR sensors.
@@ -389,9 +402,9 @@ class ExhaustiveResearch(State):
             # Check if robot is near the box
             if self.max_ir_data() > 200:
                 self.set_control(0,0)
-                msg = BoxResearch()
+                msg = BoxDetected()
                 msg.robot_id = self.controller_index
-                msg.point_condition = 'probable_point_detected'
+                msg.box_detected = True
                 for i in range(10):
                     self.pub.publish(msg)
                     rospy.sleep(0.5)
@@ -399,15 +412,12 @@ class ExhaustiveResearch(State):
 
             # Check if other robots have found the box
             self.flag_lock.acquire()
-            flag = self.flag_exhaustive_research
+            flag = self.box_detected
             self.flag_lock.release()
-                        
-            while not flag:
+
+            if flag:
                 self.set_control(0,0)
-                self.flag_lock.acquire()
-                flag = self.flag_exhaustive_research
-                self.flag_lock.release()
-                rospy.sleep(0.5)
+                return 'other_robot_found_box'
 
             # Robot current state
             my_state = self.my_self.data.pose.pose
@@ -459,14 +469,11 @@ class BoxRecognition(State):
         robot_state (Subscriber[]): Subscriber to robot odometry
         set_control (function): function that publish a twist        
         """
-        State.__init__(self, outcomes=['box_recognized','box_not_recognized'])
+        State.__init__(self, outcomes=['box_recognized'])
         self.controller_index = controller_index
         self.robot_state = robot_state
         self.set_control = set_control
         self.max_angular_v = float(rospy.get_param('max_angular_v'))
-
-        # Publish and subscribe to the topic 'research_state'
-        self.pub = rospy.Publisher('research_state', BoxResearch, queue_size=50)
 
         # Subscribe to irbumper topic
         names = rospy.get_param('topics_names')[self.controller_index]
@@ -516,7 +523,7 @@ class BoxRecognition(State):
         center_left = self.ir_data['base_irbumper_center_left']
 
         if center_right != 0 and center_left != 0:
-            if abs(center_right - center_left) < 500:
+            if abs(center_right - center_left) < 100:
                 self.lock.release()
                 return True
                     
@@ -538,6 +545,12 @@ class BoxRecognition(State):
 
         while not self.is_ir_ready:
             self.clock.sleep()
+            
+        box_parameters = rospy.get_param('box')
+        box_length = box_parameters['length']
+        box_width = box_parameters['width']
+        min_length = min(box_length, box_width)
+        max_length = max(box_length, box_width)
 
         good_case = False
         while not good_case:
@@ -626,11 +639,7 @@ class BoxRecognition(State):
                         break
 
                 # Reapproach the box
-                box_parameters = rospy.get_param('box')
-                length = box_parameters['length']
-                width = box_parameters['width']
-
-                radius = min(length, width) / 3
+                radius = min_length / 3
                 v = 0.15
                 omega = v / radius
                 self.set_control(v, -direction * omega)
@@ -642,6 +651,24 @@ class BoxRecognition(State):
                 # Try to perform box recognition as in the normal case
                 continue
 
+        robot_state = self.robot_state.data.pose.pose.position 
+        x_robot = robot_state.x
+        y_robot = robot_state.y
+        theta_robot = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
+        robot_radius = float(rospy.get_param('robot_radius'))
+
+        x_local =  max_length/2 + robot_radius
+        uncertainty_pose = [x_local * np.cos(theta_robot) + x_robot,\
+                            x_local * np.sin(theta_robot) + y_robot,\
+                            theta_robot - np.pi/2]
+
+        rospy.wait_for_service('uncertainty_area_set_pose')
+        uncertainty_area_set_pose = rospy.ServiceProxy('uncertainty_area_set_pose', SetPoseUncertaintyArea)
+        try:
+            uncertainty_area_set_pose(uncertainty_pose)
+        except rospy.ServiceException:
+            pass
+          
         return 'box_recognized'
 
 class Wait(State):
@@ -773,7 +800,7 @@ class PlanTrajectory(State):
     Outputs:
     path: the path found by the planning algorithm
     """
-    def __init__(self, controller_index, robots_state, boxstate, task_name):
+    def __init__(self, controller_index, robots_state, task_name, boxstate = None):
         """Initialize the state of the fsm.
 
         Arguments:
@@ -781,7 +808,10 @@ class PlanTrajectory(State):
         robots_state (Subscriber[]): list of Subscribers to robots odometry
         boxstate (Subscriber): Subscriber to box state
         """
-        State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['step_ok'])
+        if task_name == 'plan_to_uncertain':
+            State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['path_found'])
+        else:
+            State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['step_ok'])
         
         self.controller_index = controller_index
         self.robots_state = robots_state
@@ -799,7 +829,7 @@ class PlanTrajectory(State):
         self.planner = Planner(lower_bound, upper_bound)
 
         # Add obstacles for the neighbor robots
-        robot_radius = rospy.get_param('robot_radius')
+        robot_radius = float(rospy.get_param('robot_radius'))
         for robot_index,robot_state in enumerate(self.robots_state):
             if robot_index != self.controller_index:
                 x_robot = robot_state.data.pose.pose.position.x
@@ -807,15 +837,40 @@ class PlanTrajectory(State):
                 obstacle = CircularObstacle(robot_radius, x_robot, y_robot , robot_radius)
 
                 self.planner.add_obstacle(obstacle)
-            
-        # Add obstacle for the box
+
         box_parameters = rospy.get_param('box')
         length = box_parameters['length']
-        width = box_parameters['width']
-        x_box = self.boxstate.data.x
-        y_box = self.boxstate.data.y
-        theta_box = self.boxstate.data.theta
-        obstacle = RectangularObstacle(length, width, x_box, y_box, theta_box, robot_radius)
+        width = box_parameters['width']        
+
+        if self.task_name == 'plan_to_uncertain':
+            flag = False
+
+            rospy.wait_for_service('uncertainty_area_get_docking_point')
+            docking = rospy.ServiceProxy('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea)
+
+            while not flag:
+                try:
+                    response = docking(self.controller_index)
+                except rospy.ServiceException:
+                    pass
+                
+                flag = response.is_ready
+                
+            # Add obstale
+            uncertain_x = response.pose[0]
+            uncertain_y = response.pose[1]
+            uncertain_theta = response.pose[2]
+            max_length = max(length, width)    
+            obstacle = RectangularObstacle(2 * max_length, max_length,\
+                                           uncertain_x, uncertain_y,\
+                                           uncertain_theta, robot_radius)
+        else:
+            # Add obstacle for the box
+            x_box = self.boxstate.data.x
+            y_box = self.boxstate.data.y
+            theta_box = self.boxstate.data.theta
+            obstacle = RectangularObstacle(length, width, x_box, y_box, theta_box, robot_radius)
+            
         self.planner.add_obstacle(obstacle)
 
         if self.task_name == 'plan_for_rotation':
@@ -827,7 +882,6 @@ class PlanTrajectory(State):
             except rospy.ServiceException:
                 pass
             
-
         if self.task_name == 'plan_to_push':
             # Get docking point from service box_get_docking_point_push
             rospy.wait_for_service('box_get_docking_point_push')
@@ -840,9 +894,10 @@ class PlanTrajectory(State):
         # Plan trajectory
         this_robot = self.robots_state[self.controller_index].data.pose.pose.position
         # Tolerance and robot radius are taken into account
-        robot_radius = rospy.get_param('robot_radius')
+        robot_radius = float(rospy.get_param('robot_radius'))
         tolerance = - np.array(response.normal) * (0.07 + robot_radius)
         start_point = [this_robot.x, this_robot.y]
+        
         goal_point = (np.array(response.point) + tolerance).tolist()
 
         state = False
@@ -854,7 +909,10 @@ class PlanTrajectory(State):
 
         userdata.plan_trajectory_out = path
 
-        return 'step_ok'
+        if self.task_name == 'plan_to_uncertain':
+            return 'path_found'
+        else:
+            return 'step_ok'
 
 class Alignment(State):
     """State of the fsm in which the robot rotates in order to align
