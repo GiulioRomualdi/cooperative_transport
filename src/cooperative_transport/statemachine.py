@@ -97,7 +97,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                                          robots_state, set_control)
             StateMachine.add('MOVE_AWAY_UNC_AREA',\
                              move_away,
-                             transitions={'moved_away':'PLAN_TO_UNCERTAIN'})
+                             transitions={'moved_away':'box_found'})
             
             plan_trajectory = PlanTrajectory(controller_index, robots_state,\
                                               'plan_to_uncertain')
@@ -467,6 +467,8 @@ class ExhaustiveResearch(State):
                 distance = np.linalg.norm(difference)
                 direction = difference / distance
 
+                print distance
+                print tolerance
                 if distance < tolerance:
                     rospy.loginfo('Escaping from the discoverer')
                     escape_goal = np.array([discoverer_pose.x, discoverer_pose.y]) +\
@@ -814,9 +816,16 @@ class LinearMovementCollisionAvoidance(State):
             if self.controller_index < neigh_robot_index:
                 base += 2 * robot_radius + tolerance
 
-        direction = np.array([robot_pose.position.x, robot_pose.position.y]) - \
+        difference = np.array([robot_pose.position.x, robot_pose.position.y]) - \
                     np.array(response.detection_point)
-        direction = direction / np.linalg.norm(direction)
+        distance = np.linalg.norm(difference)
+
+        print distance
+        print base
+        if distance > base:
+            return 'moved_away'
+
+        direction = difference / distance
         goal = (np.array(response.detection_point) + base * direction).tolist()
         #
         #######################################################################################
