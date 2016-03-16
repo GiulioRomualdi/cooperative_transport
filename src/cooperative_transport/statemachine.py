@@ -56,7 +56,6 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
     sm = StateMachine(outcomes=['transport_ok', 'transport_failed', 'step_ok'])
 
     with sm:
-        # MAYBE A SEQUENCE?
         find_box = StateMachine(outcomes=['box_found','box_not_found'])
         with find_box:
             exhaustive_research = ExhaustiveResearch(controller_index,
@@ -78,13 +77,13 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                            'fine_after_recognition')
             StateMachine.add('FINE_AFTER_RECOGNITION',\
                              fine_approach,
-                             transitions={'approach_ok':'box_found'})
+                             transitions={'approach_ok':'WAIT_FOR_UNC_AREA_APPROACH'})
             
             move_away_choice = MoveAwayChoice(robots_state[controller_index], controller_index)
             StateMachine.add('MOVE_AWAY_CHOICE',\
                              move_away_choice,
                              transitions={'move_away':'ALIGNMENT_OUTWARD_UNCERTAINTY_AREA',
-                                          'not_move_away':'PLAN_TO_UNCERTAIN'})
+                                          'not_move_away':'WAIT_FOR_UNC_AREA_APPROACH'})
             
             alignment = Alignment(robots_state[controller_index],\
                                   set_control, controller_index, \
@@ -97,20 +96,39 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                                          robots_state, set_control)
             StateMachine.add('MOVE_AWAY_UNC_AREA',\
                              move_away,
-                             transitions={'moved_away':'box_found'})
+                             transitions={'moved_away':'WAIT_FOR_UNC_AREA_APPROACH'})
+
+            wait = Wait(controller_index, 'wait_for_unc_area_approach')
+            StateMachine.add('WAIT_FOR_UNC_AREA_APPROACH',\
+                             wait,
+                             transitions={'wait_ok':'PLAN_TO_UNCERTAIN'})
             
             plan_trajectory = PlanTrajectory(controller_index, robots_state,\
                                               'plan_to_uncertain')
             StateMachine.add('PLAN_TO_UNCERTAIN',\
                               plan_trajectory,\
                               remapping={'plan_trajectory_out':'path'},
-                              transitions={'path_found':'UNCERTAIN_AREA_APPROACH'})            
+                              transitions={'path_found':'UNCERTAIN_AREA_APPROACH',
+                                           'no_need_to_plan':'box_found'})            
 
             StateMachine.add('UNCERTAIN_AREA_APPROACH',\
                              box_approach(find_box, robots_state,\
                                           controller_index, set_control),\
-                             transitions={'step_ok':'box_found'})
+                             transitions={'step_ok':'ALIGNMENT_INWARD_UNC_AREA'})
 
+            alignment = Alignment(robots_state[controller_index],\
+                                  set_control, controller_index, \
+                                  'alignment_inward_uncertainty_area')
+            StateMachine.add('ALIGNMENT_INWARD_UNC_AREA',\
+                             alignment,
+                             transitions={'alignment_ok':'REACH_BOX_ONCE_ON_UNC_AREA'})
+            
+            reach_box = LinearMovement(robots_state[controller_index], \
+                                       controller_index, set_control, \
+                                       'reach_box_once_on_uncertainty_area')
+            StateMachine.add('REACH_BOX_ONCE_ON_UNC_AREA',
+                             reach_box,
+                             transitions={'reached_ok':'box_found'})
 
         rotate = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_not_needed'],
                             connector_outcome = 'step_ok')
@@ -355,8 +373,8 @@ class ExhaustiveResearch(State):
         goals = []
 
         # Get room parameters
-        room_lower_bound = float(rospy.get_param('planner_lower_bound'))
-        room_upper_bound = float(rospy.get_param('planner_upper_bound'))
+        room_lower_bound = float(rospy.get_param('research_lower_bound'))
+        room_upper_bound = float(rospy.get_param('research_upper_bound'))
         room_size = room_upper_bound - room_lower_bound
         
         # Get box parameters
@@ -427,7 +445,7 @@ class ExhaustiveResearch(State):
                 msg = BoxDetected()
                 msg.robot_id = self.controller_index
                 msg.box_detected = True
-                for i in range(10):
+                for i in range(3):
                     self.pub.publish(msg)
                     rospy.sleep(0.5)
                 return 'box_found'
@@ -467,8 +485,6 @@ class ExhaustiveResearch(State):
                 distance = np.linalg.norm(difference)
                 direction = difference / distance
 
-                print distance
-                print tolerance
                 if distance < tolerance:
                     rospy.loginfo('Escaping from the discoverer')
                     escape_goal = np.array([discoverer_pose.x, discoverer_pose.y]) +\
@@ -494,8 +510,6 @@ class ExhaustiveResearch(State):
             done, v, w = self.controller.control_law([this_x, this_y, this_theta], this_forward_velocity,\
                                                      obstacle_avoidance = True, robots_state = others_state,\
                                                      robots_velocity = others_velocity)
-            if escape:
-                print 'control within escape!!'
             self.set_control(v,w)
             
             self.clock.sleep()
@@ -820,8 +834,6 @@ class LinearMovementCollisionAvoidance(State):
                     np.array(response.detection_point)
         distance = np.linalg.norm(difference)
 
-        print distance
-        print base
         if distance > base:
             return 'moved_away'
 
@@ -917,6 +929,8 @@ class Wait(State):
         """
         if task_name == 'wait_for_turn_rotation':
             State.__init__(self, outcomes=['step_ok','rotation_not_needed'])
+        elif task_name == 'wait_for_unc_area_approach':
+            State.__init__(self, outcomes=['wait_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
         
@@ -973,7 +987,8 @@ class Wait(State):
 
  
         if self.task_name == 'wait_for_turn_rotation' or\
-           self.task_name == 'wait_for_turn_push':
+           self.task_name == 'wait_for_turn_push' or\
+           self.task_name == 'wait_for_unc_area_approach':
             
             if  self.task_name == 'wait_for_turn_push':
                 # Clear docking point
@@ -1011,6 +1026,8 @@ class Wait(State):
             except rospy.ServiceException:
                 pass
 
+        if self.task_name == 'wait_for_unc_area_approach':
+            return 'wait_ok'
         return 'step_ok'
         
 class PlanTrajectory(State):
@@ -1034,10 +1051,13 @@ class PlanTrajectory(State):
         boxstate (Subscriber): Subscriber to box state
         """
         if task_name == 'plan_to_uncertain':
-            State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['path_found'])
+            State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['path_found', 'no_need_to_plan'])
         else:
             State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['step_ok'])
-        
+
+        # Publish to 'robots_common'
+        self.pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
+
         self.controller_index = controller_index
         self.robots_state = robots_state
         self.boxstate = boxstate
@@ -1080,8 +1100,20 @@ class PlanTrajectory(State):
                     pass
                 
                 flag = response.is_ready
-                
-            # Add obstale
+
+            # This robot is already in contact with the box
+            if response.discoverer_id == self.controller_index:
+                # Let the other robots know that it's their turn
+                msg = TaskState()
+                msg.task_name = 'wait_for_unc_area_approach'
+                msg.robot_id = self.controller_index
+                for i in range(3):
+                    self.pub.publish(msg)
+                    rospy.sleep(0.5)
+
+                return 'no_need_to_plan'
+
+            # Add obstacle
             uncertain_x = response.pose[0]
             uncertain_y = response.pose[1]
             uncertain_theta = response.pose[2]
@@ -1162,10 +1194,14 @@ class Alignment(State):
         if task_name == 'iterator':
             State.__init__(self, outcomes=['alignment_ok'], input_keys=['goal'])
         elif task_name == 'alignment_before_push' or\
-             task_name == 'alignment_outward_uncertainty_area':
+             task_name == 'alignment_outward_uncertainty_area' or\
+             task_name == 'alignment_inward_uncertainty_area':
             State.__init__(self, outcomes=['alignment_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
+
+        # Publish to 'robots_common'
+        self.pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
 
         self.robot_state = robot_state
         self.set_control = set_control
@@ -1234,7 +1270,8 @@ class Alignment(State):
 
             reference = np.arctan2(goal_y - box_y,  goal_x - box_x)
 
-        if self.task_name == 'alignment_outward_uncertainty_area':
+        if self.task_name == 'alignment_outward_uncertainty_area' or\
+           self.task_name == 'alignment_inward_uncertainty_area':
             rospy.wait_for_service('uncertainty_area_get_docking_point')
             docking = rospy.ServiceProxy('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea)
 
@@ -1246,11 +1283,26 @@ class Alignment(State):
                     pass
                 
                 flag = response.is_ready
+
+        if self.task_name == 'alignment_outward_uncertainty_area':
                 
             # Evaluate_reference
             uncertain_x = response.detection_point[0]
             uncertain_y = response.detection_point[1]
             reference = np.arctan2(robot_y - uncertain_y, robot_x - uncertain_x)
+
+        if self.task_name == 'alignment_inward_uncertainty_area':
+                        
+            # Let the other robots know that it's their turn
+            msg = TaskState()
+            msg.task_name = 'wait_for_unc_area_approach'
+            msg.robot_id = self.controller_index
+            for i in range(3):
+                self.pub.publish(msg)
+                rospy.sleep(0.5)
+
+            # Evaluate reference
+            reference = np.arctan2(response.normal[1], response.normal[0])
 
         # Perform alignment
         while True:
@@ -1264,9 +1316,11 @@ class Alignment(State):
             else:
                 # Stop the robot
                 self.set_control(0, 0)
+
                 if self.task_name == 'iterator' or\
                    self.task_name == 'alignment_before_push' or\
-                   self.task_name == 'alignment_outward_uncertainty_area':
+                   self.task_name == 'alignment_outward_uncertainty_area' or\
+                   self.task_name == 'alignment_inward_uncertainty_area':
                     return 'alignment_ok'
                 else:
                     return 'step_ok'
@@ -1359,6 +1413,8 @@ class LinearMovement(State):
             State.__init__(self, outcomes=['step_ok','sequence_ok'])
         elif task_name == 'fine_after_recognition':
             State.__init__(self, outcomes=['approach_ok'])
+        elif task_name == 'reach_box_once_on_uncertainty_area':
+            State.__init__(self, outcomes=['reached_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
 
@@ -1424,16 +1480,19 @@ class LinearMovement(State):
            self.task_name == 'fine_approach_push':
             
             # Let the other robots know that it's their turn
-            # Three pubs should suffice
             msg.robot_id = self.controller_index
-            self.pub.publish(msg)
-            self.pub.publish(msg)
-            self.pub.publish(msg)
+            for i in range(3):
+                self.pub.publish(msg)
+                rospy.sleep(0.5)
 
         #########################################################################
         # Set the linear velocity and the ir tolerance depending on the task name
         #
         linear_v = 0.01
+
+        if self.task_name == 'reach_box_once_on_uncertainty_area':
+            linear_v = 0.2
+            ir_tolerance = 3300
 
         if self.task_name == 'partial_reverse':
             linear_v = -0.1
@@ -1449,18 +1508,29 @@ class LinearMovement(State):
         ##########################################################################
 
         # Perform fine approach (in forward or reverse direction)
+
+        if self.task_name == 'reach_box_once_on_uncertainty_area':
+            self.set_control(linear_v, 0)
+            while not self.max_ir_data() > 0:
+                self.clock.sleep()
+            self.set_control(0, 0)
+            linear_v = 0.01
+        
         if self.task_name == 'reverse' or\
            self.task_name == 'partial_reverse':
             # Move the robot away from the box
             while self.max_ir_data() > ir_tolerance:
                 self.set_control(linear_v, 0)
+                self.clock.sleep()
                 
         elif self.task_name == 'fine_approach_rotation' or\
              self.task_name == 'fine_approach_push' or\
-             self.task_name == 'fine_after_recognition':
+             self.task_name == 'fine_after_recognition' or\
+             self.task_name == 'reach_box_once_on_uncertainty_area':
             # Next move the robot as close as possible to the box using IR            
             while self.max_ir_data() < ir_tolerance:
                 self.set_control(linear_v, 0)
+                self.clock.sleep()
 
         # In case of task 'reverse' the robot goes quite far from the box
         if self.task_name == 'reverse':
@@ -1474,6 +1544,7 @@ class LinearMovement(State):
                 y_current = robot_state.pose.pose.position.y
                 if np.sqrt((x_0 - x_current) ** 2 + (y_0 - y_current) ** 2) > 0.6:
                     break
+                self.clock.sleep()
 
         #Stop the robot
         self.set_control(0,0)
@@ -1482,6 +1553,8 @@ class LinearMovement(State):
             return 'sequence_ok'
         elif self.task_name == 'fine_after_recognition':
             return 'approach_ok'
+        elif self.task_name == 'reach_box_once_on_uncertainty_area':
+            return 'reached_ok'
 
         return 'step_ok'
 
