@@ -13,9 +13,9 @@ from cooperative_transport.srv import BoxGetDockingPointRotateResponse
 from cooperative_transport.srv import SetPoseUncertaintyArea
 from cooperative_transport.srv import SetPoseUncertaintyAreaRequest
 from cooperative_transport.srv import SetPoseUncertaintyAreaResponse
-from cooperative_transport.srv import GetDockingPointUncertaintyArea
-from cooperative_transport.srv import GetDockingPointUncertaintyAreaRequest
-from cooperative_transport.srv import GetDockingPointUncertaintyAreaResponse
+from cooperative_transport.srv import GetUncertaintyAreaInfo
+from cooperative_transport.srv import GetUncertaintyAreaInfoRequest
+from cooperative_transport.srv import GetUncertaintyAreaInfoResponse
 from std_srvs.srv import Empty
 from cooperative_transport.msg import BoxState
 from subscriber import Subscriber
@@ -196,7 +196,7 @@ class BoxInformationServices():
 
         # Provide 'uncertainty_area' service
         rospy.Service('uncertainty_area_set_pose', SetPoseUncertaintyArea, self.set_pose_uncertainty_area)
-        rospy.Service('uncertainty_area_get_docking_point', GetDockingPointUncertaintyArea, self.get_docking_point_uncertainty_area)
+        rospy.Service('uncertainty_area_get_info', GetUncertaintyAreaInfo, self.get_uncertainty_area_info) 
         self.service_ready = False
         self.detection_point = []
         self.first_robotid_rcvd = -1
@@ -322,11 +322,11 @@ class BoxInformationServices():
         self.service_ready = True
         self.service_ready_lock.release()
 
-    def get_docking_point_uncertainty_area(self,request):
+    def get_uncertainty_area_info(self,request):
         """Provide a robot with the docking point/normal on the perimeter of the uncertainty_area.
 
         Arguments:
-            request (GetDockingPointUncertaintyArea): the request
+            request (GetUncertaintyAreaInfo): the request
 
         """
         self.service_ready_lock.acquire()
@@ -335,7 +335,7 @@ class BoxInformationServices():
 
         # Is service ready?
         if not service_ready:
-            response = GetDockingPointUncertaintyAreaResponse()
+            response = GetUncertaintyAreaInfoResponse()
             response.is_ready = False
             return response
         
@@ -355,11 +355,12 @@ class BoxInformationServices():
             self.update_docking_point_lock.release()
 
         # The response
-        response = GetDockingPointUncertaintyAreaResponse()
+        response = GetUncertaintyAreaInfoResponse()
 
         if request.robot_id == self.discoverer_id:
             response.is_ready = True
             response.discoverer_id = self.discoverer_id
+            response.pose = self.uncertainty_area_pose
             return response
 
         if self.first_robotid_rcvd == request.robot_id:
