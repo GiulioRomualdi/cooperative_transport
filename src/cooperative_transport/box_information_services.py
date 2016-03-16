@@ -167,9 +167,9 @@ def find_docking_points_in_uncertainty_area(uncertainty_area_pose, length, width
                                         uncertainty_area_pose[1]],\
                                        uncertainty_area_pose[2])
 
-    print (uncertainty_geometry.vertices())
     edges = [uncertainty_geometry.edge(1,2), uncertainty_geometry.edge(3,0)]
-    points = [edges[0].point((1.0/2 * min_length) / max_length), edges[1].point((max_length - min_length) / max_length + (1.0/2 * min_length) / max_length)]
+    points = [edges[0].point((1.0/2 * min_length) / max_length),\
+              edges[1].point((max_length - min_length) / max_length + (1.0/2 * min_length) / max_length)]
     normals = [edge.normal() for edge in edges]
             
     results = [{'point' : points[i], 'normal' : normals[i]} for i in range(2)]
@@ -200,6 +200,7 @@ class BoxInformationServices():
         self.service_ready = False
         self.detection_point = []
         self.first_robotid_rcvd = -1
+        self.discoverer_id = -1
 
         # Provide 'clear_docking_point' service
         self.update_docking_point = True
@@ -316,6 +317,7 @@ class BoxInformationServices():
         """        
         self.uncertainty_area_pose = request.pose
         self.detection_point = request.detection_point
+        self.discoverer_id = request.discoverer_id
         self.service_ready_lock.acquire()
         self.service_ready = True
         self.service_ready_lock.release()
@@ -335,10 +337,6 @@ class BoxInformationServices():
         if not service_ready:
             response = GetDockingPointUncertaintyAreaResponse()
             response.is_ready = False
-            response.pose = []
-            response.point = []
-            response.normal = []
-            response.detection_point = []
             return response
         
         self.update_docking_point_lock.acquire()
@@ -368,6 +366,7 @@ class BoxInformationServices():
         response.point = docking['point']
         response.normal = docking['normal']
         response.detection_point = self.detection_point
+        response.discoverer_id = self.discoverer_id
         return response
 
     def run(self):
