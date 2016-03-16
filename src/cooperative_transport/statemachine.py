@@ -84,16 +84,27 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                   'alignment_outward_uncertainty_area')
             StateMachine.add('ALIGNMENT_OUTWARD_UNCERTAINTY_AREA',\
                              alignment,
-                             transitions={'alignment_ok':'box_found'})
+                             transitions={'alignment_ok':'MOVE_AWAY_UNC_AREA'})
 
             move_away = LinearMovementCollisionAvoidance(controller_index,\
                                                          robots_state, set_control)
             StateMachine.add('MOVE_AWAY_UNC_AREA',\
                              move_away,
-                             transitions={'moved_away':'PLAN_TO_UNCERTAIN'})
+                             transitions={'moved_away':'SYNCHRONIZATION_BEFORE_PLANNING'})
+
+            synchronization_before_planning = Wait(controller_index, 'synchronization_before_planning')
+            StateMachine.add('SYNCHRONIZATION_BEFORE_PLANNING',\
+                             synchronization_before_planning,\
+                             transitions={'synchronization_ok':'WAIT_FOR_UNC_AREA_APPROACH'})
+
+            wait_for_unc_area_approach = WaitForUncAreaApproach(controller_index)
+            StateMachine.add('WAIT_FOR_UNC_AREA_APPROACH',\
+                             wait_for_unc_area_approach,\
+                             transitions={'my_turn':'PLAN_TO_UNCERTAIN'})
 
             plan_trajectory = PlanTrajectory(controller_index, robots_state,\
                                               'plan_to_uncertain')
+            
             StateMachine.add('PLAN_TO_UNCERTAIN',\
                               plan_trajectory,\
                               remapping={'plan_trajectory_out':'path'},
@@ -772,14 +783,6 @@ class LinearMovementCollisionAvoidance(State):
         # State clock
         self.clock = rospy.Rate(500)
 
-    def wait_for_turn(self, neigh_robot_index):
-        if self.controller_index < neigh_robot_index:
-            received = False
-            while not received:
-                msg = rospy.wait_for_message('robots_common', TaskState)
-                if msg.task_name == 'wait_for_unc_area_approach':
-                    received = True
-
     def execute(self, userdata):
         """Execute the main activity of the fsm state.
 
@@ -817,14 +820,12 @@ class LinearMovementCollisionAvoidance(State):
                                        [uncertain_x, uncertain_y],\
                                        uncertain_theta)
 
-
         # The robots does not have to move away if it is on the right side
         # of the uncertainty area
         line = Line(uncertainty_area.vertex(0), uncertainty_area.vertex(1))
         this_state = self.this_robot.data.pose.pose
         if line.evaluate([uncertain_x, uncertain_y]) *\
            line.evaluate([this_state.position.x, this_state.position.y]) < 0:
-            self.wait_for_turn(neigh_robot_index)
             rospy.loginfo('Robot on the right side of the uncertainty area')
             return 'moved_away'
                 
@@ -839,7 +840,6 @@ class LinearMovementCollisionAvoidance(State):
 
         if distance > base:
             # The robot is in a safe position
-            self.wait_for_turn(neigh_robot_index)
             rospy.loginfo('Robot on the wrong side of the uncertainty area but in safe position')
             return 'moved_away'
 
@@ -882,47 +882,58 @@ class LinearMovementCollisionAvoidance(State):
             self.set_control(v,w)
             self.clock.sleep()
 
-        self.wait_for_turn(neigh_robot_index)
         return 'moved_away'
 
-class MoveAwayChoice(State):
-    def __init__(self, robot_state, controller_index):
-        State.__init__(self, outcomes=['move_away','not_move_away'])
-        self.robot_state = robot_state
+class WaitForUncAreaApproach(State):
+    """State of the fsm in which the robot waits to approach the uncertainty area
+
+    Outcomes:
+    my_turn: robot can start to approach the uncertainty area
+
+    Inputs: 
+    none
+    
+    Outputs: 
+    none
+    """
+
+    def __init__(self, controller_index):
+        """Initialize the state of the fsm.
+
+        Arguments:
+        controller_index (int): index of the robot
+        """
+        State.__init__(self, outcomes=['my_turn'])
         self.controller_index = controller_index
 
     def execute(self, userdata):
-        box_parameters = rospy.get_param('box')
-        length = box_parameters['length']
-        width = box_parameters['width']        
-        robot_pose = self.robot_state.data.pose.pose.position
+        """Execute the main activity of the fsm state.
 
-        flag = False
-        
+        Arguments:
+        userdata: inputs and outputs of the fsm state.
+        """
+        # Get the information on the uncertainty area        
         rospy.wait_for_service('uncertainty_area_get_info')
         info = rospy.ServiceProxy('uncertainty_area_get_info', GetUncertaintyAreaInfo)
+        try:
+            response = info(self.controller_index)
+        except rospy.ServiceException:
+            pass
 
-        while not flag:
-            try:
-                response = info(self.controller_index)
-            except rospy.ServiceException:
-                pass
-                
-            flag = response.is_ready
-                
-        uncertain_x = response.pose[0]
-        uncertain_y = response.pose[1]
-        uncertain_theta = response.pose[2]
-        max_length = max(length, width)    
-        uncertainty_area = BoxGeometry(2 * max_length, max_length,\
-                                       [uncertain_x, uncertain_y],\
-                                       uncertain_theta)
+        # Find the index of the neighbor robot
+        indexes = [0, 1, 2]
+        indexes.remove(self.controller_index)
+        indexes.remove(response.discoverer_id)
+        neigh_robot_index = indexes[0]
 
-        line = Line(uncertainty_area.vertex(0), uncertainty_area.vertex(1))
-        if line.evaluate([uncertain_x, uncertain_y]) * line.evaluate([robot_pose.x, robot_pose.y]) < 0:
-            return 'not_move_away'
-        else:
-            return 'move_away'
+        # Wait for turn
+        if self.controller_index < neigh_robot_index:
+            received = False
+            while not received:
+                msg = rospy.wait_for_message('robots_common', TaskState)
+                if msg.task_name == 'wait_for_unc_area_approach':
+                    received = True
+        return 'my_turn'
 
 class Wait(State):
     """State of the fsm in which the robot waits the other robots
@@ -945,6 +956,8 @@ class Wait(State):
         """
         if task_name == 'wait_for_turn_rotation':
             State.__init__(self, outcomes=['step_ok','rotation_not_needed'])
+        elif task_name == 'synchronization_before_planning':
+            State.__init__(self, outcomes=['synchronization_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
         
@@ -1016,7 +1029,8 @@ class Wait(State):
             
 
         elif self.task_name == 'synchronization_before_rotation' or\
-             self.task_name == 'synchronization_before_pushing':
+             self.task_name == 'synchronization_before_pushing' or\
+             self.task_name == 'synchronization_before_planning':
             # Publish to 'ropots_common'
             pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
 
@@ -1025,8 +1039,13 @@ class Wait(State):
             msg.robot_id = self.controller_index
             msg.task_name = self.task_name
 
+            # Number of robots that must be synchronized
+            robot_number = 3
+            if self.task_name == 'synchronization_before_planning':
+                robot_number = 2
+
             # Wait until all robots are ready
-            while self.robots_state_length() != 3:
+            while self.robots_state_length() != robot_number:
                 self.clock.sleep()
                 pub.publish(msg)
 
@@ -1037,7 +1056,10 @@ class Wait(State):
                 start_box_estimation()
             except rospy.ServiceException:
                 pass
-
+            
+        if self.task_name == 'synchronization_before_planning':
+            return 'synchronization_ok'
+        
         return 'step_ok'
         
 class PlanTrajectory(State):
