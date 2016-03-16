@@ -11,9 +11,13 @@ from cooperative_transport.utils import quaternion_to_yaw
 from std_srvs.srv import Empty
 from utils import Segment, angle_normalization
 from cooperative_transport.filter import LowPassFilter
+from cooperative_transport.srv import GetUncertaintyAreaInfo
+from cooperative_transport.srv import GetUncertaintyAreaInfoRequest
+from cooperative_transport.srv import GetUncertaintyAreaInfoResponse
 
 # debug
 from gazebo_msgs.msg import ModelStates
+import csv
 
 class BoxGeometry:
     """Box geometry"""
@@ -117,20 +121,16 @@ class BoxStateObserver:
         state (float[]): box state [x_c, y_c, theta]
     """
 
-    def __init__(self, length, width, x_0, y_0, theta_0):
+    def __init__(self, length, width):
         """Initialize the object.
         
         Arguments:
             length (float): box length in meters
             width (float): box width in meters
-            x_0 (float): initial x coordinate of the box
-            y_0 (float): initial y coordinate of the box
-            theta_0 (float): initial yaw angle
-
         """
         self.length = length
         self.width = width
-        self._state = [x_0, y_0, theta_0]
+        self._state = [0, 0, 0]
 
     @property
     def state(self):
@@ -172,6 +172,68 @@ class BoxStateObserver:
             loss_function += self.__rectangle(coordinate[0], coordinate[1], state)
 
         return loss_function
+
+    def find_initial_guess(self, coordinates):
+        """Find the initial guess using a montecarlo-based approach.
+
+        Argument:
+            coordinates (float[]): points coordinates
+        """
+        
+        path = '/home/xenvre/'
+        with open(path + 'coords.csv', 'a') as csvfile:
+            fieldnames = ['x', 'y']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            for point in coordinates:
+                writer.writerow({'x':point[0], 'y':point[1]})
+
+        # Get info on the uncertainty area
+        rospy.wait_for_service('uncertainty_area_get_info')
+        docking = rospy.ServiceProxy('uncertainty_area_get_info', GetUncertaintyAreaInfo)
+        try:
+            response = docking(0)
+        except rospy.ServiceException:
+            pass
+
+        # Get the box sizes
+        box_params = rospy.get_param('box')
+        box_length = box_params['length']
+        box_width = box_params['width']
+        max_length = max(box_length, box_width)    
+    
+        # Extract the bounds for the estimation
+        uncertain_x = response.pose[0]
+        uncertain_y = response.pose[1]
+        uncertain_theta = response.pose[2]
+        uncertainty_area = BoxGeometry(2 * max_length, max_length,\
+                                       [uncertain_x, uncertain_y],\
+                                       uncertain_theta)
+        vertices = uncertainty_area.vertices()
+        x_coords = [p[0] for p in vertices]
+        y_coords = [p[1] for p in vertices]
+        x_lb = min(x_coords)
+        x_ub = max(x_coords)
+        y_lb = min(y_coords)
+        y_ub = max(y_coords)
+
+        # Estimate the initial guess
+        min_value = float('inf')
+        random.seed()
+        for i in range(500000):
+            x_c = random.uniform(x_lb, x_ub)
+            y_c = random.uniform(y_lb, y_ub)
+            theta = 0
+
+            estimated_state = [x_c, y_c, theta]
+
+            new_value = self.__loss_function(estimated_state, coordinates)
+            min_value = min(min_value, new_value)
+            
+            if new_value == min_value:
+                self._state = estimated_state
+
+            print min_value
+            print estimated_state
         
     def state_estimation(self, coordinates):
         """Evaluate the box state using a montecarlo-based approach.
@@ -228,10 +290,11 @@ class BoxStatePublisher:
         self.release_estimation = False
         rospy.Service('release_box_state', Empty, self.release_box_state)
         rospy.Service('hold_box_state', Empty, self.hold_box_state)
+        rospy.Service('find_initial_guess', Empty, self.find_initial_guess)
         
         # Initialize the box state observer
         box_params = rospy.get_param('box')
-        self.observer = BoxStateObserver(box_params['length'], box_params['width'], box_params['posx'], box_params['posy'], box_params['yaw'])
+        self.observer = BoxStateObserver(box_params['length'], box_params['width'])
         
         self.number_robots = len(topics_names)
         self.robots_state = [{'state':{}, 'irbumper':{}} for index in range(self.number_robots)]
@@ -248,6 +311,17 @@ class BoxStatePublisher:
         # Enable box state from gazebo
         rospy.Subscriber('/gazebo/model_states', ModelStates, self.gazebo_callback)
         self.gazebo_box = [box_params['posx'], box_params['posy'], box_params['yaw']]
+
+    def find_initial_guess(self, request):
+        self.robots_state_lock.acquire()
+        angle_keys = self.sensors_angles.keys()
+        points = [self.point_coordinates(robot_index, key) \
+                  for robot_index in range(self.number_robots) for key in angle_keys \
+                  if self.robots_state[robot_index]['irbumper'][key] < self.max_range]
+        self.robots_state_lock.release()
+            
+        # Run Estimation process
+        state = self.observer.find_initial_guess(points)
 
     def release_box_state(self, request):
         self.flag_lock.acquire()
