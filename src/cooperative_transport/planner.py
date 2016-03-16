@@ -190,6 +190,7 @@ class Planner:
     
         if solved:
             if self.optimizingPlanner.bestCost().value() == float('inf'):
+                self.optimizingPlanner.clear()
                 return False, []
             path = self.pdef.getSolutionPath()
             states = path.getStates()
