@@ -59,7 +59,7 @@ add_service_files(
    BoxGetDockingPointPush.srv
    BoxGetDockingPointRotate.srv
    SetPoseUncertaintyArea.srv
-   GetDockingPointUncertaintyArea.srv
+   GetUncertaintyAreaInfo.srv
 )
 
 ## Generate actions in the 'action' folder
