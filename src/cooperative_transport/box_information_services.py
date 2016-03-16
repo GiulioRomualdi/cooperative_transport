@@ -356,6 +356,12 @@ class BoxInformationServices():
 
         # The response
         response = GetDockingPointUncertaintyAreaResponse()
+
+        if request.robot_id == self.discoverer_id:
+            response.is_ready = True
+            response.discoverer_id = self.discoverer_id
+            return response
+
         if self.first_robotid_rcvd == request.robot_id:
             docking = self.docking[0]
         else:
