@@ -15,11 +15,15 @@
   <param name="max_angular_v" value="2"/>
 
   <!-- box goal -->	 
-  <rosparam param="box_goal">{x : 2.38, y : -4.39, theta : 0}</rosparam>
+  <rosparam param="box_goal">{x : 1.38, y : 1.90, theta : 0}</rosparam>
 
   <!-- RRT* planner bounds -->
   <param name="planner_lower_bound" value="-5"/>
   <param name="planner_upper_bound" value="5"/>
+
+  <!-- Exhaustive research bounds -->
+  <param name="research_lower_bound" value="-2"/>
+  <param name="research_upper_bound" value="2"/>
 
   <!-- Estimation Rate -->
   <param name="estimation_rate" value="10"/>
