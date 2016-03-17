@@ -1,6 +1,6 @@
 <launch>
   <!--Pose format is: posx posy posz roll pitch yaw -->
-  <arg name="box_pose" value="'0 0 0 0 0 0'"/>
+  <arg name="box_pose" value="'-0.6671 -1.68384 0 0 0 1.106346'"/>
   <arg name="iRobot_pose" value="'3 3 0 0 0 0'"/>
   <arg name="iRobot_0_pose" value="'-1 1 0 0 0 0'"/>
   <arg name="iRobot_1_pose" value="'-2 -2 0 0 0 0'"/>
