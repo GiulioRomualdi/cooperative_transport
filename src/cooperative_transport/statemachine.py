@@ -29,19 +29,7 @@ from cooperative_transport.msg import TaskState, TimeSync, BoxDetected
 from irobotcreate2.msg import RoombaIR
 
 # Services
-from cooperative_transport.srv import BoxGetDockingPointPush
-from cooperative_transport.srv import BoxGetDockingPointPushResponse
-from cooperative_transport.srv import BoxGetDockingPointPushRequest
-from cooperative_transport.srv import BoxGetDockingPointRotate
-from cooperative_transport.srv import BoxGetDockingPointRotateResponse
-from cooperative_transport.srv import BoxGetDockingPointRotateRequest
-from cooperative_transport.srv import SetPoseUncertaintyArea
-from cooperative_transport.srv import SetPoseUncertaintyAreaRequest
-from cooperative_transport.srv import SetPoseUncertaintyAreaResponse
-from cooperative_transport.srv import GetUncertaintyAreaInfo
-from cooperative_transport.srv import GetUncertaintyAreaInfoRequest
-from cooperative_transport.srv import GetUncertaintyAreaInfoResponse
-
+from cooperative_transport.srv import *
 from std_srvs.srv import Empty
 
 def construct_sm(controller_index, robots_state, boxstate, set_control):
@@ -79,7 +67,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                            'fine_after_recognition')
             StateMachine.add('FINE_AFTER_RECOGNITION',\
                              fine_approach,
-                             transitions={'approach_ok':'box_found'})
+                             transitions={'approach_ok':'SYNCHRONIZATION_AFTER_BOX_RECOGNITION'})
             
             alignment = Alignment(robots_state[controller_index],\
                                   set_control, controller_index, \
@@ -110,8 +98,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
             StateMachine.add('PLAN_TO_UNCERTAIN',\
                               plan_trajectory,\
                               remapping={'plan_trajectory_out':'path'},
-                              transitions={'path_found':'UNCERTAIN_AREA_APPROACH',
-                                           'no_need_to_plan':'box_found'})            
+                              transitions={'path_found':'UNCERTAIN_AREA_APPROACH'})            
 
             StateMachine.add('UNCERTAIN_AREA_APPROACH',\
                              box_approach(find_box, robots_state,\
@@ -130,7 +117,17 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                                        'reach_box_once_on_uncertainty_area')
             StateMachine.add('REACH_BOX_ONCE_ON_UNC_AREA',
                              reach_box,
-                             transitions={'reached_ok':'box_found'})
+                             transitions={'reached_ok':'SYNCHRONIZATION_AFTER_BOX_RECOGNITION'})
+
+            StateMachine.add('SYNCHRONIZATION_AFTER_BOX_RECOGNITION',
+                             Wait(controller_index, 'synchronization_after_box_recognition'),\
+                             transitions={'synchronization_ok':'REVERSE_AFTER_BOX_RECOGNITION'})
+
+            StateMachine.add('REVERSE_AFTER_BOX_RECOGNITION',
+                             LinearMovement(robots_state[controller_index], \
+                                            controller_index, set_control, \
+                                            'reverse_after_box_reconition'),\
+                             transitions={'reverse_ok':'box_found'})
 
         rotate = Sequence(outcomes = ['sequence_ok', 'step_ok', 'rotation_not_needed'],
                             connector_outcome = 'step_ok')
@@ -183,11 +180,11 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
             Sequence.add('REVERSE_ROTATION',\
                          LinearMovement(robots_state[controller_index], \
-                                            controller_index, set_control, \
-                                            'reverse'))
+                                        controller_index, set_control, \
+                                        'reverse'))
 
         push = Sequence(outcomes = ['sequence_ok', 'step_ok'],
-                                connector_outcome = 'step_ok')
+                        connector_outcome = 'step_ok')
         with push:
 
             Sequence.add('WAIT_PUSH',\
@@ -209,8 +206,8 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
             Sequence.add('FINE_APPROACH_PUSH',\
                          LinearMovement(robots_state[controller_index], \
-                                            controller_index, set_control, \
-                                            'fine_approach_push'))
+                                        controller_index, set_control, \
+                                        'fine_approach_push'))
 
             Sequence.add('SYNCHRONIZATION_PUSH',
                          Wait(controller_index, 'synchronization_before_pushing'))
@@ -220,8 +217,7 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
 
         StateMachine.add('FIND_BOX', find_box,\
                          transitions={'box_not_found':'transport_failed',\
-                                      'box_found':'transport_ok'})
-
+                                      'box_found':'ROTATE'})
 
         StateMachine.add('ROTATE', rotate,\
                          transitions={'sequence_ok':'PUSH',\
@@ -527,7 +523,7 @@ class ExhaustiveResearch(State):
             # Set control
             done, v, w = self.controller.control_law([this_x, this_y, this_theta], this_forward_velocity,\
                                                      obstacle_avoidance = True, robots_state = others_state,\
-                                                     robots_velocity = others_velocity)
+                                                     robots_velocity = others_velocity, controller_index = self.controller_index)
             self.set_control(v,w)
             
             self.clock.sleep()
@@ -678,7 +674,6 @@ class BoxRecognition(State):
             angular_v = 0.15
             direction = self.turning_direction()
             if direction == 0:
-                print 'direction fallback'
                 direction = userdata.sensed_direction
 
             # Turn until max ir reading is zero
@@ -698,7 +693,6 @@ class BoxRecognition(State):
                 theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
                 error = utils.angle_normalization(reference - theta)
                 if abs(error) < 0.017:
-                    rospy.loginfo('180out')
                     self.set_control(0, 0)
                     break
 
@@ -979,7 +973,8 @@ class Wait(State):
         """
         if task_name == 'wait_for_turn_rotation':
             State.__init__(self, outcomes=['step_ok','rotation_not_needed'])
-        elif task_name == 'synchronization_before_planning':
+        elif task_name == 'synchronization_before_planning' or\
+             task_name == 'synchronization_after_box_recognition':
             State.__init__(self, outcomes=['synchronization_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
@@ -1050,10 +1045,10 @@ class Wait(State):
             while self.robots_state_length() != self.controller_index:
                 self.clock.sleep()
             
-
         elif self.task_name == 'synchronization_before_rotation' or\
              self.task_name == 'synchronization_before_pushing' or\
-             self.task_name == 'synchronization_before_planning':
+             self.task_name == 'synchronization_before_planning' or\
+             self.task_name == 'synchronization_after_box_recognition':
             # Publish to 'ropots_common'
             pub = rospy.Publisher('robots_common', TaskState, queue_size=50)
 
@@ -1071,16 +1066,49 @@ class Wait(State):
             while self.robots_state_length() != robot_number:
                 self.clock.sleep()
                 pub.publish(msg)
-
-            # Start the box state estimation service
-            rospy.wait_for_service('release_box_state')
-            start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
-            try:
-                start_box_estimation()
-            except rospy.ServiceException:
-                pass
             
-        if self.task_name == 'synchronization_before_planning':
+            if self.task_name == 'synchronization_before_pushing' or\
+               self.task_name == 'synchronization_before_rotation':
+
+                # Start the box state estimation service
+                rospy.wait_for_service('release_box_state')
+                start_box_estimation = rospy.ServiceProxy('release_box_state', Empty)
+                try:
+                    start_box_estimation()
+                except rospy.ServiceException:
+                    pass
+            
+            if self.task_name == 'synchronization_after_box_recognition':
+                # Find box initial state
+                if self.controller_index == 0:
+                    rospy.wait_for_service('find_initial_guess')
+                    find_initial_guess = rospy.ServiceProxy('find_initial_guess', Empty)
+                    try:
+                        find_initial_guess()
+                    except rospy.ServiceException:
+                        pass
+
+                # Wait for initial guess found
+                is_found = False
+                rospy.wait_for_service('is_initial_guess_found')
+                is_initial_guess_found = rospy.ServiceProxy('is_initial_guess_found', IsInitialGuessFound)
+                while not is_found:
+                    try:
+                        response = is_initial_guess_found()
+                        is_found = response.is_found
+                    except rospy.ServiceException:
+                        pass
+
+                # Clear docking point
+                rospy.wait_for_service('clear_docking_point')
+                clear_docking_point = rospy.ServiceProxy('clear_docking_point', Empty)
+                try:
+                    clear_docking_point()
+                except rospy.ServiceException:
+                    pass
+
+        if self.task_name == 'synchronization_before_planning' or\
+           self.task_name == 'synchronization_after_box_recognition':
             return 'synchronization_ok'
         
         return 'step_ok'
@@ -1106,7 +1134,7 @@ class PlanTrajectory(State):
         boxstate (Subscriber): Subscriber to box state
         """
         if task_name == 'plan_to_uncertain':
-            State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['path_found', 'no_need_to_plan'])
+            State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['path_found'])
         else:
             State.__init__(self, output_keys=['plan_trajectory_out'], outcomes=['step_ok'])
 
@@ -1328,7 +1356,6 @@ class Alignment(State):
             x = response.detection_point[0]
             y = response.detection_point[1]
             reference = np.arctan2(robot_y - y, robot_x - x)
-            print reference
             
         if self.task_name == 'alignment_inward_uncertainty_area':
             # Evaluate reference
@@ -1445,6 +1472,8 @@ class LinearMovement(State):
             State.__init__(self, outcomes=['approach_ok'])
         elif task_name == 'reach_box_once_on_uncertainty_area':
             State.__init__(self, outcomes=['reached_ok'])
+        elif task_name == 'reverse_after_box_reconition':
+            State.__init__(self, outcomes=['reverse_ok'])
         else:
             State.__init__(self, outcomes=['step_ok'])
 
@@ -1535,7 +1564,8 @@ class LinearMovement(State):
             if self.controller_index == 0:
                 return 'step_ok'
 
-        if self.task_name == 'reverse':
+        if self.task_name == 'reverse' or\
+           self.task_name == 'reverse_after_box_reconition':
             linear_v = -0.1
             ir_tolerance = 0
         #
@@ -1551,7 +1581,8 @@ class LinearMovement(State):
             linear_v = 0.01
         
         if self.task_name == 'reverse' or\
-           self.task_name == 'partial_reverse':
+           self.task_name == 'partial_reverse' or\
+           self.task_name == 'reverse_after_box_reconition':
             # Move the robot away from the box
             while self.max_ir_data() > ir_tolerance:
                 self.set_control(linear_v, 0)
@@ -1567,7 +1598,8 @@ class LinearMovement(State):
                 self.clock.sleep()
 
         # In case of task 'reverse' the robot goes quite far from the box
-        if self.task_name == 'reverse':
+        if self.task_name == 'reverse' or\
+           self.task_name == 'reverse_after_box_reconition':
             x_0 = self.robot_state.data.pose.pose.position.x
             y_0 = self.robot_state.data.pose.pose.position.y
 
@@ -1585,6 +1617,8 @@ class LinearMovement(State):
         
         if self.task_name == 'reverse':
             return 'sequence_ok'
+        elif self.task_name == 'reverse_after_box_reconition':
+            return 'reverse_ok'
         elif self.task_name == 'fine_after_recognition':
             return 'approach_ok'
         elif self.task_name == 'reach_box_once_on_uncertainty_area':
@@ -1640,7 +1674,6 @@ class Rotate(State):
             pass
         # Angular reference and direction of rotation
         reference = response.theta
-        print (reference)
         direction = response.direction
 
         # Radius
@@ -1762,8 +1795,6 @@ class PushBox(State):
         box_x = current_box_pose[0]
         box_y = current_box_pose[1]
         distance = self.desired_traj.distance([box_x, box_y])
-        if self.controller_index == 0:
-            print distance
         return distance
   
     def execute(self, userdata):
@@ -1798,7 +1829,6 @@ class PushBox(State):
         box_y = round(latest_boxstate.y, 2)
         self.desired_traj = utils.Line([box_x, box_y],
                                        [self.goal['x'], self.goal['y']])
-        print(self.desired_traj.coefficients())
 
         # Push the box
         forward_v = float(rospy.get_param('box_forward_v'))
@@ -1818,6 +1848,15 @@ class PushBox(State):
             else:
                 #Stop the robot
                 self.set_control(0,0)
+
+                # Hold box state
+                rospy.wait_for_service('hold_box_state')
+                hold_box_state = rospy.ServiceProxy('hold_box_state', Empty)
+                try:
+                    hold_box_state()
+                except rospy.ServiceException:
+                    pass
+
                 return 'box_at_goal'
 
             # Wait for next clock

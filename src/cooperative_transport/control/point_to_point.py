@@ -36,7 +36,7 @@ class PointToPoint:
         self.xg = point[0]
         self.yg = point[1]
 
-    def control_law(self, robot_state, robot_velocity, obstacle_avoidance = False, robots_state = [], robots_velocity = []):
+    def control_law(self, robot_state, robot_velocity, obstacle_avoidance = False, robots_state = [], robots_velocity = [], controller_index = 0):
         """Return controller output
 
         Arguments:
@@ -93,6 +93,8 @@ class PointToPoint:
             forward_velocity = rho_rg
             if obstacle_avoidance:
                 forward_velocity = 0.2
+                if controller_index == 2:
+                    forward_velocity = 0.16
                 if rho_rg < 0.2:
                     forward_velocity = rho_rg
             angular_velocity = -k * utils.angle_normalization(theta - phi_rg) + phi_rg_dot
