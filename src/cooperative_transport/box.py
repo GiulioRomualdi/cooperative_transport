@@ -9,7 +9,7 @@ from nav_msgs.msg import Odometry
 from cooperative_transport.msg import BoxState
 from cooperative_transport.utils import quaternion_to_yaw
 from std_srvs.srv import Empty
-from utils import Segment, angle_normalization
+from utils import Segment, Line, angle_normalization
 from cooperative_transport.filter import LowPassFilter
 from cooperative_transport.srv import GetUncertaintyAreaInfo
 from cooperative_transport.srv import GetUncertaintyAreaInfoRequest
@@ -173,56 +173,67 @@ class BoxStateObserver:
 
         return loss_function
 
-    def find_initial_guess(self, coordinates):
+    def find_initial_guess(self, coordinates, robots_pose):
         """Find the initial guess using a montecarlo-based approach.
 
         Argument:
-            coordinates (float[]): points coordinates
+            coordinates (float[]): points coordinatesn
         """
-        
-        path = '/home/xenvre/'
-        with open(path + 'coords.csv', 'a') as csvfile:
-            fieldnames = ['x', 'y']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            for point in coordinates:
-                writer.writerow({'x':point[0], 'y':point[1]})
-
-        # Get info on the uncertainty area
-        rospy.wait_for_service('uncertainty_area_get_info')
-        docking = rospy.ServiceProxy('uncertainty_area_get_info', GetUncertaintyAreaInfo)
-        try:
-            response = docking(0)
-        except rospy.ServiceException:
-            pass
-
-        # Get the box sizes
+        # Get the box size
         box_params = rospy.get_param('box')
         box_length = box_params['length']
         box_width = box_params['width']
         max_length = max(box_length, box_width)    
-    
-        # Extract the bounds for the estimation
-        uncertain_x = response.pose[0]
-        uncertain_y = response.pose[1]
-        uncertain_theta = response.pose[2]
-        uncertainty_area = BoxGeometry(2 * max_length, max_length,\
-                                       [uncertain_x, uncertain_y],\
-                                       uncertain_theta)
-        vertices = uncertainty_area.vertices()
-        x_coords = [p[0] for p in vertices]
-        y_coords = [p[1] for p in vertices]
-        x_lb = min(x_coords)
-        x_ub = max(x_coords)
-        y_lb = min(y_coords)
-        y_ub = max(y_coords)
+
+        # Get info on the uncertainty area
+        rospy.wait_for_service('uncertainty_area_get_info')
+        info = rospy.ServiceProxy('uncertainty_area_get_info', GetUncertaintyAreaInfo)
+        try:
+            response = info(0)
+        except rospy.ServiceException:
+            pass
+        unc_area = BoxGeometry(2 * max_length, max_length,\
+                               [response.pose[0], response.pose[1]],\
+                               response.pose[2])
+        # Robot that found the box
+        discoverer_id = response.discoverer_id
+        discoverer_pose = robots_pose[discoverer_id]
+
+        # Evaluate the segment between the two other robot
+        indexes = [0, 1, 2]
+        indexes.remove(discoverer_id)
+        poses = [robots_pose[i] for i in indexes]
+
+        segment_between = Segment([poses[0][0],poses[0][1]],\
+                                  [poses[1][0],poses[1][1]])
+        half_way = np.array(segment_between.point(0.5))
+        segment_length = segment_between.length()
+
+        # Find the length of the side on which the other robots are attached
+        robot_radius = float(rospy.get_param('robot_radius'))
+        effective_length = segment_length - 2 * robot_radius
+
+        side_length = box_width
+        if abs(effective_length - box_width) < abs(effective_length - box_length):
+            side_length = box_length
+            
+        # Find an uncertainty area for the center of the box
+        direction = np.array([np.cos(discoverer_pose[2]), np.sin(discoverer_pose[2])])
+        line_half_way = Line(half_way.tolist(), (half_way + direction).tolist())
+        side0 = Line(unc_area.vertex(0), unc_area.vertex(1))
+        intersection = line_half_way.intersect(side0)
+        center_guess = (np.array(intersection) + (side_length / 2) * direction).tolist()
+        theta_guess = discoverer_pose[2]
+        if side_length == box_width:
+            theta_guess -= np.pi / 2
 
         # Estimate the initial guess
         min_value = float('inf')
         random.seed()
-        for i in range(500000):
-            x_c = random.uniform(x_lb, x_ub)
-            y_c = random.uniform(y_lb, y_ub)
-            theta = 0
+        for i in range(10000):
+            x_c = random.gauss(center_guess[0], 0.01)
+            y_c = random.gauss(center_guess[1], 0.01)
+            theta = theta_guess
 
             estimated_state = [x_c, y_c, theta]
 
@@ -232,9 +243,10 @@ class BoxStateObserver:
             if new_value == min_value:
                 self._state = estimated_state
 
-            print min_value
-            print estimated_state
-        
+        print estimated_state
+        print center_guess
+        print theta_guess
+
     def state_estimation(self, coordinates):
         """Evaluate the box state using a montecarlo-based approach.
         
@@ -318,10 +330,14 @@ class BoxStatePublisher:
         points = [self.point_coordinates(robot_index, key) \
                   for robot_index in range(self.number_robots) for key in angle_keys \
                   if self.robots_state[robot_index]['irbumper'][key] < self.max_range]
+
+        robots_pose = [[self.robots_state[i]['state']['x'],\
+                         self.robots_state[i]['state']['y'],\
+                         self.robots_state[i]['state']['theta']] for i in range(3)]
         self.robots_state_lock.release()
-            
+
         # Run Estimation process
-        state = self.observer.find_initial_guess(points)
+        state = self.observer.find_initial_guess(points, robots_pose)
 
     def release_box_state(self, request):
         self.flag_lock.acquire()
