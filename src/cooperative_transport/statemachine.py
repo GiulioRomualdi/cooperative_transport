@@ -64,13 +64,15 @@ def construct_sm(controller_index, robots_state, boxstate, set_control):
                              exhaustive_research,\
                              transitions={'box_not_found':'box_not_found',
                                           'box_found':'BOX_RECOGNITION',
-                                          'other_robot_found_box':'ALIGNMENT_OUTWARD_UNCERTAINTY_AREA'})
+                                          'other_robot_found_box':'ALIGNMENT_OUTWARD_UNCERTAINTY_AREA'},
+                             remapping={'sensed_direction':'sensed_direction'})
 
             box_recognition = BoxRecognition(controller_index, 
                                              robots_state[controller_index], set_control)
             StateMachine.add('BOX_RECOGNITION',\
                              box_recognition,\
-                             transitions={'box_recognized':'FINE_AFTER_RECOGNITION'})
+                             transitions={'box_recognized':'FINE_AFTER_RECOGNITION'},
+                             remapping={'sensed_direction':'sensed_direction'})
         
             fine_approach = LinearMovement(robots_state[controller_index], \
                                            controller_index, set_control, \
@@ -298,7 +300,8 @@ class ExhaustiveResearch(State):
         robots_state (Subscriber[]): list of Subscribers to robots odometry
         set_control (function): function that publish a twist        
         """
-        State.__init__(self, outcomes=['box_not_found','box_found','other_robot_found_box'])
+        State.__init__(self, outcomes=['box_not_found','box_found','other_robot_found_box'],
+                       output_keys=['sensed_direction'])
         self.controller_index = controller_index
         self.this_robot = robots_state[self.controller_index]
         self.robots_state = robots_state
@@ -320,8 +323,9 @@ class ExhaustiveResearch(State):
         self.pub = rospy.Publisher('research_state', BoxDetected, queue_size=50)
 
         self.box_detected = False
-        self.discoverer_id = 0
         self.flag_lock = Lock()
+        self.sensed_direction = 0
+        self.discoverer_id = 0
 
         # Subscribe to irbumper topic
         names = rospy.get_param('topics_names')[self.controller_index]
@@ -364,8 +368,21 @@ class ExhaustiveResearch(State):
         """Return the maximum ir bumper sensor reading."""
         self.ir_data_lock.acquire()
         max_value = max(self.ir_data.values())
+        self.sensed_direction = self.turning_direction()
         self.ir_data_lock.release()
         return max_value
+
+    def turning_direction(self):
+        direction = 0
+        keys = ['base_irbumper_center_', 'base_irbumper_front_', 'base_irbumper_']
+        for key in keys:
+            if self.ir_data[key + 'right'] != 0:
+                direction = 1
+                break
+            elif self.ir_data[key + 'left'] != 0:
+                direction = -1
+                break
+        return direction
 
     def path(self):
         """Return path."""
@@ -448,6 +465,7 @@ class ExhaustiveResearch(State):
                 for i in range(6):
                     self.pub.publish(msg)
                     rospy.sleep(1)
+                userdata.sensed_direction = self.sensed_direction
                 return 'box_found'
 
             # Robot current state
@@ -536,7 +554,8 @@ class BoxRecognition(State):
         robot_state (Subscriber[]): Subscriber to robot odometry
         set_control (function): function that publish a twist        
         """
-        State.__init__(self, outcomes=['box_recognized'])
+        State.__init__(self, outcomes=['box_recognized'],
+                       input_keys=['sensed_direction'])
         self.controller_index = controller_index
         self.robot_state = robot_state
         self.set_control = set_control
@@ -589,8 +608,8 @@ class BoxRecognition(State):
         center_right = self.ir_data['base_irbumper_center_right']
         center_left = self.ir_data['base_irbumper_center_left']
 
-        if center_right != 0 and center_left != 0:
-            if abs(center_right - center_left) < 100:
+        if center_right > 500  and center_left > 500:
+            if abs(center_right - center_left) < 30:
                 self.lock.release()
                 return True
                     
@@ -612,7 +631,7 @@ class BoxRecognition(State):
 
         while not self.is_ir_ready:
             self.clock.sleep()
-            
+
         box_parameters = rospy.get_param('box')
         box_length = box_parameters['length']
         box_width = box_parameters['width']
@@ -656,8 +675,11 @@ class BoxRecognition(State):
 
             # Try to understand if we are in a good or bad case
             theta0 = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
-            angular_v = 0.3
+            angular_v = 0.15
             direction = self.turning_direction()
+            if direction == 0:
+                print 'direction fallback'
+                direction = userdata.sensed_direction
 
             # Turn until max ir reading is zero
             self.set_control(0, direction * angular_v)
@@ -676,6 +698,7 @@ class BoxRecognition(State):
                 theta = utils.quaternion_to_yaw(self.robot_state.data.pose.pose.orientation)
                 error = utils.angle_normalization(reference - theta)
                 if abs(error) < 0.017:
+                    rospy.loginfo('180out')
                     self.set_control(0, 0)
                     break
 
@@ -1177,6 +1200,7 @@ class PlanTrajectory(State):
         state = False
         while not state:
             state, path = self.planner.plan(start_point, goal_point)
+            rospy.sleep(1)
 
         # the first point in the path is the actual robot position
         path.pop(0)
