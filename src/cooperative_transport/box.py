@@ -14,6 +14,9 @@ from cooperative_transport.filter import LowPassFilter
 from cooperative_transport.srv import GetUncertaintyAreaInfo
 from cooperative_transport.srv import GetUncertaintyAreaInfoRequest
 from cooperative_transport.srv import GetUncertaintyAreaInfoResponse
+from cooperative_transport.srv import IsInitialGuessFound
+from cooperative_transport.srv import IsInitialGuessFoundRequest
+from cooperative_transport.srv import IsInitialGuessFoundResponse
 
 # debug
 from gazebo_msgs.msg import ModelStates
@@ -230,10 +233,10 @@ class BoxStateObserver:
         # Estimate the initial guess
         min_value = float('inf')
         random.seed()
+        theta = angle_normalization(theta_guess)
         for i in range(10000):
             x_c = random.gauss(center_guess[0], 0.01)
             y_c = random.gauss(center_guess[1], 0.01)
-            theta = theta_guess
 
             estimated_state = [x_c, y_c, theta]
 
@@ -300,9 +303,11 @@ class BoxStatePublisher:
         
         # Service declaration
         self.release_estimation = False
+        self.found_initial_guess = False
         rospy.Service('release_box_state', Empty, self.release_box_state)
         rospy.Service('hold_box_state', Empty, self.hold_box_state)
         rospy.Service('find_initial_guess', Empty, self.find_initial_guess)
+        rospy.Service('is_initial_guess_found', IsInitialGuessFound, self.is_initial_guess_found)
         
         # Initialize the box state observer
         box_params = rospy.get_param('box')
@@ -337,9 +342,15 @@ class BoxStatePublisher:
         self.robots_state_lock.release()
 
         # Run Estimation process
-        state = self.observer.find_initial_guess(points, robots_pose)
+        self.observer.find_initial_guess(points, robots_pose)
+        
+        # Initial guess found
+        self.flag_lock.acquire()
+        self.found_initial_guess = True        
+        self.flag_lock.release()
 
     def release_box_state(self, request):
+        print 'release box state'
         self.flag_lock.acquire()
         self.release_estimation = True
         self.flag_lock.release()
@@ -348,6 +359,13 @@ class BoxStatePublisher:
         self.flag_lock.acquire()
         self.release_estimation = False
         self.flag_lock.release()
+
+    def is_initial_guess_found(self, request):
+        self.flag_lock.acquire()
+        is_found = self.found_initial_guess
+        self.flag_lock.release()
+        response = IsInitialGuessFoundResponse(is_found)
+        return response
 
     def irsensors_callback(self, data, robot_index):
         """Update robots_state using data from IR sensor.

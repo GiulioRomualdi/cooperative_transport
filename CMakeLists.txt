@@ -60,6 +60,7 @@ add_service_files(
    BoxGetDockingPointRotate.srv
    SetPoseUncertaintyArea.srv
    GetUncertaintyAreaInfo.srv
+   IsInitialGuessFound.srv
 )
 
 ## Generate actions in the 'action' folder
