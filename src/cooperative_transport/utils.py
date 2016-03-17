@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 
 def quaternion_to_yaw(quaternion):
@@ -65,6 +66,15 @@ class Line:
 
     def coefficients(self):
         return [self.a, self.b, self.c]
+
+    def intersect(self, line):
+        coeffs = line.coefficients()
+        a2, b2, c2 = [coeffs[0], coeffs[1], coeffs[2]]
+        determinant = (a2 * self.b - self.a * b2)
+        sol_x = - (- b2 * self.c + self.b * c2) / determinant 
+        sol_y = - (a2 * self.c - self.a * c2) / determinant
+
+        return [sol_x, sol_y]
 
 class Segment:
     """Segment between two points p0 and p1.
