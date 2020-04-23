@@ -26,3 +26,5 @@ The launch file runs gazebo, the main controller (for each simulated robot) and 
 
 The ir readings are available in the topics /ir_bumper_x where x identifies the robot.
 
+## Authors
+[xEnVrE](https://github.com/xEnVrE) and [GiulioRomualdi](https://github.com/GiulioRomualdi) equally contribute to the code
